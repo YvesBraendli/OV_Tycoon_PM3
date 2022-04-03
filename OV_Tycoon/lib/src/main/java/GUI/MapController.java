@@ -50,11 +50,15 @@ public class MapController {
     }
 
     private void initZoneSquares() {
+        // startX, endX, startY, endY, color, name
         Pattern zoneSquareData = Pattern.compile("sX=([0-9]+), eX=([0-9]+), sY=([0-9]+), eY=([0-9]+), color:(.+), name=([^;]+);");
         final int dataGroupsCount = 6;
         try {
             String dir = System.getProperty("user.dir");
-            String zonesTxtPath = dir + "\\lib\\src\\main\\resources\\zones.txt";
+            if (!dir.contains("lib")) {
+                dir += "\\lib";
+            }
+            String zonesTxtPath = dir + "\\src\\main\\resources\\zones.txt";
             File zones = new File(zonesTxtPath);
             BufferedReader br = new BufferedReader(new FileReader(zones));
             String line;
