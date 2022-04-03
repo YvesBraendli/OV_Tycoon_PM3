@@ -1,0 +1,5 @@
+sX=446, eX=534, sY=343, eY=426, color:GREEN, name=Zone 170;
+sX=314, eX=448, sY=307, eY=449, color:RED, name=Zone 122;
+sX=347, eX=494, sY=224, eY=353, color:WHITE, name=Zone 120;
+sX=472, eX=592, sY=239, eY=363, color:RED, name=Zone 164;
+
