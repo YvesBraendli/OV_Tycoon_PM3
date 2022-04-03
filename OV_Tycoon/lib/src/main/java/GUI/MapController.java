@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class MapController {
     List<ZoneSquare> zoneSquares = new ArrayList<>();
@@ -50,8 +51,9 @@ public class MapController {
     }
 
     private void initZoneSquares() {
-        // startX, endX, startY, endY, color, name
-        Pattern zoneSquareData = Pattern.compile("sX=([0-9]+), eX=([0-9]+), sY=([0-9]+), eY=([0-9]+), color:(.+), name=([^;]+);");
+        // startX, offsetX, startY, offsetY, color, name
+        // TODO fix color group
+        Pattern zoneSquareData = Pattern.compile("sX=([0-9]+), oX=([0-9]+), sY=([0-9]+), oY=([0-9]+), color:(.+), name=([^;]+);");
         final int dataGroupsCount = 6;
         try {
             String dir = System.getProperty("user.dir");
@@ -118,12 +120,23 @@ public class MapController {
         /*if (stackPane.getChildren().size() >= 3) {
             stackPane.getChildren().remove(2);
         }*/
+        final int overlayEffectShift = 5;
+        long startTime = System.currentTimeMillis();
         int x = (int) mouseEvent.getX();
         int y = (int) mouseEvent.getY();
         this.removeOverlayPixels();
         Color c = pr.getColor(x, y);
         ZoneColor currColor = getZoneColor(c.toString());
-        for (ZoneSquare sqr : zoneSquares) {
+        List<ZoneSquare> zones = zoneSquares.stream()
+                .filter((zSq) -> zSq.getColor() == currColor)
+                .collect(Collectors.toList());
+        Color overlayColor = new Color(0.0d, 0.0d, 0.0d, 0.25d);
+        double opacity = 1 - (1 - overlayColor.getOpacity()) * (1 - c.getOpacity());
+        double r = overlayColor.getRed() * overlayColor.getOpacity() / opacity + c.getRed() * c.getOpacity() * (1 - overlayColor.getOpacity()) / opacity;
+        double g = overlayColor.getGreen() * overlayColor.getOpacity() / opacity + c.getGreen() * c.getOpacity() * (1 - overlayColor.getOpacity()) / opacity;
+        double b = overlayColor.getBlue() * overlayColor.getOpacity() / opacity + c.getBlue() * c.getOpacity() * (1 - overlayColor.getOpacity()) / opacity;
+        Color mix = new Color(r, g, b, opacity);
+        for (ZoneSquare sqr : zones) {
             if (currColor == sqr.getColor() && x >= sqr.getSquare().getStartX() && x <= sqr.getSquare().getEndX()
                     && y >= sqr.getSquare().getStartY() && y <= sqr.getSquare().getEndY()) {
                 List<Pixel> overlaidPixels = new ArrayList<>();
@@ -131,8 +144,14 @@ public class MapController {
                     for (int j = sqr.getSquare().getStartY(); j < sqr.getSquare().getEndY(); j++) {
                         if (getZoneColor(pr.getColor(i, j).toString()) == currColor) {
                             overlaidPixels.add(new Pixel(i, j));
-                            Color overlayColor = new Color(0.0d, 0.0d, 0.0d, 0.25d);
                             pw.setColor(i, j, overlayColor);
+                            for (int k = 1; k < overlayEffectShift; k++) {
+                                pw.setColor(i - k, j - k, mix);
+                                overlaidPixels.add(new Pixel(i - k, j - k));
+                            }
+                            pw.setColor(i - overlayEffectShift, j - overlayEffectShift, c);
+                            overlaidPixels.add(new Pixel(i - overlayEffectShift, j - overlayEffectShift));
+
                         }
                     }
                 }
@@ -153,6 +172,7 @@ public class MapController {
 
             }
         }
+        System.out.println(String.format("Click handling took %d ms", System.currentTimeMillis() - startTime));
     }
 
     private void removeOverlayPixels() {

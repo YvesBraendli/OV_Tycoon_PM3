@@ -1,5 +1,11 @@
-sX=446, eX=534, sY=343, eY=426, color:GREEN, name=Zone 170;
-sX=314, eX=448, sY=307, eY=449, color:RED, name=Zone 122;
-sX=347, eX=494, sY=224, eY=353, color:WHITE, name=Zone 120;
-sX=472, eX=592, sY=239, eY=363, color:RED, name=Zone 164;
+sX=446, oX=88, sY=343, oY=83, color:GREEN, name=Zone 170;
+sX=314, oX=134, sY=307, oY=142, color:RED, name=Zone 122;
+sX=347, oX=147, sY=224, oY=129, color:WHITE, name=Zone 120;
+sX=472, oX=120, sY=239, oY=124, color:RED, name=Zone 164;
+sX=294, oX=79, sY=12, oY=72, color:BLUE, name=Zone 116;
+sX=152, oX=180, sY=379, oY=174, color:WHITE, name=Zone 110;
+sX=65, oX=141, sY=391, oY=164, color:GREEN, name=Zone 154;
+sX=182, oX=225, sY=317, oY=233, color:BLUE, name=Zone 121;
+sX=458, oX=87, sY=172, oY=116, color:YELLOW, name=Zone 163;
+sX=330, oX=55, sY=504, oY=65, color:YELLOW, name=Zone 130;
 
