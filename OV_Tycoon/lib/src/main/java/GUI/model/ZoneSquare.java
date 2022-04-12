@@ -1,9 +1,12 @@
 package GUI.model;
 
+import java.util.List;
+
 public class ZoneSquare {
     private Square square;
     private ZoneColor color;
     private String name;
+    private List<HorizontalStripe> border;
 
     public ZoneSquare(Square square, ZoneColor color, String name) {
         this.square = square;
@@ -24,6 +27,10 @@ public class ZoneSquare {
         this.name = name;
     }
 
+    public void setBorder(List<HorizontalStripe> border) {
+        this.border = border;
+    }
+
     public ZoneSquare() {}
 
     public String getName() {
@@ -36,6 +43,10 @@ public class ZoneSquare {
 
     public ZoneColor getColor() {
         return color;
+    }
+
+    public List<HorizontalStripe> getBorder() {
+        return border;
     }
 
     @Override

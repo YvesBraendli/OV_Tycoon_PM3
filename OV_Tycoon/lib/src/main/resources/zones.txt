@@ -8,4 +8,4 @@ sX=65, oX=141, sY=391, oY=164, color:GREEN, name=Zone 154;
 sX=182, oX=225, sY=317, oY=233, color:BLUE, name=Zone 121;
 sX=458, oX=87, sY=172, oY=116, color:YELLOW, name=Zone 163;
 sX=330, oX=55, sY=504, oY=65, color:YELLOW, name=Zone 130;
-
+sX=280, oX=115, sY=648, oY=78, color:RED, name=Zone 152;
