@@ -3,6 +3,8 @@ package ch.zhaw.ovtycoon.model;
 import java.util.Arrays;
 import java.util.Random;
 
+import ch.zhaw.ovtycoon.Config;
+
 public class Dice {
 	private final Random random = new Random();   
 	
@@ -16,17 +18,14 @@ public class Dice {
 	 * 	
 	 */
 	public int[] rollDice(int amount) {
-		int maxDiceValue = 6;
-		int maxThrowableDice = 200;
-		
-		if(amount < 0 || amount > maxThrowableDice) {
+		if(amount < 0 || amount > Config.MAX_THROWABLE_DICE) {
 			return null;
 		}
 		
 		int[] rolledDice = new int[amount];	
 		for (int i = 0; i < amount; i++) {
 			// +1 because bound is not included in nextInt.
-			rolledDice[i] = (random.nextInt(maxDiceValue) + 1);
+			rolledDice[i] = (random.nextInt(Config.MAX_DICE_VALUE) + 1);
 		}
 		Arrays.sort(rolledDice);
 		return rolledDice;			
