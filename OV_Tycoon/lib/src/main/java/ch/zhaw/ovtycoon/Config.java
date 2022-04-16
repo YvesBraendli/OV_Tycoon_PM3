@@ -72,7 +72,6 @@ public class Config {
 
 	public enum PlayerColor{
 		BLACK, BLUE, GREEN, RED, WHITE, YELLOW
-
 	}
 	
 }
