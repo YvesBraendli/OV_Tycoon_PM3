@@ -1,5 +1,6 @@
 package ch.zhaw.ovtycoon.model;
 
+import ch.zhaw.ovtycoon.Config;
 import ch.zhaw.ovtycoon.Config.ZoneName;
 
 public class Fight {
@@ -13,14 +14,14 @@ public class Fight {
 
 	public static void main(String[] args) {
 		Zone attacking = new Zone(ZoneName.Zone110);
-		attacking.setTroops(12);
+		attacking.setTroops(2);
 		Zone deffending = new Zone(ZoneName.Zone111);
-		deffending.setTroops(10);
+		deffending.setTroops(1);
 
 		Fight f = new Fight(attacking, deffending);
-		f.fight(3, 2);
+		f.fight(2, 2);
 	}
-
+	
 	/**
 	 * This fight methods executes the fight between the attacking zone and the
 	 * defending zone. The smaller amount of troops (arguments) is the number of
@@ -38,6 +39,10 @@ public class Fight {
 	 *                        defending zone.
 	 */
 	public void fight(int attackingTroops, int defendingTroops) {
+		if(!isValidArgument(attackingTroops, true) || !isValidArgument(defendingTroops, false)) {
+			throw new IllegalArgumentException();
+		}
+		
 		System.out.println("*******************************************");
 
 		System.out.println("start configuration: ");
@@ -69,6 +74,17 @@ public class Fight {
 			System.out.println("*******************************************");
 		}
 
+	}
+
+	private boolean isValidArgument(int attackingTroops, boolean isAttacker) {
+		if(attackingTroops < 0 || attackingTroops < Config.MAX_THROWABLE_DICE) {
+			return false;
+		}
+		int maxPossibleTroops = isAttacker ? attackingZone.getTroops() : defendingZone.getTroops();
+		if(maxPossibleTroops < attackingTroops) {
+			return false;
+		}
+		return true;
 	}
 
 }
