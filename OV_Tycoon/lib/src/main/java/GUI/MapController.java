@@ -126,10 +126,6 @@ public class MapController {
         ZoneSquare sqr = getClickedZone(x, y);
         if (sqr.getBorder() != null) {
             List<Pixel> overlaidPixels = new ArrayList<>();
-            this.setZoneActive(sqr, overlaidPixels, overlayColor, true);
-            String zoneInfo = sqr.getName();
-            zoneLabel.setText(zoneInfo);
-            overlaidZones.put(sqr.getName(), overlaidPixels);
             if (markNeighbours && "Zone 163".equals(sqr.getName())) {
                 List<ZoneSquare> neighbours = zoneSquares.stream().filter((zsq) ->
                         // neighbour zones
@@ -144,6 +140,10 @@ public class MapController {
                     overlaidZones.put(n.getName(), overlayPixels);
                 });
             }
+            this.setZoneActive(sqr, overlaidPixels, overlayColor, true);
+            String zoneInfo = sqr.getName();
+            zoneLabel.setText(zoneInfo);
+            overlaidZones.put(sqr.getName(), overlaidPixels);
             overlayStackPane.setStyle("-fx-background-color: black; -fx-opacity: 0.5;");
         }
         System.out.println(String.format("Click handling took %d ms", System.currentTimeMillis() - startTime));
