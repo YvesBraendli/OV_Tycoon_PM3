@@ -26,12 +26,16 @@ public class Fight {
 	 * defending zone. The smaller amount of troops (arguments) is the number of
 	 * thrown dice per player/zone. The highest thrown number from the attacker is
 	 * compared to the highest thrown number of the defender. The attacker wins, if
-	 * his number is bigger than the defender. Then the defender loses one troop.
-	 * If the number from the attacker isn't higher, the attacker loses one troop.
-	 * This goes one as many times as the dice has been thrown.
+	 * his number is bigger than the defender. Then the defender loses one troop. If
+	 * the number from the attacker isn't higher, the attacker loses one troop. This
+	 * goes one as many times as the dice has been thrown.
 	 * 
-	 * @param attackingTroops  Number of troops that the attacker sends to attack. Must be positive and 
+	 * @param attackingTroops Number of troops that the attacker sends to attack.
+	 *                        Must be positive and max amount is equals to troops in
+	 *                        attacking zone.
 	 * @param defendingTroops Number of troops that the defender sends to defend.
+	 *                        Must be positive and max amount is equals to troops in
+	 *                        defending zone.
 	 */
 	public void fight(int attackingTroops, int defendingTroops) {
 		System.out.println("*******************************************");
