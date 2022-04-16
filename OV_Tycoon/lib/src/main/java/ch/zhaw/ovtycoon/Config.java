@@ -7,7 +7,7 @@ public class Config {
 	public static final int MIN_ATTACKERS = 1;
 	public static final int REGION_BONUS = 2;
 	
-	enum Regions{
+	public enum RegionName{
 		Zurich,
 		Winterthur,
 		Horgen,
@@ -22,7 +22,7 @@ public class Config {
 		Uster
 	}
 	
-	enum Zones{
+	public enum ZoneName{
 		Zone110,
 		Zone111,
 		Zone112,
