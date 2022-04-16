@@ -6,15 +6,6 @@ public class Square {
     private int startY;
     private int endY;
 
-    public Square(int startX, int offsetX, int startY, int offsetY) {
-        this.startX = startX;
-        this.endX = startX + offsetX;
-        this.startY = startY;
-        this.endY = startY + offsetY;
-    }
-
-    public Square() {}
-
     public int getStartX() {
         return startX;
     }

@@ -8,13 +8,6 @@ public class ZoneSquare {
     private String name;
     private List<HorizontalStripe> border;
 
-    public ZoneSquare(Square square, ZoneColor color, String name) {
-        this.square = square;
-        this.color = color;
-        this.name = name;
-
-    }
-
     public void setSquare(Square square) {
         this.square = square;
     }
@@ -31,8 +24,6 @@ public class ZoneSquare {
         this.border = border;
     }
 
-    public ZoneSquare() {}
-
     public String getName() {
         return name;
     }
@@ -47,14 +38,5 @@ public class ZoneSquare {
 
     public List<HorizontalStripe> getBorder() {
         return border;
-    }
-
-    @Override
-    public String toString() {
-        return "ZoneSquare{" +
-                "square=" + square +
-                ", color=" + color +
-                ", name='" + name + '\'' +
-                '}';
     }
 }

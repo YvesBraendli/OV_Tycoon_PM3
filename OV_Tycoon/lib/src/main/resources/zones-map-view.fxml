@@ -27,7 +27,7 @@
             <children>
                <ImageView cache="true" fitHeight="781.0" fitWidth="688.0" pickOnBounds="true" preserveRatio="true" smooth="false">
                    <image>
-                       <Image fx:id="img" url="@zvv_zones_v7.png" />
+                       <Image fx:id="mapImage" url="@zvv_zones_v7.png" />
                    </image>
                </ImageView>
                 <Canvas fx:id="mapCanvas" height="781.0" width="688.0" />
@@ -37,6 +37,5 @@
             </children>
          </StackPane>
       </VBox>
-      <Button fx:id="startBtn" mnemonicParsing="false" text="Start" onMouseClicked="#startGame" />
    </children>
 </HBox>

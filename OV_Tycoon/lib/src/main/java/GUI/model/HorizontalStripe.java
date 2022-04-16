@@ -5,12 +5,6 @@ public class HorizontalStripe {
     private int endX;
     private int y;
 
-    public HorizontalStripe(int start, int end, int y) {
-        this.startX = start;
-        this.endX = end;
-        this.y = y;
-    }
-
     public HorizontalStripe() {}
 
     public void setStartX(int startX) {
