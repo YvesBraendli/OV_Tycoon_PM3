@@ -67,7 +67,7 @@ public class MapController {
 
     private void initZoneSquares() {
         // startX, offsetX, startY, offsetY, color, name
-        Pattern zoneSquareData = Pattern.compile("sX=([0-9]+), oX=([0-9]+), sY=([0-9]+), oY=([0-9]+), color:([^,]+), name=([^;]+);");
+        Pattern zoneSquareData = Pattern.compile("sX=([0-9]+), oX=([0-9]+), sY=([0-9]+), oY=([0-9]+), color=([^,]+), name=([^;]+);");
         final int dataGroupsCount = 6;
         try {
             String dir = System.getProperty("user.dir");
