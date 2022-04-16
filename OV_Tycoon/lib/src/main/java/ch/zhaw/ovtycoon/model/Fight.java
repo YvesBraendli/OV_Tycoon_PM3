@@ -7,7 +7,17 @@ public class Fight {
 	private Zone attackingZone;
 	private Zone defendingZone;
 
+	/**
+	 * Instantiates a new Fight object.
+	 * @param attackingZone		attacking Zone, can't be null
+	 * @param defendingZone		defending Zone, can't be null
+	 * 
+	 * @throws IllegalArgumentException	if one of the zones is null
+	 */
 	public Fight(Zone attackingZone, Zone defendingZone) {
+		if(attackingZone == null || defendingZone == null) {
+			throw new IllegalArgumentException();
+		}
 		this.attackingZone = attackingZone;
 		this.defendingZone = defendingZone;
 	}
@@ -21,7 +31,7 @@ public class Fight {
 		Fight f = new Fight(attacking, deffending);
 		f.fight(2, 2);
 	}
-	
+
 	/**
 	 * This fight methods executes the fight between the attacking zone and the
 	 * defending zone. The smaller amount of troops (arguments) is the number of
@@ -32,17 +42,20 @@ public class Fight {
 	 * goes one as many times as the dice has been thrown.
 	 * 
 	 * @param attackingTroops Number of troops that the attacker sends to attack.
-	 *                        Must be positive and max amount is equals to troops in
-	 *                        attacking zone.
+	 *                        Must be positive and max amount is equals to
+	 *                        Config.MAX_THROWABLE_DICE and not bigger than troops
+	 *                        in attacking zone.
 	 * @param defendingTroops Number of troops that the defender sends to defend.
-	 *                        Must be positive and max amount is equals to troops in
-	 *                        defending zone.
+	 *                        Must be positive and max amount is equals to
+	 *                        Config.MAX_THROWABLE_DICE and not bigger than troops
+	 *                        in defending zone.
+	 * @throws IllegalArgumentException if arguments are invalid.
 	 */
 	public void fight(int attackingTroops, int defendingTroops) {
-		if(!isValidArgument(attackingTroops, true) || !isValidArgument(defendingTroops, false)) {
+		if (!isValidArgument(attackingTroops, true) || !isValidArgument(defendingTroops, false)) {
 			throw new IllegalArgumentException();
 		}
-		
+
 		System.out.println("*******************************************");
 
 		System.out.println("start configuration: ");
@@ -77,11 +90,11 @@ public class Fight {
 	}
 
 	private boolean isValidArgument(int attackingTroops, boolean isAttacker) {
-		if(attackingTroops < 0 || attackingTroops < Config.MAX_THROWABLE_DICE) {
+		if (attackingTroops < 0 || attackingTroops < Config.MAX_THROWABLE_DICE) {
 			return false;
 		}
 		int maxPossibleTroops = isAttacker ? attackingZone.getTroops() : defendingZone.getTroops();
-		if(maxPossibleTroops < attackingTroops) {
+		if (maxPossibleTroops < attackingTroops) {
 			return false;
 		}
 		return true;
