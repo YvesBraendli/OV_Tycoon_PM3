@@ -9,7 +9,7 @@ public class Config {
 	public static final int MAX_PLAYERS = 6;
 	public static final int MIN_PLAYERS = 2;
 	
-	enum Regions{
+	public enum RegionName{
 		Zurich,
 		Winterthur,
 		Horgen,
@@ -24,7 +24,7 @@ public class Config {
 		Uster
 	}
 	
-	enum Zones{
+	public enum ZoneName{
 		Zone110,
 		Zone111,
 		Zone112,
