@@ -47,7 +47,7 @@ public class MapController {
     private final List<ZoneSquare> zoneSquares = new ArrayList<>();
     private final Color transparentColor = Color.TRANSPARENT;
     private final Color overlayColor = new Color(0.0d, 0.0d, 0.0d, 0.25d);
-    private final Color neighbourOverlayColor = new Color(0.57d, 0.97d, 0.64d, 1.0d);
+    private final Color neighbourOverlayColor = new Color(1, 1, 1, 0.25d);
     private final int overlayEffectShift = 5;
 
 
@@ -130,15 +130,17 @@ public class MapController {
             String zoneInfo = sqr.getName();
             zoneLabel.setText(zoneInfo);
             overlaidZones.put(sqr.getName(), overlaidPixels);
-            if (markNeighbours && "Zone 121".equals(sqr.getName())) {
+            if (markNeighbours && "Zone 163".equals(sqr.getName())) {
                 List<ZoneSquare> neighbours = zoneSquares.stream().filter((zsq) ->
                         // neighbour zones
-                        (zsq.getName().equals("Zone 122") || zsq.getName().equals("Zone 110") || zsq.getName().equals("Zone 130"))
+                        (zsq.getName().equals("Zone 164") || zsq.getName().equals("Zone 120")
+                                || zsq.getName().equals("Zone 160"))
                         && zsq.getColor() != sqr.getColor() // if attack -> zone that can be attacked can't have same color as own zone
                 ).collect(Collectors.toList());
                 neighbours.forEach((n) -> {
+                    Color nOverLay = mixColors(neighbourOverlayColor, getColor(n.getColor().getColorAsHexString()));
                     List<Pixel> overlayPixels = new ArrayList<>();
-                    setZoneActive(n, overlayPixels, neighbourOverlayColor, false);
+                    setZoneActive(n, overlayPixels, nOverLay, false);
                     overlaidZones.put(n.getName(), overlayPixels);
                 });
             }
