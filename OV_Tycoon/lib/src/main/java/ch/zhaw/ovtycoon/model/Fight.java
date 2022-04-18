@@ -65,7 +65,7 @@ public class Fight {
 	}
 
 	private boolean isValidArgument(int attackingTroops, boolean isAttacker) {
-		if (attackingTroops < 0 || attackingTroops > Config.MAX_THROWABLE_DICE) {
+		if (attackingTroops <= 0 || attackingTroops > Config.MAX_THROWABLE_DICE) {
 			return false;
 		}
 		int maxPossibleTroops = isAttacker ? attackingZone.getTroops() : defendingZone.getTroops();
