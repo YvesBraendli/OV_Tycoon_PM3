@@ -6,6 +6,8 @@ public class Config {
 	public static final int MAX_ATTACKERS = 3;
 	public static final int MIN_ATTACKERS = 1;
 	public static final int REGION_BONUS = 2;
+	public static final int MAX_PLAYERS = 6;
+	public static final int MIN_PLAYERS = 2;
 	
 	public enum RegionName{
 		Zurich,
@@ -66,6 +68,10 @@ public class Config {
 		Zone180,
 		Zone181,
 		Zone184
+	}
+
+	public enum PlayerColor{
+		BLACK, BLUE, GREEN, RED, WHITE, YELLOW
 	}
 	
 }
