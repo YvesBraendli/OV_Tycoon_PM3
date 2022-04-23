@@ -8,6 +8,7 @@ public class Config {
 	public static final int REGION_BONUS = 2;
 	public static final int MAX_PLAYERS = 6;
 	public static final int MIN_PLAYERS = 2;
+	public static final int NUMBER_OF_ZONES = 42;
 	
 	public enum RegionName{
 		Zurich,
