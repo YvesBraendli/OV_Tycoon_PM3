@@ -1,0 +1,22 @@
+.action-btn {
+    -fx-min-width: 100px;
+    -fx-min-height: 50px;
+    -fx-background-color: cadetblue;
+    -fx-font-size: 20px;
+    -fx-text-fill: floralwhite;
+}
+
+.fight-label {
+    -fx-background-color: grey;
+    -fx-font-family: Arial;
+    -fx-text-fill: white;
+    -fx-font-size: 30px;
+    -fx-alignment: center;
+}
+
+.zone-tooltip {
+    -fx-background-color: black;
+    -fx-fill: grey;
+    -fx-text-fill: white;
+    -fx-alignment: center;
+}

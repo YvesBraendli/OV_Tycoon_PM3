@@ -1,5 +1,7 @@
 package ch.zhaw.ovtycoon.gui.model;
 
+import javafx.scene.text.Text;
+
 import java.util.List;
 
 public class ZoneSquare {
@@ -7,6 +9,8 @@ public class ZoneSquare {
     private ZoneColor color;
     private String name;
     private List<HorizontalStripe> border;
+    private Pixel center;
+    private Text txt;
 
     public void setSquare(Square square) {
         this.square = square;
@@ -38,5 +42,21 @@ public class ZoneSquare {
 
     public List<HorizontalStripe> getBorder() {
         return border;
+    }
+
+    public Pixel getCenter() {
+        return center;
+    }
+
+    public void setCenter(Pixel center) {
+        this.center = center;
+    }
+
+    public Text getTxt() {
+        return txt;
+    }
+
+    public void setTxt(Text txt) {
+        this.txt = txt;
     }
 }
