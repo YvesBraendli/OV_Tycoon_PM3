@@ -5,18 +5,71 @@ import java.util.HashMap;
 import java.util.Map;
 
 import ch.zhaw.ovtycoon.Config;
+import ch.zhaw.ovtycoon.Config.RegionName;
+import ch.zhaw.ovtycoon.Config.ZoneName;
 
 public class Game {
-	private int currentRound = 0;
-	private HashMap<Player,ArrayList<Zone>> ownedZones;
+	private ArrayList<Region> regions;
 	
 	
 	public void initGame(int playerAmount) {
-		ownedZones = new HashMap<Player,ArrayList<Zone>>();
+		regions = new ArrayList<Region>();
+		ArrayList<Zone> Unterland = new ArrayList<Zone>();
+		Unterland.add(new Zone(ZoneName.Zone114));
+		Unterland.add(new Zone(ZoneName.Zone113));
+		Unterland.add(new Zone(ZoneName.Zone112));
+		Unterland.add(new Zone(ZoneName.Zone121));
+		Unterland.add(new Zone(ZoneName.Zone111));
+		Unterland.add(new Zone(ZoneName.Zone117));
+		Unterland.add(new Zone(ZoneName.Zone154));
+		Unterland.add(new Zone(ZoneName.Zone184));
+		regions.add(new Region(RegionName.Unterland, Unterland));
 		
-		//for(int i = 0; i <= playerAmount; i++) {
-		//	addPlayer(new Player(null)); //TODO create players with name and color
-		//}	
+		ArrayList<Zone> Weinland = new ArrayList<Zone>();
+		Weinland.add(new Zone(ZoneName.Zone115));
+		Weinland.add(new Zone(ZoneName.Zone124));
+		Weinland.add(new Zone(ZoneName.Zone123));
+		Weinland.add(new Zone(ZoneName.Zone120));
+		Weinland.add(new Zone(ZoneName.Zone170));
+		Weinland.add(new Zone(ZoneName.Zone171));
+		Weinland.add(new Zone(ZoneName.Zone164));
+		Weinland.add(new Zone(ZoneName.Zone163));
+		Weinland.add(new Zone(ZoneName.Zone160));
+		Weinland.add(new Zone(ZoneName.Zone161));
+		Weinland.add(new Zone(ZoneName.Zone162));
+		regions.add(new Region(RegionName.Weinland, Weinland));
+		
+		ArrayList<Zone> Oberland = new ArrayList<Zone>();
+		Oberland.add(new Zone(ZoneName.Zone122));
+		Oberland.add(new Zone(ZoneName.Zone135));
+		Oberland.add(new Zone(ZoneName.Zone172));
+		Oberland.add(new Zone(ZoneName.Zone173));
+		Oberland.add(new Zone(ZoneName.Zone134));
+		Oberland.add(new Zone(ZoneName.Zone133));
+		Oberland.add(new Zone(ZoneName.Zone132));
+		Oberland.add(new Zone(ZoneName.Zone131));
+		Oberland.add(new Zone(ZoneName.Zone130));
+		regions.add(new Region(RegionName.Oberland, Oberland));
+		
+		ArrayList<Zone> MeilenZurich = new ArrayList<Zone>();
+		MeilenZurich.add(new Zone(ZoneName.Zone143));
+		MeilenZurich.add(new Zone(ZoneName.Zone141));
+		MeilenZurich.add(new Zone(ZoneName.Zone130));
+		MeilenZurich.add(new Zone(ZoneName.Zone140));
+		MeilenZurich.add(new Zone(ZoneName.Zone180));
+		MeilenZurich.add(new Zone(ZoneName.Zone110));
+		regions.add(new Region(RegionName.MeilenZurich, MeilenZurich));
+		
+		
+		ArrayList<Zone> HorgenAlbis = new ArrayList<Zone>();
+		HorgenAlbis.add(new Zone(ZoneName.Zone155));
+		HorgenAlbis.add(new Zone(ZoneName.Zone156));
+		HorgenAlbis.add(new Zone(ZoneName.Zone151));
+		HorgenAlbis.add(new Zone(ZoneName.Zone152));
+		HorgenAlbis.add(new Zone(ZoneName.Zone153));
+		HorgenAlbis.add(new Zone(ZoneName.Zone150));
+		HorgenAlbis.add(new Zone(ZoneName.Zone181));
+		regions.add(new Region(RegionName.HorgenAlbis, HorgenAlbis));
 	}
 	
 	public void start() {
@@ -61,4 +114,5 @@ public class Game {
 		}
 		return null;
 	}
+	
 }

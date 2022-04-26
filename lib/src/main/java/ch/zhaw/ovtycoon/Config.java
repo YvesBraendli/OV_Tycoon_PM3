@@ -11,18 +11,11 @@ public class Config {
 	public static final int NUMBER_OF_ZONES = 42;
 	
 	public enum RegionName{
-		Zurich,
-		Winterthur,
-		Horgen,
-		Affoltern,
-		Andelfingen,
-		Bulach,
-		Dielsdorf,
-		Dietikon,
-		Hinwil,
-		Meilen,
-		Pfaeffikon,
-		Uster
+		Unterland,
+		Weinland,
+		Oberland,
+		HorgenAlbis,
+		MeilenZurich
 	}
 	
 	public enum ZoneName{
