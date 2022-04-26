@@ -4,10 +4,11 @@ import ch.zhaw.ovtycoon.gui.model.Action;
 import ch.zhaw.ovtycoon.gui.model.ActionButton;
 import ch.zhaw.ovtycoon.gui.model.HorizontalStripe;
 import ch.zhaw.ovtycoon.gui.model.Pixel;
-import ch.zhaw.ovtycoon.gui.model.Square;
-import ch.zhaw.ovtycoon.gui.model.ZoneColor;
 import ch.zhaw.ovtycoon.gui.model.ZoneSquare;
 import ch.zhaw.ovtycoon.gui.model.ZoneTooltip;
+import ch.zhaw.ovtycoon.gui.service.ColorService;
+import ch.zhaw.ovtycoon.gui.service.MapLoaderService;
+import ch.zhaw.ovtycoon.model.Zone;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.fxml.FXML;
@@ -16,26 +17,18 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
-import javafx.scene.image.PixelReader;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Text;
 import javafx.util.Duration;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class MapController {
@@ -51,36 +44,37 @@ public class MapController {
     private StackPane labelStackPane;
     @FXML
     private VBox mapVBox;
-    private ActionButton actionBtn;
-    private PixelWriter pw;
-    private PixelWriter mapPw;
-    private PixelReader pr;
-    private Map<String, List<Pixel>> overlaidZones = new HashMap<>();
-    private final List<ZoneSquare> zoneSquares = new ArrayList<>();
+
     private final Color transparentColor = Color.TRANSPARENT;
     private final Color overlayColor = new Color(0.0d, 0.0d, 0.0d, 0.25d);
     private final Color neighbourOverlayColor = new Color(1, 1, 1, 0.25d);
     private final int overlayEffectShift = 5;
-    private boolean firstSelect = false;
+
+    private ActionButton actionBtn;
+    private PixelWriter pw;
+    private PixelWriter mapPw;
+    private Map<String, List<Pixel>> overlaidZones = new HashMap<>();
+    private List<ZoneSquare> zoneSquares;
     private ZoneSquare source;
     private ZoneSquare target;
     private ZoneSquare currHovered;
     private boolean hoverActive = true;
+    private ColorService colorService = new ColorService();
+    private MapLoaderService mapLoaderService;
 
 
     @FXML
     public void initialize() {
+        mapLoaderService = new MapLoaderService(mapImage);
         GraphicsContext gc = mapCanvas.getGraphicsContext2D();
         GraphicsContext overlayGc = mapCanvasOverlay.getGraphicsContext2D();
         pw = overlayGc.getPixelWriter();
         mapPw = gc.getPixelWriter();
-        initZoneSquares();
-        addMapClickHandler();
-        long start = System.currentTimeMillis();
-        this.zoneSquares.forEach(zsq -> getXBorderStripes(zsq)); // TODO why faster without multithreading?
-        System.out.println(String.format("Finished stripe init in %d ms", System.currentTimeMillis() - start));
+        zoneSquares = mapLoaderService.initZoneSquaresFromConfig();
+        zoneSquares.forEach(zoneSquare -> labelStackPane.getChildren().add(zoneSquare.getTxt()));
         this.addPlayerColorsToZones();
-        this.addHoverHandler();
+        labelStackPane.setOnMouseClicked(mouseEvent -> onMapClick(mouseEvent));
+        labelStackPane.setOnMouseMoved(mouseEvent -> handleMapHover(mouseEvent));
         actionBtn = new ActionButton();
         actionBtn.setAlignment(Pos.BOTTOM_CENTER);
         actionBtn.getStyleClass().add("action-btn");
@@ -88,13 +82,7 @@ public class MapController {
         actionBtn.setOnMouseClicked(event -> onActionButtonClick());
     }
 
-    private void addHoverHandler() {
-        labelStackPane.setOnMouseMoved((mouseEvent) -> {
-            handleHover(mouseEvent);
-        });
-    }
-
-    private void handleHover(MouseEvent mouseEvent) {
+    private void handleMapHover(MouseEvent mouseEvent) {
         if (!hoverActive) return;
         int x = (int) mouseEvent.getX();
         int y = (int) mouseEvent.getY();
@@ -142,11 +130,11 @@ public class MapController {
             this.labelStackPane.getChildren().remove(fightLabel);
             if (number > 3) {
                 // attacker wins
-                Color attackerColor = getColor(source.getColor().getColorAsHexString());
+                Color attackerColor = colorService.getColor(source.getColor().getColorAsHexString());
                 drawZone(target, attackerColor, mapPw);
             } else {
                 // defender wins
-                Color defenderColor = getColor(target.getColor().getColorAsHexString());
+                Color defenderColor = colorService.getColor(target.getColor().getColorAsHexString());
                 drawZone(source, defenderColor, mapPw);
             }
             source = null;
@@ -154,54 +142,10 @@ public class MapController {
             removeAllOverlaidPixels();
             overlayStackPane.setStyle("-fx-background-color: transparent;");
             hoverActive = true;
+            actionBtn.setDisable(true);
         });
         Timeline fightTl = new Timeline(waitingForDiceThrowKf, winnerKf, finishFightKf);
         fightTl.play();
-    }
-
-    private void initZoneSquares() {
-        // startX, offsetX, startY, offsetY, color, name
-        Pattern zoneSquareData = Pattern.compile("sX=([0-9]+), oX=([0-9]+), sY=([0-9]+), oY=([0-9]+), color=([^,]+), name=([^;]+), center=\\(([0-9]+,[0-9]+)\\);");
-        final int dataGroupsCount = 7;
-        try {
-            String dir = System.getProperty("user.dir");
-            if (!dir.contains("lib")) {
-                dir += "\\lib";
-            }
-            String zonesTxtPath = dir + "\\src\\main\\resources\\zones.txt";
-            File zones = new File(zonesTxtPath);
-            try (BufferedReader br = new BufferedReader(new FileReader(zones))) {
-                String line;
-                while ((line = br.readLine()) != null) {
-                    Matcher matcher = zoneSquareData.matcher(line);
-                    if (matcher.find() && matcher.groupCount() == dataGroupsCount) {
-                        ZoneSquare zoneSquare = new ZoneSquare();
-                        Square square = new Square();
-                        square.setStartX(Integer.parseInt(matcher.group(1)));
-                        square.setEndX(Integer.parseInt(matcher.group(2)));
-                        square.setStartY(Integer.parseInt(matcher.group(3)));
-                        square.setEndY(Integer.parseInt(matcher.group(4)));
-                        zoneSquare.setSquare(square);
-                        zoneSquare.setColor(getZoneColorByName(matcher.group(5)));
-                        zoneSquare.setName(matcher.group(6));
-                        String center = matcher.group(7);
-                        String[] centerCoordinates = center.split(",");
-                        zoneSquare.setCenter(new Pixel(Integer.parseInt(centerCoordinates[0]), Integer.parseInt(centerCoordinates[1])));
-                        Text txt = new Text();
-                        txt.setStyle("-fx-fill: lightgray;-fx-font-weight: bold;");
-                        txt.setText("0");
-                        txt.setTranslateX(zoneSquare.getCenter().getX());
-                        txt.setTranslateY(zoneSquare.getCenter().getY());
-                        zoneSquare.setTxt(txt);
-                        labelStackPane.getChildren().add(txt);
-                        zoneSquares.add(zoneSquare);
-                    }
-                }
-            }
-        }
-        catch (IOException ioException) {
-            ioException.printStackTrace();
-        }
     }
 
     private void addPlayerColorsToZones() {
@@ -218,7 +162,7 @@ public class MapController {
         }
     }
 
-    // TODO should depend if move = attack, reinforcement or move trains
+    // TODO should depend if move = attack, reinforcement or move troops
     private void onMapClick(MouseEvent mouseEvent) {
         if (source == null || source != null && target != null) {
             overlayStackPane.setStyle("-fx-background-color: transparent;");
@@ -229,49 +173,56 @@ public class MapController {
         long startTime = System.currentTimeMillis();
         int x = (int) mouseEvent.getX();
         int y = (int) mouseEvent.getY();
-        boolean markNeighbours = false;
         ZoneSquare sqr = getZoneAtCoordinates(x, y);
         if (sqr != null && sqr.getBorder() != null) {
             List<Pixel> overlaidPixels = new ArrayList<>();
-            if (markNeighbours && "Zone 163".equals(sqr.getName())) {
-                List<ZoneSquare> neighbours = zoneSquares.stream().filter((zsq) ->
-                        // neighbour zones
-                        (zsq.getName().equals("Zone 164") || zsq.getName().equals("Zone 120")
-                                || zsq.getName().equals("Zone 160"))
-                        && zsq.getColor() != sqr.getColor() // if attack -> zone that can be attacked can't have same color as own zone
-                ).collect(Collectors.toList());
-                neighbours.forEach((n) -> {
-                    Color nOverLay = mixColors(neighbourOverlayColor, getColor(n.getColor().getColorAsHexString()));
-                    List<Pixel> overlayPixels = new ArrayList<>();
-                    setZoneActive(n, overlayPixels, nOverLay, false);
-                    overlaidZones.put(n.getName(), overlayPixels);
-                });
-            }
-            if (!firstSelect) {
-                this.setZoneActive(sqr, overlaidPixels, overlayColor, true);
-                overlaidZones.put(sqr.getName(), overlaidPixels);
-            } else {
-                this.drawZone(sqr, getColor(sqr.getColor().getColorAsHexString()), pw);
-                this.setZoneActive(source, overlaidPixels, overlayColor, true);
-                overlaidZones.put(source.getName(), overlaidPixels);
-            }
-            overlayStackPane.setStyle("-fx-background-color: black; -fx-opacity: 0.5;");
             if (source == null) {
                 source = sqr;
             } else {
                 target = sqr;
                 if (labelStackPane.getChildren().size() > zoneSquares.size()) labelStackPane.getChildren().remove(labelStackPane.getChildren().size() - 1);
                 hoverActive = false;
+                actionBtn.setDisable(false);
             }
-            firstSelect = !firstSelect;
+            markNeighbours(getNeighbours(sqr));
+            if (source == null) {
+                this.setZoneActive(sqr, overlaidPixels, overlayColor, true);
+                overlaidZones.put(sqr.getName(), overlaidPixels);
+            } else {
+                this.drawZone(sqr, colorService.getColor(sqr.getColor().getColorAsHexString()), pw);
+                this.setZoneActive(source, overlaidPixels, overlayColor, true);
+                overlaidZones.put(source.getName(), overlaidPixels);
+            }
+            overlayStackPane.setStyle("-fx-background-color: black; -fx-opacity: 0.5;");
         } else {
             source = null;
             target = null;
             this.removeAllOverlaidPixels();
             overlayStackPane.setStyle("-fx-background-color: transparent;");
-            firstSelect = false;
         }
         System.out.println(String.format("Click handling took %d ms", System.currentTimeMillis() - startTime));
+    }
+
+    // will be handled by backend in future, only here for testing
+    private List<ZoneSquare> getNeighbours(ZoneSquare zoneSquare) {
+        if (source == zoneSquare && "Zone 163".equals(zoneSquare.getName())) {
+            return zoneSquares.stream().filter((zsq) ->
+                    // neighbour zones
+                    (zsq.getName().equals("Zone 164") || zsq.getName().equals("Zone 120")
+                            || zsq.getName().equals("Zone 160"))
+                            && zsq.getColor() != zoneSquare.getColor() // if attack -> zone that can be attacked can't have same color as own zone
+            ).collect(Collectors.toList());
+        }
+        return new ArrayList<>();
+    }
+
+    private void markNeighbours(List<ZoneSquare> neighbours) {
+        neighbours.forEach((n) -> {
+            Color nOverLay = colorService.mixColors(neighbourOverlayColor, colorService.getColor(n.getColor().getColorAsHexString()));
+            List<Pixel> overlayPixels = new ArrayList<>();
+            setZoneActive(n, overlayPixels, nOverLay, false);
+            overlaidZones.put(n.getName(), overlayPixels);
+        });
     }
 
     private ZoneSquare getZoneAtCoordinates(int x, int y) {
@@ -286,63 +237,6 @@ public class MapController {
         return clickedZone;
     }
 
-    // TODO current impl doesnt work if !mapClr(i - 1) mapClr(i) !mapClr(i+1)
-    private List<HorizontalStripe> getXBorderStripes(ZoneSquare zsq) {
-        Square sqr = zsq.getSquare();
-        ZoneColor zoneColor = zsq.getColor();
-        List<HorizontalStripe> stripes = new ArrayList<>();
-        for (int i = sqr.getStartY(); i <= sqr.getEndY(); i++) { // TODO check if index out of bounds exception possible here
-            HorizontalStripe currStripe = new HorizontalStripe();
-
-            boolean enteredZone = false;
-
-            boolean prev = false;
-
-            for (int j = sqr.getStartX(); j <= sqr.getEndX(); j++) {
-                prev = enteredZone;
-                enteredZone = isZoneColor(j, i, zoneColor);
-                if (enteredZone && !prev) {
-                    currStripe.setStartX(j);
-                    currStripe.setY(i);
-                }
-                else if (!enteredZone && prev) {
-                    currStripe.setEndX(j - 1); // prev was last pixel in zone
-                    stripes.add(currStripe);
-                    currStripe = new HorizontalStripe(); // if stripe intersected
-                }
-            }
-        }
-        zsq.setBorder(stripes);
-        return stripes;
-    }
-
-    private boolean isZoneColor(int x, int y, ZoneColor zoneColor) {
-        return zoneColor == getZoneColor(pr.getColor(x, y).toString());
-    }
-
-    private void addMapClickHandler() {
-        pr = mapImage.getPixelReader();
-        labelStackPane.setOnMouseClicked(mouseEvent -> this.onMapClick(mouseEvent));
-    }
-
-    private ZoneColor getZoneColor(String color) {
-        for (ZoneColor mapColor : ZoneColor.values()) {
-            if (mapColor.getColorAsHexString().equals(color)) {
-                return mapColor;
-            }
-        }
-        return null;
-    }
-
-    private ZoneColor getZoneColorByName(String name) {
-        for (ZoneColor zoneColor: ZoneColor.values()) {
-            if (name != null && name.equals(zoneColor.toString())) {
-                return zoneColor;
-            }
-        }
-        return null;
-    }
-
     private void removeAllOverlaidPixels() {
         if (overlaidZones == null) return;
         overlaidZones.values().forEach(zone -> zone.forEach(pixel -> pw.setColor(pixel.getX(), pixel.getY(), transparentColor)));
@@ -350,9 +244,9 @@ public class MapController {
     }
 
     private void setZoneActive(ZoneSquare sqr, List<Pixel> overlaidPixels, Color overlayColor, boolean shift) {
-        Color currColor = getColor(sqr.getColor().getColorAsHexString());
+        Color currColor = colorService.getColor(sqr.getColor().getColorAsHexString());
         if (currColor == null) return;
-        Color mix = mixColors(overlayColor, currColor);
+        Color mix = colorService.mixColors(overlayColor, currColor);
         for (HorizontalStripe stripe : sqr.getBorder()) {
             int y = stripe.getY();
             for (int x = stripe.getStartX(); x <= stripe.getEndX(); x++) {
@@ -371,17 +265,6 @@ public class MapController {
         }
     }
 
-    private Color getColor(String hex) {
-        Pattern hexColor = Pattern.compile("^0x([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$");
-        Matcher matcher = hexColor.matcher(hex);
-        double[] colorParams = new double[4];
-        if (!matcher.find() || matcher.groupCount() != 4) return null;
-        for (int i = 0; i < matcher.groupCount(); i++) {
-            colorParams[i] = Integer.parseInt(matcher.group(i + 1), 16) / 255.0d;
-        }
-        return new Color(colorParams[0], colorParams[1], colorParams[2], colorParams[3]);
-    }
-
     private void drawZone(ZoneSquare sqr, Color c, PixelWriter pw) {
         boolean drawingOverlay = pw == this.pw;
         if (drawingOverlay) overlaidZones.put(sqr.getName(), new ArrayList<>());
@@ -394,15 +277,7 @@ public class MapController {
                 }
             }
         }
-        sqr.setColor(getZoneColor(c.toString()));
-    }
-
-    private Color mixColors(Color foregroundColor, Color backgroundColor) {
-        double opacity = 1 - (1 - foregroundColor.getOpacity()) * (1 - backgroundColor.getOpacity());
-        double r = foregroundColor.getRed() * foregroundColor.getOpacity() / opacity + backgroundColor.getRed() * backgroundColor.getOpacity() * (1 - foregroundColor.getOpacity()) / opacity;
-        double g = foregroundColor.getGreen() * foregroundColor.getOpacity() / opacity + backgroundColor.getGreen() * backgroundColor.getOpacity() * (1 - foregroundColor.getOpacity()) / opacity;
-        double b = foregroundColor.getBlue() * foregroundColor.getOpacity() / opacity + backgroundColor.getBlue() * backgroundColor.getOpacity() * (1 - foregroundColor.getOpacity()) / opacity;
-        return new Color(r, g, b, opacity);
+        sqr.setColor(colorService.getZoneColor(c.toString()));
     }
 }
 

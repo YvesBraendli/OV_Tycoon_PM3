@@ -8,6 +8,7 @@ public class ActionButton extends Button {
 
     public ActionButton() {
         setText(action.name().toLowerCase());
+        setDisable(true);
     }
 
     public Action getAction() {

@@ -40,4 +40,4 @@ sX=442, oX=161, sY=539, oY=131, color=RED, name=Zone 133, center=(555,560);
 sX=410, oX=78, sY=583, oY=90, color=BLUE, name=Zone 143, center=(445,605);
 sX=359, oX=79, sY=540, oY=118, color=RED, name=Zone 142, center=(400,570);
 sX=304, oX=75, sY=566, oY=70, color=GREEN, name=Zone 141, center=(350,590);
-sX=434, oX=104, sY=505, oY=105, color=YELLOW, name=ZONE 132, center=(485,550);
+sX=434, oX=104, sY=505, oY=105, color=YELLOW, name=Zone 132, center=(485,550);
