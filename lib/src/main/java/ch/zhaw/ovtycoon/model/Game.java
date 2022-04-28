@@ -12,7 +12,7 @@ public class Game {
 	private Player[] players;
 	
 	/**
-	 * initializes the gamemap and creates players with their corresponding colors
+	 * initializes the gameMap and creates players with their corresponding colors
 	 * @param playerAmount number of players
 	 */
 	public void initGame(int playerAmount) {
@@ -43,5 +43,9 @@ public class Game {
 				return null;
 		}
 		return regionOwner;
+	}
+	
+	public void setZoneOwner(Player owner) {
+		//TODO Implement setZoneOwner method
 	}
 }
