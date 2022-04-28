@@ -1,14 +1,19 @@
 package ch.zhaw.ovtycoon.model;
 
-import ch.zhaw.ovtycoon.Config.ZoneName;
+import java.util.ArrayList;
+import java.util.Objects;
 
-public class Zone {
-	private ZoneName name;
+public class Zone{
+	private String name;
 	private int troops;
 	private Player owner;
+	private ArrayList<Zone> neighbours;
 	
-	public Zone(ZoneName name) {
+	public Zone(String name) {
 		this.name = name;
+		neighbours = new ArrayList<Zone>();
+		owner = null;
+		troops = 0;
 	}
 	
 	public Player getOwner() {
@@ -19,7 +24,7 @@ public class Zone {
 		owner = player;
 	}
 	
-	public ZoneName getName() {
+	public String getName() {
 		return name;
 	}
 	
@@ -34,4 +39,28 @@ public class Zone {
 	public void setTroops(int troops) {
 		this.troops = troops;
 	}
+	
+	public void setNeighbours(ArrayList<Zone> neighbours) {
+		this.neighbours = neighbours;
+	}
+	
+	public ArrayList<Zone> getNeighbours(){
+		return neighbours;
+	}
+	
+	public boolean isNeighbour(Zone zone) {
+		if(neighbours.contains(zone)) return true;
+		return false;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if(this == o) return true;
+		if(o == null) return false;
+		if (getClass() != o.getClass()) return false;
+		Zone zone = (Zone) o;
+		return Objects.equals(name, zone.name);
+	}
+	
+	
 }

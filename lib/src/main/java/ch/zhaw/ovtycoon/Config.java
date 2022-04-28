@@ -9,13 +9,25 @@ public class Config {
 	public static final int MAX_PLAYERS = 6;
 	public static final int MIN_PLAYERS = 2;
 	public static final int NUMBER_OF_ZONES = 42;
+	public static final int NUMBER_OF_REGIONS = 5;
 	
 	public enum RegionName{
-		Unterland,
-		Weinland,
-		Oberland,
-		HorgenAlbis,
-		MeilenZurich
+		Unterland("Unterland"),
+		Weinland("Weinland"),
+		Oberland("Oberland"),
+		HorgenAlbis("HorgenAlbis"),
+		MeilenZurich("MeilenZurich");
+		
+		private String name;
+
+	    private RegionName(String name) {
+	      this.name = name;
+	    }
+
+	    @Override
+	    public String toString() {
+	      return name;
+	    }
 	}
 	
 	public enum ZoneName{
