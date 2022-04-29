@@ -49,10 +49,11 @@ public class MapInitializer {
                 String line;
                 while ((line = br.readLine()) != null) {
                 	
-                	ArrayList<Zone> zonesInRegion = new ArrayList<Zone>();
+                	ArrayList<Zone> neighboursOfZone = new ArrayList<Zone>();
                     Matcher matcherZones = zoneData.matcher(line);
                     while(matcherZones.find()) {
-                    	zonesInRegion.add(zonesByName.get(matcherZones.group(0)));
+                    	neighboursOfZone.addAll(neighboursOfZones.get(matcherZones.group()));
+                    	System.out.println("hier");
                     }
                 }
             }
@@ -60,6 +61,7 @@ public class MapInitializer {
         catch (IOException ioException) {
             ioException.printStackTrace();
         }
+        System.out.println(gameMap);
         return gameMap;
     }
 	
@@ -101,6 +103,7 @@ public class MapInitializer {
         catch (IOException ioException) {
             ioException.printStackTrace();
         }
+        System.out.println(zonesByName);
         return gameMap;
     }
     
