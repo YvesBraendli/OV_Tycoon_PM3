@@ -2,6 +2,7 @@ package ch.zhaw.ovtycoon.model;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Map.*;
 
 import ch.zhaw.ovtycoon.Config;
@@ -48,7 +49,11 @@ public class Game {
 		return regionOwner;
 	}
 	
-	public void setZoneOwner(Player owner) {
-		//TODO Implement setZoneOwner method
+	public void setZoneOwner(Player owner, Zone zone) {
+		zoneOwner.put(zone, owner);
+	}
+	
+	public Player getZoneOwner(Zone zone) {
+		return zoneOwner.get(zone);
 	}
 }
