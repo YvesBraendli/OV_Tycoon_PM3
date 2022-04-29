@@ -15,6 +15,12 @@ public class Game {
 	private HashMap<Zone,Player> zoneOwner = new HashMap<Zone,Player>();
 	private Player[] players;
 	private TroopHandler troopHandler;
+
+	public static void main(String[] args) {
+		Game game = new Game();
+		game.initGame(5);
+		System.out.println("wuuuuhu");
+	}
 	
 	/**
 	 * Initializes the gameMap and creates players with their corresponding colors
@@ -29,11 +35,7 @@ public class Game {
 		//TODO get player color and name
 	}
 	
-	public static void main(String[] args) {
-        Game game = new Game();
-        game.initGame(5);
-        System.out.println("bla");
-    }
+
 	
 	/**
 	 * starts the game
@@ -41,6 +43,8 @@ public class Game {
 	public void start() {
 		//TODO implement game flow, update JavaDoc
 	}
+
+
 	
 	/**
 	 * This method is responsible for the initial troop setting, which starts at the beginning of the game.
