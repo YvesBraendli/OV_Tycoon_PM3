@@ -1,6 +1,9 @@
 package ch.zhaw.ovtycoon.model;
 
+import java.util.HashMap;
+
 import ch.zhaw.ovtycoon.Config;
+import jdk.jshell.spi.ExecutionControl;
 
 public class TroopHandler {
     private int numberOfTroopsPerPlayer;
@@ -37,7 +40,7 @@ public class TroopHandler {
         return game.getZoneOwner(zoneToMoveUnitsTo) == player
                 && game.getZoneOwner(zoneToRemoveUnitsFrom) == player
                 && (zoneToRemoveUnitsFrom.getTroops() >= numberOfTroopUnitsToMove + Config.MIN_NUMBER_OF_TROOPS_IN_ZONE)
-                && zonesHaveDirectConnection(zoneToRemoveUnitsFrom, zoneToMoveUnitsTo);
+                && zonesHaveDirectConnection(zoneToRemoveUnitsFrom, zoneToMoveUnitsTo, game, player);
     }
 
     /**
@@ -49,14 +52,15 @@ public class TroopHandler {
         return numberOfTroopsPerPlayer;
     }
 
-    private boolean zonesHaveDirectConnection(Zone originZone, Zone targetZone) {
+    private boolean zonesHaveDirectConnection(Zone originZone, Zone targetZone, Game game, Player player) {
         originZone.setAlreadyVisitedTrue();
         if (originZone == targetZone) {
             return true;
         } else {
             for (Zone adjacentZone : originZone.getNeighbours()) {
-                if (!adjacentZone.getAlreadyVisited()) {
-                    if (zonesHaveDirectConnection(adjacentZone, targetZone)) {
+                if (!adjacentZone.getAlreadyVisited()
+                        && game.getZoneOwner(adjacentZone) == player) {
+                    if (zonesHaveDirectConnection(adjacentZone, targetZone, game, player)) {
                         return true;
                     }
                 }
