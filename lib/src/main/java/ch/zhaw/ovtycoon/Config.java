@@ -54,7 +54,7 @@ public class Config {
 		Zone140("Zone140"),
 		Zone141("Zone141"),
 		Zone142("Zone142"),
-		Zone143("Zone142"),
+		Zone143("Zone143"),
 		Zone150("Zone150"),
 		Zone151("Zone151"),
 		Zone152("Zone152"),

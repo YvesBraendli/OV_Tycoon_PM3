@@ -38,6 +38,7 @@ public class Game {
 	 */
 	public Player getWinner() {
 		Player winner = zoneOwner.get(gameMap.get(RegionName.Oberland).get(0));
+		if(winner == null) return null;
 		for(Entry<Zone,Player> zone: zoneOwner.entrySet()) {
 			if(!winner.equals(zone.getValue())) return null;
 		}
@@ -51,8 +52,9 @@ public class Game {
 	 */
 	public Player getRegionOwner(RegionName region) {
 		Player regionOwner = zoneOwner.get(gameMap.get(region).get(0));
+		if(regionOwner == null) return null;
 		for (Zone zone : gameMap.get(region)) {
-			if (!regionOwner.equals(zoneOwner.get(zone)))
+			if (regionOwner != zoneOwner.get(zone))
 				return null;
 		}
 		return regionOwner;
@@ -74,5 +76,19 @@ public class Game {
 	 */
 	public Player getZoneOwner(Zone zone) {
 		return zoneOwner.get(zone);
+	}
+	
+	/**
+	 * Returns a zone object
+	 * @param zoneName enum
+	 * @return zone
+	 */
+	public Zone getZone(Config.ZoneName zoneName) {
+		for(Zone zone: zoneOwner.keySet()) {
+			if(zone.getName().equals(zoneName.toString())) {
+				return zone;
+			}
+		}
+		return null;
 	}
 }

@@ -1,5 +1,5 @@
-name=Unterland,zones=Zone114,Zone113,Zone112,Zone121,Zone111,Zone117,Zone154,Zone184
-name=Weinland,zones=Zone115,Zone124,Zone123,Zone120,Zone170,Zone171,Zone164,Zone163,Zone160,Zone161,Zone162
+name=Unterland,zones=Zone114,Zone113,Zone112,Zone121,Zone111,Zone117,Zone154,Zone184,Zone118
+name=Weinland,zones=Zone115,Zone124,Zone123,Zone120,Zone170,Zone171,Zone164,Zone163,Zone160,Zone161,Zone162,Zone116
 name=Oberland,zones=Zone122,Zone135,Zone172,Zone173,Zone134,Zone133,Zone132,Zone131,Zone130
-name=MeilenZurich,zones=Zone143,Zone141,Zone130,Zone140,Zone180,Zone110
+name=MeilenZurich,zones=Zone143,Zone141,Zone130,Zone140,Zone180,Zone110,Zone142
 name=HorgenAlbis,zones=Zone155,Zone156,Zone151,Zone152,Zone153,Zone150,Zone181
