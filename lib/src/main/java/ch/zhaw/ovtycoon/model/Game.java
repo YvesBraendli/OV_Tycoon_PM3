@@ -19,7 +19,7 @@ public class Game {
 	public static void main(String[] args) {
 		Game game = new Game();
 		game.initGame(5);
-		System.out.println("wuuuuhu");
+
 	}
 	
 	/**
@@ -57,25 +57,6 @@ public class Game {
 	 */
 	public boolean setInitialTroops(Player player, Zone zoneToPlaceTroop) {
 		boolean wasSuccessfull = false;
-		return wasSuccessfull;
-	}
-	
-	/**
-	 * Moves Troops from the current player to the desired location
-	 * 
-	 * @param zonToRemoveUnits The Zone, from which the players wants to remove some units.
-	 * @param zoneToAddUnits The Zone, to which the player wants to move his units.
-	 * @param player The player instance of the current player.
-	 * @param numberOfUnits The number of units, the player wants to move between the zones.	 * 
-	 * 
-	 * @return true, if the movement was successfull
-	 */
-	public boolean moveTroops(Zone zoneToRemoveUnits, Zone zoneToAddUnits, Player currentPlayer, int numberOfUnits) {
-		boolean wasSuccessfull = false;
-		if (getZoneOwner(zoneToRemoveUnits)==currentPlayer
-				&&getZoneOwner(zoneToAddUnits)==currentPlayer) {
-			
-		}
 		return wasSuccessfull;
 	}
 	

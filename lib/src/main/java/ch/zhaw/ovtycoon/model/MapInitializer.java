@@ -22,6 +22,7 @@ public class MapInitializer {
     private final String regionFileName = "regions.txt";
     private final String neighboursFileName = "neighbours.txt";
     HashMap<String,Zone> zonesByName;
+    ArrayList<Zone> neighbours;
 
     /**
      * Constructor of MapInitializer
