@@ -32,14 +32,23 @@ public class Game {
 		//TODO implement game flow, update JavaDoc
 	}
 	
+	/**
+	 * Checks for a winner. A winner is defined by owning all zones
+	 * @return
+	 */
 	public Player getWinner() {
 		Player winner = zoneOwner.get(gameMap.get(RegionName.Oberland).get(0));
-		for(Entry<Config.RegionName, ArrayList<Zone>> region: gameMap.entrySet()) {
-			if(!winner.equals(getRegionOwner(region.getKey()))) return null;
+		for(Entry<Zone,Player> zone: zoneOwner.entrySet()) {
+			if(!winner.equals(zone.getValue())) return null;
 		}
 		return winner;
 	}
 	
+	/**
+	 * Checks if a player owns all zones in a region
+	 * @param region
+	 * @return Player
+	 */
 	public Player getRegionOwner(RegionName region) {
 		Player regionOwner = zoneOwner.get(gameMap.get(region).get(0));
 		for (Zone zone : gameMap.get(region)) {
@@ -49,10 +58,20 @@ public class Game {
 		return regionOwner;
 	}
 	
+	/**
+	 * Sets a new owner for a zone
+	 * @param owner
+	 * @param zone
+	 */
 	public void setZoneOwner(Player owner, Zone zone) {
 		zoneOwner.put(zone, owner);
 	}
 	
+	/**
+	 * Gets the current owner for a zone
+	 * @param zone
+	 * @return player
+	 */
 	public Player getZoneOwner(Zone zone) {
 		return zoneOwner.get(zone);
 	}
