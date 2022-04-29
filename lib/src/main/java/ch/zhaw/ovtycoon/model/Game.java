@@ -9,14 +9,17 @@ import ch.zhaw.ovtycoon.Config.RegionName;
 
 public class Game {
 	private HashMap<Config.RegionName, ArrayList<Zone>> gameMap;
+	private HashMap<Zone,Player> zoneOwner = new HashMap<Zone,Player>();
 	private Player[] players;
 	
 	/**
-	 * initializes the gameMap and creates players with their corresponding colors
+	 * Initializes the gameMap and creates players with their corresponding colors
 	 * @param playerAmount number of players
 	 */
 	public void initGame(int playerAmount) {
-		gameMap = MapInitializer.initGameMap();	
+		MapInitializer mapInit = new MapInitializer();
+		gameMap = mapInit.getGameMap();	
+		zoneOwner = mapInit.getOwnerList();
 		players = new Player[playerAmount];
 		//TODO get player color and name
 	}
@@ -29,7 +32,7 @@ public class Game {
 	}
 	
 	public Player getWinner() {
-		Player winner = gameMap.get(RegionName.Oberland).get(0).getOwner();
+		Player winner = zoneOwner.get(gameMap.get(RegionName.Oberland).get(0));
 		for(Entry<Config.RegionName, ArrayList<Zone>> region: gameMap.entrySet()) {
 			if(!winner.equals(getRegionOwner(region.getKey()))) return null;
 		}
@@ -37,9 +40,9 @@ public class Game {
 	}
 	
 	public Player getRegionOwner(RegionName region) {
-		Player regionOwner = gameMap.get(region).get(0).getOwner();
+		Player regionOwner = zoneOwner.get(gameMap.get(region).get(0));
 		for (Zone zone : gameMap.get(region)) {
-			if (!regionOwner.equals(zone.getOwner()))
+			if (!regionOwner.equals(zoneOwner.get(zone)))
 				return null;
 		}
 		return regionOwner;

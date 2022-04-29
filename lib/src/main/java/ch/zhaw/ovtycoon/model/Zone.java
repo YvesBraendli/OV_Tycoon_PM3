@@ -6,22 +6,12 @@ import java.util.Objects;
 public class Zone{
 	private String name;
 	private int troops;
-	private Player owner;
 	private ArrayList<Zone> neighbours;
 	
 	public Zone(String name) {
 		this.name = name;
 		neighbours = new ArrayList<Zone>();
-		owner = null;
 		troops = 0;
-	}
-	
-	public Player getOwner() {
-		return owner;
-	}
-	
-	public void setOwner(Player player) {
-		owner = player;
 	}
 	
 	public String getName() {
