@@ -7,11 +7,25 @@ public class Zone{
 	private String name;
 	private int troops;
 	private ArrayList<Zone> neighbours;
-	
+	private boolean alreadyVisited;
+
 	public Zone(String name) {
 		this.name = name;
 		neighbours = new ArrayList<Zone>();
 		troops = 0;
+		alreadyVisited = false;
+	}
+
+	public boolean getAlreadyVisited(){
+		return alreadyVisited;
+	}
+
+	public void setAlreadyVisitedTrue(){
+		alreadyVisited = true;
+	}
+
+	public void setAlreadyVisitedFalse(){
+		alreadyVisited = false;
 	}
 	
 	public String getName() {

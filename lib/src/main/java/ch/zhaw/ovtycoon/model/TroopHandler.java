@@ -1,12 +1,9 @@
 package ch.zhaw.ovtycoon.model;
 
-import java.util.HashMap;
-
 import ch.zhaw.ovtycoon.Config;
 
 public class TroopHandler {
     private int numberOfTroopsPerPlayer;
-    private HashMap<Zone, Integer> numberOfTroopsPerZone = new HashMap<Zone, Integer>();
 
     public TroopHandler(int numberOfPlayers) {
         numberOfTroopsPerPlayer = Config.NUMBER_OF_TROOPS_TOTAL_IN_GAME / numberOfPlayers;
@@ -28,13 +25,19 @@ public class TroopHandler {
      */
     public boolean moveUnits(Zone zoneToRemoveUnitsFrom, Zone zoneToMoveUnitsTo, Player player, int numberOfTroopUnitsToMove, Game game) {
         boolean successful = false;
-        boolean isOwner = false;
-        if (game.getZoneOwner(zoneToMoveUnitsTo) == player
-                && game.getZoneOwner(zoneToRemoveUnitsFrom) == player) {
-            isOwner = true;
+        if (moveIsValid(zoneToRemoveUnitsFrom, zoneToMoveUnitsTo, player, numberOfTroopUnitsToMove, game)) {
+            successful = true;
+            zoneToMoveUnitsTo.setTroops(zoneToMoveUnitsTo.getTroops() + numberOfTroopUnitsToMove);
+            zoneToRemoveUnitsFrom.setTroops(zoneToRemoveUnitsFrom.getTroops() - numberOfTroopUnitsToMove);
         }
-
         return successful;
+    }
+
+    private boolean moveIsValid(Zone zoneToRemoveUnitsFrom, Zone zoneToMoveUnitsTo, Player player, int numberOfTroopUnitsToMove, Game game) {
+        return game.getZoneOwner(zoneToMoveUnitsTo) == player
+                && game.getZoneOwner(zoneToRemoveUnitsFrom) == player
+                && (zoneToRemoveUnitsFrom.getTroops() >= numberOfTroopUnitsToMove + Config.MIN_NUMBER_OF_TROOPS_IN_ZONE)
+                && zonesHaveDirectConnection(zoneToRemoveUnitsFrom, zoneToMoveUnitsTo);
     }
 
     /**
@@ -46,14 +49,21 @@ public class TroopHandler {
         return numberOfTroopsPerPlayer;
     }
 
-    /**
-     * Returns the int value of the number of the troop units in the specified zone.
-     *
-     * @param zone The zone, from which on want to know the actual unit number.
-     * @return The int-value, which represents the number of current units in the zone.
-     */
-    public int getNumberOfTroopsInZone(Zone zone) {
-        return numberOfTroopsPerZone.get(zone);
+    private boolean zonesHaveDirectConnection(Zone originZone, Zone targetZone) {
+        originZone.setAlreadyVisitedTrue();
+        if (originZone == targetZone) {
+            return true;
+        } else {
+            for (Zone adjacentZone : originZone.getNeighbours()) {
+                if (!adjacentZone.getAlreadyVisited()) {
+                    if (zonesHaveDirectConnection(adjacentZone, targetZone)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        originZone.setAlreadyVisitedFalse();
+        return false;
     }
 
 }
