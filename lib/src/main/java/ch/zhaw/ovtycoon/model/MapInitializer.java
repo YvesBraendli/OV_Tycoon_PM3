@@ -22,6 +22,7 @@ public class MapInitializer {
 	private final String regionFileName = "regions.txt";
 	private final String neighboursFileName = "neighbours.txt";
 	HashMap<String,Zone> zonesByName;
+	HashMap<Zone,ArrayList<Zone>> neighboursOfZones;
 	
 	/**
 	 * Constructor of MapInitializer
@@ -29,9 +30,42 @@ public class MapInitializer {
 	 */
 	public MapInitializer() {
 		zonesByName = new HashMap<String,Zone>();
+		neighboursOfZones = new HashMap<Zone, ArrayList<Zone>>();
 		initZones();
 		initZoneNeighbours();
 	}
+	
+	/**
+	 * Generates a HashMap with the Regions as Keys and an ArrayList with the corresponding neighbours.
+	 * @return HashMap<Zone, ArrayList<Zone>> 
+	 */
+    public HashMap<Zone, ArrayList<Zone>> getZoneNeighboursOnMap() {
+    	HashMap<Zone, ArrayList<Zone>> gameMap = new HashMap<Zone, ArrayList<Zone>>();;
+        Pattern zoneData = Pattern.compile("Zone[0-9]{3}");
+        
+        try {
+            File regionFile = getRessource(neighboursFileName);
+            try (BufferedReader br = new BufferedReader(new FileReader(regionFile))) {
+                String line;
+                while ((line = br.readLine()) != null) {
+                	
+                	ArrayList<Zone> zonesInRegion = new ArrayList<Zone>();
+                    Matcher matcherZones = zoneData.matcher(line);
+                    while(matcherZones.find()) {
+                    	zonesInRegion.add(zonesByName.get(matcherZones.group(0)));
+                    }
+                }
+            }
+        }
+        catch (IOException ioException) {
+            ioException.printStackTrace();
+        }
+        return gameMap;
+    }
+	
+	
+	
+	
 	/**
 	 * Generates a HashMap with the Regions as Keys and the corresponding zones as values
 	 * @return HashMap<Config.RegionName, ArrayList<Zone>> 

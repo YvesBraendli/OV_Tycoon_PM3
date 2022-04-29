@@ -6,12 +6,15 @@ import java.util.Map;
 import java.util.Map.*;
 
 import ch.zhaw.ovtycoon.Config;
+import ch.zhaw.ovtycoon.RisikoController;
 import ch.zhaw.ovtycoon.Config.RegionName;
+import javafx.application.Application;
 
 public class Game {
 	private HashMap<Config.RegionName, ArrayList<Zone>> gameMap;
 	private HashMap<Zone,Player> zoneOwner = new HashMap<Zone,Player>();
 	private Player[] players;
+	private TroopHandler troopHandler;
 	
 	/**
 	 * Initializes the gameMap and creates players with their corresponding colors
@@ -22,14 +25,53 @@ public class Game {
 		gameMap = mapInit.getGameMap();	
 		zoneOwner = mapInit.getOwnerList();
 		players = new Player[playerAmount];
+		troopHandler = new TroopHandler(playerAmount);
 		//TODO get player color and name
 	}
+	
+	public static void main(String[] args) {
+        Game game = new Game();
+        game.initGame(5);
+    }
 	
 	/**
 	 * starts the game
 	 */
 	public void start() {
 		//TODO implement game flow, update JavaDoc
+	}
+	
+	/**
+	 * This method is responsible for the initial troop setting, which starts at the beginning of the game.
+	 * It sets one troop of the player in the zone, afterwards it has to be called again for the next player.
+	 * 
+	 * @param player The player instance which wants to add troops to a zone.
+	 * @param zoneToPlaceTroop The zone, in which the player wants to add his troop unit.
+	 * 
+	 * @return true, if the troop was successfully added to the wished zone.
+	 */
+	public boolean setInitialTroops(Player player, Zone zoneToPlaceTroop) {
+		boolean wasSuccessfull = false;
+		return wasSuccessfull;
+	}
+	
+	/**
+	 * Moves Troops from the current player to the desired location
+	 * 
+	 * @param zonToRemoveUnits The Zone, from which the players wants to remove some units.
+	 * @param zoneToAddUnits The Zone, to which the player wants to move his units.
+	 * @param player The player instance of the current player.
+	 * @param numberOfUnits The number of units, the player wants to move between the zones.	 * 
+	 * 
+	 * @return true, if the movement was successfull
+	 */
+	public boolean moveTroops(Zone zoneToRemoveUnits, Zone zoneToAddUnits, Player currentPlayer, int numberOfUnits) {
+		boolean wasSuccessfull = false;
+		if (getZoneOwner(zoneToRemoveUnits)==currentPlayer
+				&&getZoneOwner(zoneToAddUnits)==currentPlayer) {
+			
+		}
+		return wasSuccessfull;
 	}
 	
 	/**
