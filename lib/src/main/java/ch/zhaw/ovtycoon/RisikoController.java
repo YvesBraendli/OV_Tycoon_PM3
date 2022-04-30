@@ -1,12 +1,13 @@
-package ch.zhaw.ovtycoon.gui;
+package ch.zhaw.ovtycoon;
 
+import ch.zhaw.ovtycoon.gui.MapController;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.PerspectiveCamera;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
-public class Game extends Application {
+public class RisikoController extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {

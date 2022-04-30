@@ -15,9 +15,9 @@ public class FightTests {
 	
 	@Before
 	public void init() {
-		attackingZone = new Zone(ZoneName.Zone110);
+		attackingZone = new Zone(ZoneName.Zone110.toString());
 		attackingZone.setTroops(2);
-		defendingZone = new Zone(ZoneName.Zone110);
+		defendingZone = new Zone(ZoneName.Zone110.toString());
 		defendingZone.setTroops(1);
 		testee = new Fight(attackingZone, defendingZone);
 	}
