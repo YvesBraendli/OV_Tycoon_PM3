@@ -21,3 +21,29 @@
     -fx-text-fill: white;
     -fx-alignment: center;
 }
+
+.troop-amount-box {
+    -fx-alignment: top-center;
+    -fx-max-height: 150px;
+    -fx-max-width: 200px;
+    -fx-background-color: lightgrey;
+}
+
+.troop-amount-label {
+    -fx-max-height: 70px;
+    -fx-max-width: 190px;
+    -fx-min-height: 70px;
+    -fx-min-width: 190px;
+    -fx-alignment: center;
+    -fx-wrap-text: true;
+}
+
+.troop-amount-text-field {
+    -fx-max-width: 75px;
+    -fx-max-height: 25px;
+    -fx-alignment: center;
+}
+
+.confirm-troop-amount-btn {
+    -fx-translate-y: 20px;
+}

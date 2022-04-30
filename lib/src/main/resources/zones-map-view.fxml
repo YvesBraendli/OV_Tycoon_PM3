@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.String?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.canvas.Canvas?>
 <?import javafx.scene.image.Image?>
@@ -11,17 +12,15 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-
-<?import java.lang.String?>
-<GridPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ch.zhaw.ovtycoon.gui.MapController">
+<GridPane xmlns="http://javafx.com/javafx/11.0.2" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ch.zhaw.ovtycoon.gui.MapController">
     <stylesheets>
-        <String fx:value="map-styles.css"/>
+        <String fx:value="map-styles.css" />
     </stylesheets>
    <columnConstraints>
       <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" percentWidth="Infinity" />
    </columnConstraints>
    <rowConstraints>
-      <RowConstraints minHeight="10.0" vgrow="SOMETIMES" percentHeight="Infinity" />
+      <RowConstraints minHeight="10.0" percentHeight="Infinity" vgrow="SOMETIMES" />
    </rowConstraints>
    <children>
         <HBox alignment="CENTER_LEFT" prefWidth="1000.0">

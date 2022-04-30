@@ -56,7 +56,33 @@ public class ZoneSquare {
         return txt;
     }
 
-    public void setTxt(Text txt) {
+    public void setTroopsAmountText(Text txt) {
         this.txt = txt;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        ZoneSquare that = (ZoneSquare) o;
+
+        if (square != null ? !square.equals(that.square) : that.square != null) return false;
+        if (color != that.color) return false;
+        if (name != null ? !name.equals(that.name) : that.name != null) return false;
+        if (border != null ? !border.equals(that.border) : that.border != null) return false;
+        if (center != null ? !center.equals(that.center) : that.center != null) return false;
+        return txt != null ? txt.equals(that.txt) : that.txt == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = square != null ? square.hashCode() : 0;
+        result = 31 * result + (color != null ? color.hashCode() : 0);
+        result = 31 * result + (name != null ? name.hashCode() : 0);
+        result = 31 * result + (border != null ? border.hashCode() : 0);
+        result = 31 * result + (center != null ? center.hashCode() : 0);
+        result = 31 * result + (txt != null ? txt.hashCode() : 0);
+        return result;
     }
 }

@@ -18,12 +18,13 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class MapLoaderService {
     // startX, offsetX, startY, offsetY, color, name
-    private static final Pattern ZONE_SQUARE_DATA_PATTERN = Pattern.compile("sX=([0-9]+), oX=([0-9]+), sY=([0-9]+), oY=([0-9]+), color=([^,]+), name=([^;]+), center=\\(([0-9]+,[0-9]+)\\);");
+    private static final Pattern ZONE_SQUARE_DATA_PATTERN = Pattern.compile("sX=([0-9]+), oX=([0-9]+), sY=([0-9]+), oY=([0-9]+), color=([^,]+), name=([^,]+), center=\\(([0-9]+,[0-9]+)\\);");
     private static final int DATA_GROUP_COUNT = 7;
     private static final String ZONES_TXT_PATH_POSTFIX = "\\src\\main\\resources\\zones.txt";
 
@@ -107,16 +108,17 @@ public class MapLoaderService {
     private Text setTroopsCountText(ZoneSquare zoneSquare) {
         Text txt = new Text();
         txt.setStyle("-fx-fill: lightgray;-fx-font-weight: bold;");
-        txt.setText("0");
+        int randomTroopsAmount = new Random().nextInt(11) + 5; // zwischen 5 und 15 Truppen zum testen
+        txt.setText(Integer.toString(randomTroopsAmount));
         txt.setTranslateX(zoneSquare.getCenter().getX());
         txt.setTranslateY(zoneSquare.getCenter().getY());
-        zoneSquare.setTxt(txt);
+        zoneSquare.setTroopsAmountText(txt);
         return txt;
     }
 
     public Map<String, List<String>> getNeighboursMap() {
         Map<String, List<String>> neighboursMap = new HashMap<>();
-        final Pattern neighboursPattern = Pattern.compile("^center_zone=([^,]+), neighbours=([a-zA-Z0-9, ]+)$");
+        final Pattern neighboursPattern = Pattern.compile("^zone=([^,]+),neighbours=([a-zA-Z0-9,]+)$");
         final int neighboursPatternGroupCount = 2;
         try {
             String dir = System.getProperty("user.dir");
@@ -133,7 +135,7 @@ public class MapLoaderService {
                     if (matcher.find() && matcher.groupCount() == neighboursPatternGroupCount) {
                         String centerZone = matcher.group(1);
                         String neighboursString = matcher.group(2);
-                        List<String> neighbours = Arrays.asList(neighboursString.split(", "));
+                        List<String> neighbours = Arrays.asList(neighboursString.split(","));
                         neighboursMap.put(centerZone, neighbours);
                     }
                 }
@@ -142,6 +144,7 @@ public class MapLoaderService {
         catch (IOException ioException) {
             ioException.printStackTrace();
         }
+        System.out.println(neighboursMap.size());
         return neighboursMap;
     }
 }

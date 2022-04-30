@@ -4,6 +4,8 @@ import ch.zhaw.ovtycoon.gui.model.Action;
 import ch.zhaw.ovtycoon.gui.model.ActionButton;
 import ch.zhaw.ovtycoon.gui.model.HorizontalStripe;
 import ch.zhaw.ovtycoon.gui.model.Pixel;
+import ch.zhaw.ovtycoon.gui.model.TroopAmountPopup;
+import ch.zhaw.ovtycoon.gui.model.ZoneColor;
 import ch.zhaw.ovtycoon.gui.model.ZoneSquare;
 import ch.zhaw.ovtycoon.gui.model.ZoneTooltip;
 import ch.zhaw.ovtycoon.gui.service.ColorService;
@@ -57,9 +59,10 @@ public class MapController {
     private ZoneSquare source;
     private ZoneSquare target;
     private ZoneSquare currHovered;
-    private boolean hoverActive = true;
     private ColorService colorService = new ColorService();
     private MapLoaderService mapLoaderService;
+
+    private boolean mapClickEnabled = true;
 
     private List<ZoneSquare> hoverableZones = new ArrayList<>();
 
@@ -84,10 +87,11 @@ public class MapController {
         this.mapVBox.getChildren().add(actionBtn);
         actionBtn.setOnMouseClicked(event -> onActionButtonClick());
         zonesWithNeighbours = mapNeighboursStringMapToZones(mapLoaderService.getNeighboursMap());
+        hoverableZones = zoneSquares;
     }
 
     private void handleMapHover(MouseEvent mouseEvent) {
-        if (!hoverActive) return;
+        if (hoverableZones.isEmpty()) return;
         int x = (int) mouseEvent.getX();
         int y = (int) mouseEvent.getY();
         ZoneSquare hoveredZone = getZoneAtCoordinates(x, y);
@@ -102,7 +106,8 @@ public class MapController {
         }
         if (currHovered != null && this.labelStackPane.getChildren().size() > this.zoneSquares.size()) labelStackPane.getChildren().remove(labelStackPane.getChildren().size() - 1);
         currHovered = hoveredZone;
-        ZoneTooltip t = new ZoneTooltip(hoveredZone.getName());
+        String name = hoveredZone.getName().replace("Zone", "Zone ");
+        ZoneTooltip t = new ZoneTooltip(name);
         t.setTranslateX(hoveredZone.getCenter().getX());
         t.setTranslateY(hoveredZone.getCenter().getY() - 30.0);
         labelStackPane.getChildren().add(t);
@@ -110,9 +115,15 @@ public class MapController {
 
     private void onActionButtonClick() {
         if (actionBtn.getAction() != Action.ATTACK) return; // only attack implemented currently
-        if (source == null || target == null) return;
-        int number = new Random().nextInt(6) + 1;
+        actionBtn.setDisable(true);
+        mapClickEnabled = false;
+        attack();
 
+    }
+
+    private void attack() {
+        if (source == null || target == null) return;
+        int diceThrowResult = new Random().nextInt(6) + 1;
         Label fightLabel = new Label();
         fightLabel.setText("Waiting for dice throw...");
         fightLabel.setPrefWidth(400.0d);
@@ -121,29 +132,47 @@ public class MapController {
         fightLabel.setTranslateX((labelStackPane.getWidth()  - fightLabel.getPrefWidth()) / 2.0d);
         fightLabel.setTranslateY((labelStackPane.getHeight()  - fightLabel.getPrefHeight()) / 2.0d);
 
-        String winner = number > 3 ? source.getColor().name() : target.getColor().name();
-        String loser =  number > 3 ? target.getColor().name() : source.getColor().name();
+        String winner = diceThrowResult > 3 ? source.getColor().name() : target.getColor().name();
+        String loser =  diceThrowResult > 3 ? target.getColor().name() : source.getColor().name();
 
         KeyFrame waitingForDiceThrowKf = new KeyFrame(Duration.seconds(0), (event) -> {
-           this.labelStackPane.getChildren().add(fightLabel);
+            this.labelStackPane.getChildren().add(fightLabel);
         });
         KeyFrame winnerKf = new KeyFrame(Duration.seconds(2), (event -> {
             fightLabel.setText(String.format("%s defeated %s", winner.replace("PLAYER_", ""), loser.replace("PLAYER_", "")));
         }));
         KeyFrame finishFightKf = new KeyFrame(Duration.seconds(4), (event) -> {
             this.labelStackPane.getChildren().remove(fightLabel);
-            if (number > 3) {
-                // attacker wins
+            // attacker wins
+            if (diceThrowResult > 3) {
                 Color attackerColor = colorService.getColor(source.getColor().getColorAsHexString());
                 drawZone(target, attackerColor, mapPw);
+
+                int attackerTroops = Integer.parseInt(source.getTxt().getText());
+
+                TroopAmountPopup troopAmountPopup = new TroopAmountPopup(attackerTroops - 1);
+                troopAmountPopup.setTranslateX((labelStackPane.getWidth() - troopAmountPopup.getPrefWidth()) / 2.0d);
+                troopAmountPopup.setTranslateY((labelStackPane.getHeight() - troopAmountPopup.getPrefHeight()) / 2.0d);
+                labelStackPane.getChildren().add(troopAmountPopup);
+                troopAmountPopup.getConfirmBtn().setOnMouseClicked(mouseEvent -> {
+                    target.getTxt().setText(Integer.toString(troopAmountPopup.getTroopAmount()));
+                    source.getTxt().setText(Integer.toString(attackerTroops - troopAmountPopup.getTroopAmount()));
+                    labelStackPane.getChildren().remove(troopAmountPopup);
+                    mapClickEnabled = true;
+                    hoverableZones = zoneSquares;
+                    source = null;
+                    target = null;
+                    removeAllOverlaidPixels();
+                    overlayStackPane.setStyle("-fx-background-color: transparent;");
+                });
+            } else {
+                mapClickEnabled = true;
+                hoverableZones = zoneSquares;
+                source = null;
+                target = null;
+                removeAllOverlaidPixels();
+                overlayStackPane.setStyle("-fx-background-color: transparent;");
             }
-            source = null;
-            target = null;
-            removeAllOverlaidPixels();
-            overlayStackPane.setStyle("-fx-background-color: transparent;");
-            hoverActive = true;
-            actionBtn.setDisable(true);
-            hoverableZones = zoneSquares;
         });
         Timeline fightTl = new Timeline(waitingForDiceThrowKf, winnerKf, finishFightKf);
         fightTl.play();
@@ -155,9 +184,9 @@ public class MapController {
             int randomInt = random.nextInt(3);
             Color clr = null;
             switch (randomInt) {
-                case 0: clr = Color.GREENYELLOW; break;
-                case 1: clr = Color.BLUE; break;
-                default: clr = Color.RED; break;
+                case 0: clr = colorService.getColor(ZoneColor.PLAYER_GREEN.getColorAsHexString()); break;
+                case 1: clr = colorService.getColor(ZoneColor.PLAYER_BLUE.getColorAsHexString()); break;
+                default: clr = colorService.getColor(ZoneColor.PLAYER_RED.getColorAsHexString()); break;
             }
             this.drawZone(zoneSquares.get(i), clr, mapPw);
         }
@@ -165,39 +194,42 @@ public class MapController {
 
     // TODO should depend if move = attack, reinforcement or move troops
     private void onMapClick(MouseEvent mouseEvent) {
+        if (!mapClickEnabled) return;
         if (source == null || source != null && target != null) {
             overlayStackPane.setStyle("-fx-background-color: transparent;");
             this.removeAllOverlaidPixels();
             source = null;
             target = null;
         }
-        long startTime = System.currentTimeMillis();
+        // uncomment for testing
+        // long startTime = System.currentTimeMillis();
         int x = (int) mouseEvent.getX();
         int y = (int) mouseEvent.getY();
         ZoneSquare sqr = getZoneAtCoordinates(x, y);
         if (sqr != null && sqr.getBorder() != null) {
             List<Pixel> overlaidPixels = new ArrayList<>();
-            if (source == null) {
+            if (source == null || sqr == source) {
                 source = sqr;
-                hoverableZones.clear();
-                zonesWithNeighbours.get(sqr).forEach(z -> hoverableZones.add(z));
+                List< ZoneSquare> validTargets = getValidZonesForAction(actionBtn.getAction());
+                hoverableZones = new ArrayList<>();
+                validTargets.forEach(z -> hoverableZones.add(z));
                 hoverableZones.add(source);
-                markNeighbours(zonesWithNeighbours.get(sqr));
-            } else {
-                target = sqr;
-                this.overlaidZones.keySet().stream().filter((zone) -> !(zone.equals(source.getName()) || zone.equals(target.getName()))).collect(Collectors.toList()).forEach(zoneToInactivate -> inactivateZone(zoneToInactivate));
-                if (labelStackPane.getChildren().size() > zoneSquares.size()) labelStackPane.getChildren().remove(labelStackPane.getChildren().size() - 1);
-                hoverActive = false;
-                actionBtn.setDisable(false);
-                hoverableZones.clear();
-            }
-            if (source == null) {
+                markNeighbours(validTargets);
                 this.setZoneActive(sqr, overlaidPixels, overlayColor, true);
                 overlaidZones.put(sqr.getName(), overlaidPixels);
             } else {
+                if (!getValidZonesForAction(actionBtn.getAction()).contains(sqr)) {
+                    System.out.println("You cannot attack " + sqr.getName());
+                    return;
+                }
+                target = sqr;
+                this.overlaidZones.keySet().stream().filter((zone) -> !(zone.equals(source.getName()) || zone.equals(target.getName()))).collect(Collectors.toList()).forEach(zoneToInactivate -> inactivateZone(zoneToInactivate));
+                if (labelStackPane.getChildren().size() > zoneSquares.size()) labelStackPane.getChildren().remove(labelStackPane.getChildren().size() - 1);
+                actionBtn.setDisable(false);
                 this.drawZone(sqr, colorService.getColor(sqr.getColor().getColorAsHexString()), pw);
                 this.setZoneActive(source, overlaidPixels, overlayColor, true);
                 overlaidZones.put(source.getName(), overlaidPixels);
+                hoverableZones = new ArrayList<>();
             }
             overlayStackPane.setStyle("-fx-background-color: black; -fx-opacity: 0.5;");
         } else {
@@ -207,7 +239,8 @@ public class MapController {
             overlayStackPane.setStyle("-fx-background-color: transparent;");
             hoverableZones = zoneSquares;
         }
-        System.out.println(String.format("Click handling took %d ms", System.currentTimeMillis() - startTime));
+        // uncomment for testing
+        // System.out.println(String.format("Click handling took %d ms", System.currentTimeMillis() - startTime));
     }
 
     private Map<ZoneSquare, List<ZoneSquare>> mapNeighboursStringMapToZones(Map<String, List<String>> stringMap) {
@@ -222,19 +255,6 @@ public class MapController {
 
     private ZoneSquare getZsqByName(String name) {
         return this.zoneSquares.stream().filter((zsq) -> name.equals(zsq.getName())).findFirst().orElse(null);
-    }
-
-    // will be handled by backend in future, only here for testing
-    private List<ZoneSquare> getNeighbours(ZoneSquare zoneSquare) {
-        if (source == zoneSquare && "Zone 163".equals(zoneSquare.getName())) {
-            return zoneSquares.stream().filter((zsq) ->
-                    // neighbour zones
-                    (zsq.getName().equals("Zone 164") || zsq.getName().equals("Zone 120")
-                            || zsq.getName().equals("Zone 160"))
-                            && zsq.getColor() != zoneSquare.getColor() // if attack -> zone that can be attacked can't have same color as own zone
-            ).collect(Collectors.toList());
-        }
-        return new ArrayList<>();
     }
 
     private void markNeighbours(List<ZoneSquare> neighbours) {
@@ -305,6 +325,23 @@ public class MapController {
             }
         }
         sqr.setColor(colorService.getZoneColor(c.toString()));
+    }
+
+    private List<ZoneSquare> getValidZonesForAction(Action currAction) {
+        switch (currAction) {
+            case ATTACK:
+                return zonesWithNeighbours.get(source).stream()
+                        .filter(neighbour -> neighbour.getColor() != source.getColor())
+                        .collect(Collectors.toList());
+            case MOVE:
+                return zonesWithNeighbours.get(source).stream()
+                        .filter(neighbour -> neighbour.getColor() == source.getColor())
+                        .collect(Collectors.toList());
+            case DEFEND:
+                return zoneSquares;
+            default:
+                return new ArrayList<>();
+        }
     }
 }
 
