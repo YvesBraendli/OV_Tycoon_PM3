@@ -14,7 +14,10 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -109,5 +112,36 @@ public class MapLoaderService {
         txt.setTranslateY(zoneSquare.getCenter().getY());
         zoneSquare.setTxt(txt);
         return txt;
+    }
+
+    public Map<String, List<String>> getNeighboursMap() {
+        Map<String, List<String>> neighboursMap = new HashMap<>();
+        final Pattern neighboursPattern = Pattern.compile("^center_zone=([^,]+), neighbours=([a-zA-Z0-9, ]+)$");
+        final int neighboursPatternGroupCount = 2;
+        try {
+            String dir = System.getProperty("user.dir");
+            if (!dir.contains("lib")) {
+                dir += "\\lib";
+            }
+            String nTxtPath = dir + ZONES_TXT_PATH_POSTFIX;
+            nTxtPath = nTxtPath.replace("zones.txt", "neighbours.txt");
+            File neighbourFile = new File(nTxtPath);
+            try (BufferedReader br = new BufferedReader(new FileReader(neighbourFile))) {
+                String line;
+                while ((line = br.readLine()) != null) {
+                    Matcher matcher = neighboursPattern.matcher(line);
+                    if (matcher.find() && matcher.groupCount() == neighboursPatternGroupCount) {
+                        String centerZone = matcher.group(1);
+                        String neighboursString = matcher.group(2);
+                        List<String> neighbours = Arrays.asList(neighboursString.split(", "));
+                        neighboursMap.put(centerZone, neighbours);
+                    }
+                }
+            }
+        }
+        catch (IOException ioException) {
+            ioException.printStackTrace();
+        }
+        return neighboursMap;
     }
 }
