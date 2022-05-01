@@ -17,6 +17,6 @@ public class ActionButton extends Button {
 
     public void setAction(Action action) {
         this.action = action;
-        setText(action.name().toLowerCase());
+        setText(action.getActionName());
     }
 }
