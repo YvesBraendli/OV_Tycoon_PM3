@@ -16,12 +16,6 @@ public class Game {
 	private Player[] players;
 	private TroopHandler troopHandler;
 
-	public static void main(String[] args) {
-		Game game = new Game();
-		game.initGame(5);
-
-	}
-	
 	/**
 	 * Initializes the gameMap and creates players with their corresponding colors
 	 * @param playerAmount number of players
