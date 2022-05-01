@@ -10,7 +10,7 @@
 
 <VBox xmlns="http://javafx.com/javafx/11.0.2" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ch.zhaw.ovtycoon.gui.MapController">
    <children>
-        <HBox alignment="CENTER_LEFT" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="800.0" prefWidth="1000.0">
+        <HBox alignment="CENTER_LEFT" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="800.0" prefWidth="1000.0" style="-fx-background-color: white;">
             <children>
                 <VBox fx:id="mapVBox" alignment="CENTER_LEFT" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="800.0" prefWidth="700.0" spacing="20.0">
                     <padding>
@@ -30,9 +30,10 @@
                         </children>
                     </StackPane>
                 </VBox>
+            <VBox fx:id="playersVBox" alignment="TOP_RIGHT" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="250.0" prefWidth="250.0" spacing="3.0" style="-fx-background-color: white;" translateX="20.0" />
             </children>
         </HBox>
-      <HBox fx:id="buttonHBox" alignment="CENTER_LEFT" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="50.0" prefWidth="1000.0" style="-fx-padding: 20px 0 0 20px;">
+      <HBox fx:id="buttonHBox" alignment="CENTER_LEFT" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="50.0" prefWidth="1000.0" style="-fx-padding: 20px 0 0 20px; -fx-background-color: white;">
          <opaqueInsets>
             <Insets />
          </opaqueInsets></HBox>

@@ -25,6 +25,7 @@ import javafx.scene.image.PixelWriter;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.util.Duration;
 
@@ -48,6 +49,10 @@ public class MapController {
     private StackPane labelStackPane;
     @FXML
     private HBox buttonHBox;
+    @FXML
+    private VBox playersVBox;
+
+    private Timeline highlightClickableZonesTl = new Timeline();
 
     private final Color transparentColor = Color.TRANSPARENT;
     private final Color overlayColor = new Color(0.0d, 0.0d, 0.0d, 0.25d);
@@ -77,6 +82,10 @@ public class MapController {
 
     private ChangeListener<Boolean> placeTroopsListener;
 
+    private final List<Label> playerLabels = new ArrayList<>();
+
+    private List<ZoneSquare> clickableZones = new ArrayList<>();
+
 
     @FXML
     public void initialize() {
@@ -98,7 +107,41 @@ public class MapController {
         actionBtn.setOnMouseClicked(event -> onActionButtonClick());
         zonesWithNeighbours = mapNeighboursStringMapToZones(mapLoaderService.getNeighboursMap());
         hoverableZones = zoneSquares;
+        addPlayers();
         showActionChange();
+    }
+
+    private void addPlayers() {
+        for (ZoneColor player : testBackend.getPlayers()) {
+            Label playerLabel = new Label(player.name());
+            playerLabel.setPrefHeight(25.0d);
+            playerLabel.setPrefWidth(150.0d);
+            String playerColor = player.getColorAsHexString().substring(0, 8).replace("0x", "#");
+            playerLabel.getStyleClass().add("player-label");
+            playerLabel.setStyle(String.format("-fx-background-color: %s;", playerColor));
+            playerLabel.setId(player.name());
+            playerLabels.add(playerLabel);
+            playersVBox.getChildren().add(playerLabel);
+            if (player == testBackend.getCurrPlayer()) highlightPlayerLabel(playerLabel);
+        }
+        testBackend.getNextPlayer().addListener((obs, oldVal, newVal) -> {
+            highlightCurrPlayer(oldVal, newVal);
+        });
+    }
+
+    private void highlightCurrPlayer(ZoneColor prev, ZoneColor currPlayer) {
+        Label prevLabel = playerLabels.stream().filter(label -> label.getId().equals(prev.name())).findFirst().orElse(null);
+        Label curr = playerLabels.stream().filter(label -> label.getId().equals(currPlayer.name())).findFirst().orElse(null);
+        if (prevLabel == null || curr == null) return;
+        prevLabel.setPrefWidth(150.0d);
+        prevLabel.setPrefHeight(25.0d);
+        highlightPlayerLabel(curr);
+
+    }
+
+    private void highlightPlayerLabel(Label label) {
+        label.setPrefWidth(175.0d);
+        label.setPrefHeight(35.0d);
     }
 
     private void nextAction() {
@@ -125,6 +168,10 @@ public class MapController {
         label.setTranslateX((labelStackPane.getMaxWidth()  - label.getPrefWidth()) / 2.0d);
         label.setTranslateY((labelStackPane.getMaxHeight()  - label.getPrefHeight()) / 2.0d);
         overlayStackPane.setStyle("-fx-background-color: black; -fx-opacity: 0.5;");
+
+        highlightClickableZonesTl.stop();
+        removeAllOverlaidPixels();
+
         KeyFrame showActionChangeLabelKf = new KeyFrame(Duration.seconds(2), (event) -> this.labelStackPane.getChildren().add(label));
         KeyFrame removeActionChangeLabelKf = new KeyFrame(Duration.seconds(5), event -> {
             this.labelStackPane.getChildren().remove(label);
@@ -136,6 +183,7 @@ public class MapController {
                 labelStackPane.setOnMouseClicked(mouseEvent -> onMapClick(mouseEvent));
                 hoverableZones = zoneSquares;
                 mapClickEnabled = true;
+                highLightClickableZones();
             }
         });
         Timeline actionChangeTl = new Timeline(showActionChangeLabelKf, removeActionChangeLabelKf);
@@ -184,7 +232,9 @@ public class MapController {
         troopAmountPopup.setTranslateY((labelStackPane.getHeight() - troopAmountPopup.getPrefHeight()) / 2.0d);
         labelStackPane.getChildren().add(troopAmountPopup);
         troopAmountPopup.getConfirmBtn().setOnMouseClicked(mouseEvent -> {
-            target.getTxt().setText(Integer.toString(troopAmountPopup.getTroopAmount()));
+            // if move: oldAmt + movedAmt, if attack: movedAmt
+            int troopAmtNew = minAmount == 0 ? Integer.parseInt(target.getTxt().getText()) + troopAmountPopup.getTroopAmount() : troopAmountPopup.getTroopAmount();
+            target.getTxt().setText(Integer.toString(troopAmtNew));
             source.getTxt().setText(Integer.toString(sourceTroops - troopAmountPopup.getTroopAmount()));
             labelStackPane.getChildren().remove(troopAmountPopup);
             mapClickEnabled = true;
@@ -194,6 +244,25 @@ public class MapController {
             removeAllOverlaidPixels();
             overlayStackPane.setStyle("-fx-background-color: transparent;");
         });
+    }
+
+    private void highLightClickableZones() {
+        highlightClickableZonesTl.stop();
+        ZoneColor currPlayerColor = testBackend.getCurrPlayer();
+        Color mix = colorService.mixColors(neighbourOverlayColor, colorService.getColor(currPlayerColor.getColorAsHexString()));
+        updateAndGetClickableZones();
+        KeyFrame highlightZonesKf = new KeyFrame(Duration.seconds(1), event -> clickableZones.forEach(zone -> setZoneActive(zone, new ArrayList<>(), mix, false)));
+        KeyFrame removeHighlightedZonesKf = new KeyFrame(Duration.seconds(2), event -> removeAllOverlaidPixels());
+        highlightClickableZonesTl = new Timeline(highlightZonesKf, removeHighlightedZonesKf);
+        highlightClickableZonesTl.setCycleCount(30);
+        System.out.println("playing");
+        highlightClickableZonesTl.play();
+    }
+
+    // TODO should depend on action
+    private void updateAndGetClickableZones() {
+        ZoneColor currPlayerColor = testBackend.getCurrPlayer();
+        clickableZones = zoneSquares.stream().filter(zone -> zone.getColor() == currPlayerColor).collect(Collectors.toList());
     }
 
     private void reinforcement() {
@@ -226,6 +295,7 @@ public class MapController {
             overlayStackPane.setStyle("-fx-background-color: transparent;");
             hoverableZones = zoneSquares;
             mapClickEnabled = true;
+            highLightClickableZones();
         });
 
         Timeline reinforcementTl = new Timeline(waitingForDiceThrowKf, troopsReceivedKf, setTroopsKf, removeLabelKf);
@@ -237,7 +307,9 @@ public class MapController {
         int x = (int) mouseEvent.getX();
         int y = (int) mouseEvent.getY();
         ZoneSquare sqr = getZoneAtCoordinates(x, y);
-        if (sqr == null) return;
+        if (sqr == null || !clickableZones.contains(sqr)) return;
+        highlightClickableZonesTl.stop();
+        removeAllOverlaidPixels();
         mapClickEnabled = false;
         hoverableZones = new ArrayList<>();
         List<Pixel> overlaidPixels = new ArrayList<>();
@@ -317,7 +389,7 @@ public class MapController {
         }
     }
 
-    // TODO should depend if move = attack, reinforcement or move troops
+    // TODO check if clickable zones contains clicked zone
     private void onMapClick(MouseEvent mouseEvent) {
         if (!mapClickEnabled) return;
         if (source == null || source != null && target != null) {
@@ -332,6 +404,8 @@ public class MapController {
         int y = (int) mouseEvent.getY();
         ZoneSquare sqr = getZoneAtCoordinates(x, y);
         if (sqr != null && sqr.getBorder() != null) {
+            highlightClickableZonesTl.stop();
+            removeAllOverlaidPixels();
             List<Pixel> overlaidPixels = new ArrayList<>();
             if (source == null || sqr == source) {
                 source = sqr;
@@ -367,6 +441,7 @@ public class MapController {
         // System.out.println(String.format("Click handling took %d ms", System.currentTimeMillis() - startTime));
     }
 
+    // TODO fix npe
     public List<ZoneSquare> getValidZonesForAction(Action action) {
         switch (action) {
             case ATTACK:
