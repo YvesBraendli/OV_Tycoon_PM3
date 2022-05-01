@@ -1,5 +1,6 @@
 package ch.zhaw.ovtycoon.gui;
 
+import ch.zhaw.ovtycoon.TestBackend;
 import ch.zhaw.ovtycoon.gui.model.Action;
 import ch.zhaw.ovtycoon.gui.model.ActionButton;
 import ch.zhaw.ovtycoon.gui.model.HorizontalStripe;
@@ -12,14 +13,17 @@ import ch.zhaw.ovtycoon.gui.service.ColorService;
 import ch.zhaw.ovtycoon.gui.service.MapLoaderService;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -46,6 +50,9 @@ public class MapController {
     @FXML
     private VBox mapVBox;
 
+    @FXML
+    private HBox buttonHBox;
+
     private final Color transparentColor = Color.TRANSPARENT;
     private final Color overlayColor = new Color(0.0d, 0.0d, 0.0d, 0.25d);
     private final Color neighbourOverlayColor = new Color(1, 1, 1, 0.25d);
@@ -62,11 +69,19 @@ public class MapController {
     private ColorService colorService = new ColorService();
     private MapLoaderService mapLoaderService;
 
+    private final Button nextMoveBtn = new Button();
+
     private boolean mapClickEnabled = true;
 
     private List<ZoneSquare> hoverableZones = new ArrayList<>();
 
     private Map<ZoneSquare, List<ZoneSquare>> zonesWithNeighbours = new HashMap<>();
+
+    private Action currAction = Action.ATTACK;
+
+    private TestBackend testBackend = new TestBackend();
+
+    private ChangeListener<Boolean> placeTroopsListener;
 
 
     @FXML
@@ -79,15 +94,50 @@ public class MapController {
         zoneSquares = mapLoaderService.initZoneSquaresFromConfig();
         zoneSquares.forEach(zoneSquare -> labelStackPane.getChildren().add(zoneSquare.getTxt()));
         this.addPlayerColorsToZones();
-        labelStackPane.setOnMouseClicked(mouseEvent -> onMapClick(mouseEvent));
         labelStackPane.setOnMouseMoved(mouseEvent -> handleMapHover(mouseEvent));
         actionBtn = new ActionButton();
         actionBtn.setAlignment(Pos.BOTTOM_CENTER);
         actionBtn.getStyleClass().add("action-btn");
-        this.mapVBox.getChildren().add(actionBtn);
+        this.buttonHBox.getChildren().add(actionBtn);
+        nextMoveBtn.setText("Phase beenden");
+        nextMoveBtn.setOnMouseClicked(event -> nextAction());
+        this.buttonHBox.getChildren().add(nextMoveBtn);
         actionBtn.setOnMouseClicked(event -> onActionButtonClick());
         zonesWithNeighbours = mapNeighboursStringMapToZones(mapLoaderService.getNeighboursMap());
         hoverableZones = zoneSquares;
+        showActionChange();
+    }
+
+    private void nextAction() {
+        currAction = currAction == Action.ATTACK ? Action.DEFEND : Action.ATTACK;
+        showActionChange();
+    }
+
+    private void showActionChange() {
+        Label label = new Label();
+        mapClickEnabled = false;
+        hoverableZones = new ArrayList<>();
+        String text = currAction == Action.ATTACK ? "Angriff" : "Verstaerkung";
+        label.setText(text);
+        label.setPrefWidth(400.0d);
+        label.setPrefHeight(100.0d);
+        label.getStyleClass().add("fight-label");
+        label.setTranslateX((labelStackPane.getMaxWidth()  - label.getPrefWidth()) / 2.0d);
+        label.setTranslateY((labelStackPane.getMaxHeight()  - label.getPrefHeight()) / 2.0d);
+        KeyFrame showActionChangeLabelKf = new KeyFrame(Duration.seconds(2), (event) -> this.labelStackPane.getChildren().add(label));
+        KeyFrame removeActionChangeLabelKf = new KeyFrame(Duration.seconds(5), event -> {
+            this.labelStackPane.getChildren().remove(label);
+            if (currAction == Action.DEFEND) {
+                reinforcement();
+                labelStackPane.setOnMouseClicked(mouseEvent -> reinforcementClickHandler(mouseEvent));
+            } else {
+                labelStackPane.setOnMouseClicked(mouseEvent -> onMapClick(mouseEvent));
+                hoverableZones = zoneSquares;
+                mapClickEnabled = true;
+            }
+        });
+        Timeline actionChangeTl = new Timeline(showActionChangeLabelKf, removeActionChangeLabelKf);
+        actionChangeTl.play();
     }
 
     private void handleMapHover(MouseEvent mouseEvent) {
@@ -121,28 +171,88 @@ public class MapController {
 
     }
 
+    private void reinforcement() {
+        testBackend.diceThrow();
+        placeTroopsListener = (observable, oldValue, newValue) -> {
+            if (newValue) {
+                testBackend.finishedPlacingTroops().removeListener(placeTroopsListener);
+                nextAction();
+            }
+        };
+        testBackend.finishedPlacingTroops().addListener(placeTroopsListener);
+        Label label = new Label();
+        label.setText("Waiting for dice throw...");
+        label.setPrefWidth(400.0d);
+        label.setPrefHeight(100.0d);
+        label.setMaxHeight(200.0d);
+        label.getStyleClass().add("fight-label");
+        label.setTranslateX((labelStackPane.getWidth()  - label.getPrefWidth()) / 2.0d);
+        label.setTranslateY((labelStackPane.getHeight()  - label.getPrefHeight()) / 2.0d);
+
+        KeyFrame waitingForDiceThrowKf = new KeyFrame(Duration.seconds(0), (event) -> this.labelStackPane.getChildren().add(label));
+        KeyFrame troopsReceivedKf = new KeyFrame(Duration.seconds(2), (event -> label.setText(String.format("You received %d troops", testBackend.getTroopsToPlace()))));
+        KeyFrame setTroopsKf = new KeyFrame(Duration.seconds(4), (event -> label.setText("Select zone(s) onto which you want to deploy your troops")));
+        KeyFrame removeLabelKf = new KeyFrame(Duration.seconds(6), event -> {
+            labelStackPane.getChildren().remove(label);
+            hoverableZones = zoneSquares;
+            mapClickEnabled = true;
+        });
+
+        Timeline reinforcementTl = new Timeline(waitingForDiceThrowKf, troopsReceivedKf, setTroopsKf, removeLabelKf);
+        reinforcementTl.play();
+    }
+
+    private void reinforcementClickHandler(MouseEvent mouseEvent) {
+        if (!mapClickEnabled) return;
+        int x = (int) mouseEvent.getX();
+        int y = (int) mouseEvent.getY();
+        ZoneSquare sqr = getZoneAtCoordinates(x, y);
+        if (sqr == null) return;
+        mapClickEnabled = false;
+        hoverableZones = new ArrayList<>();
+        List<Pixel> overlaidPixels = new ArrayList<>();
+        int currTroopsAmt = Integer.parseInt(sqr.getTxt().getText());
+        overlayStackPane.setStyle("-fx-background-color: black; -fx-opacity: 0.5;");
+        setZoneActive(sqr, overlaidPixels, overlayColor, false);
+        overlaidZones.put(sqr.getName(), overlaidPixels);
+        TroopAmountPopup troopAmountPopup = new TroopAmountPopup(0, testBackend.getTroopsToPlace());
+        troopAmountPopup.setTranslateX((labelStackPane.getWidth() - troopAmountPopup.getPrefWidth()) / 2.0d);
+        troopAmountPopup.setTranslateY((labelStackPane.getHeight() - troopAmountPopup.getPrefHeight()) / 2.0d);
+        labelStackPane.getChildren().add(troopAmountPopup);
+        troopAmountPopup.getConfirmBtn().setOnMouseClicked(mE -> {
+            sqr.getTxt().setText(Integer.toString(currTroopsAmt + troopAmountPopup.getTroopAmount()));
+            testBackend.placeTroops(troopAmountPopup.getTroopAmount());
+            labelStackPane.getChildren().remove(troopAmountPopup);
+            mapClickEnabled = true;
+            hoverableZones = zoneSquares;
+            removeAllOverlaidPixels();
+            overlayStackPane.setStyle("-fx-background-color: transparent;");
+        });
+    }
+
     private void attack() {
         if (source == null || target == null) return;
-        int diceThrowResult = new Random().nextInt(6) + 1;
-        Label fightLabel = new Label();
-        fightLabel.setText("Waiting for dice throw...");
-        fightLabel.setPrefWidth(400.0d);
-        fightLabel.setPrefHeight(100.0d);
-        fightLabel.getStyleClass().add("fight-label");
-        fightLabel.setTranslateX((labelStackPane.getWidth()  - fightLabel.getPrefWidth()) / 2.0d);
-        fightLabel.setTranslateY((labelStackPane.getHeight()  - fightLabel.getPrefHeight()) / 2.0d);
+        testBackend.diceThrow();
+        int diceThrowResult = testBackend.getDiceThrowResult();
+        Label label = new Label();
+        label.setText("Waiting for dice throw...");
+        label.setPrefWidth(400.0d);
+        label.setPrefHeight(100.0d);
+        label.getStyleClass().add("fight-label");
+        label.setTranslateX((labelStackPane.getWidth()  - label.getPrefWidth()) / 2.0d);
+        label.setTranslateY((labelStackPane.getHeight()  - label.getPrefHeight()) / 2.0d);
 
         String winner = diceThrowResult > 3 ? source.getColor().name() : target.getColor().name();
         String loser =  diceThrowResult > 3 ? target.getColor().name() : source.getColor().name();
 
         KeyFrame waitingForDiceThrowKf = new KeyFrame(Duration.seconds(0), (event) -> {
-            this.labelStackPane.getChildren().add(fightLabel);
+            this.labelStackPane.getChildren().add(label);
         });
         KeyFrame winnerKf = new KeyFrame(Duration.seconds(2), (event -> {
-            fightLabel.setText(String.format("%s defeated %s", winner.replace("PLAYER_", ""), loser.replace("PLAYER_", "")));
+            label.setText(String.format("%s defeated %s", winner.replace("PLAYER_", ""), loser.replace("PLAYER_", "")));
         }));
         KeyFrame finishFightKf = new KeyFrame(Duration.seconds(4), (event) -> {
-            this.labelStackPane.getChildren().remove(fightLabel);
+            this.labelStackPane.getChildren().remove(label);
             // attacker wins
             if (diceThrowResult > 3) {
                 Color attackerColor = colorService.getColor(source.getColor().getColorAsHexString());
@@ -150,7 +260,7 @@ public class MapController {
 
                 int attackerTroops = Integer.parseInt(source.getTxt().getText());
 
-                TroopAmountPopup troopAmountPopup = new TroopAmountPopup(attackerTroops - 1);
+                TroopAmountPopup troopAmountPopup = new TroopAmountPopup(1, attackerTroops - 1);
                 troopAmountPopup.setTranslateX((labelStackPane.getWidth() - troopAmountPopup.getPrefWidth()) / 2.0d);
                 troopAmountPopup.setTranslateY((labelStackPane.getHeight() - troopAmountPopup.getPrefHeight()) / 2.0d);
                 labelStackPane.getChildren().add(troopAmountPopup);
@@ -310,6 +420,7 @@ public class MapController {
 
             }
         }
+        overlaidZones.put(sqr.getName(), overlaidPixels);
     }
 
     private void drawZone(ZoneSquare sqr, Color c, PixelWriter pw) {

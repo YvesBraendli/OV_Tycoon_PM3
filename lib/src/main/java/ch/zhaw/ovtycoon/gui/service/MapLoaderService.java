@@ -144,7 +144,6 @@ public class MapLoaderService {
         catch (IOException ioException) {
             ioException.printStackTrace();
         }
-        System.out.println(neighboursMap.size());
         return neighboursMap;
     }
 }

@@ -8,11 +8,12 @@
 }
 
 .fight-label {
-    -fx-background-color: grey;
+    -fx-background-color: #0F05A0; /* zueri - blau */
     -fx-font-family: Arial;
     -fx-text-fill: white;
     -fx-font-size: 30px;
     -fx-alignment: center;
+    -fx-wrap-text: true;
 }
 
 .zone-tooltip {
