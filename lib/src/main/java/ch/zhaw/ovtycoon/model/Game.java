@@ -2,20 +2,17 @@ package ch.zhaw.ovtycoon.model;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Map.*;
 
 import ch.zhaw.ovtycoon.Config;
 import ch.zhaw.ovtycoon.Config.RegionName;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleObjectProperty;
+
 
 public class Game {
 	private HashMap<Config.RegionName, ArrayList<Zone>> gameMap;
 	private HashMap<Zone,Player> zoneOwner = new HashMap<Zone,Player>();
 	private Player[] players;
-	private Dice dice;
-	private SimpleObjectProperty<Dice> diceProperty;
+	private int[][] lastRolledDie;
 	/**
 	 * Initializes the gameMap and creates players with their corresponding colors
 	 * @param playerAmount number of players
@@ -24,11 +21,7 @@ public class Game {
 		MapInitializer mapInit = new MapInitializer();
 		gameMap = mapInit.getGameMap();	
 		zoneOwner = mapInit.getOwnerList();
-		dice = new Dice();
-		diceProperty = new SimpleObjectProperty<>(dice);
 		players = new Player[playerAmount];
-		
-		dice.rollDice(2);
 		//TODO get player color and name
 	}
 	
@@ -37,6 +30,7 @@ public class Game {
 	 */
 	public void start() {
 		//TODO implement game flow, update JavaDoc
+		
 	}
 	
 	/**
@@ -86,21 +80,48 @@ public class Game {
 	}
 	
 	/**
-	 * Returns a zone object
+	 * Checks if a player owns a specific zone
+	 * @param player
+	 * @param zone
+	 * @return true if the player owns the zone, false if not
+	 */
+	public Boolean isZoneOwner(Player player, Zone zone) {
+		return (zoneOwner.get(zone) == player);
+	}
+	
+	/**
+	 * Returns a zone object by name
 	 * @param zoneName enum
 	 * @return zone
 	 */
-	public Zone getZone(Config.ZoneName zoneName) {
+	public Zone getZone(String zoneName) {
 		for(Zone zone: zoneOwner.keySet()) {
-			if(zone.getName().equals(zoneName.toString())) {
+			if(zone.getName().equals(zoneName)) {
 				return zone;
 			}
 		}
 		return null;
 	}
 	
-	public ObjectProperty<Dice> dicePropertyProperty(){
-		return diceProperty;
+	/**
+	 * Returns a player by color
+	 * @param playerColor
+	 * @return player
+	 */
+	public Player getPlayer(Config.PlayerColor playerColor) {
+		for(Player player: players) {
+			if(player.getColor() == playerColor) {
+				return player;
+			}
+		}
+		return null;
 	}
 	
+	/**
+	 * Returs the last set of rolled die
+	 * @return a 2d array containing the defenders roll in the first column and the attackers in the second
+	 */
+	public int[][] getLastRolledDie(){
+		return lastRolledDie;
+	}
 }

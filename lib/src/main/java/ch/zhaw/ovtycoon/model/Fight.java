@@ -41,8 +41,9 @@ public class Fight {
 	 *                        Config.MAX_THROWABLE_DICE and not bigger than troops
 	 *                        in defending zone.
 	 * @throws IllegalArgumentException if arguments are invalid.
+	 * @return rolledDie, a 2d array containing the defenders roll in the first column and the attackers in the second
 	 */
-	public void fight(int attackingTroops, int defendingTroops) {
+	public int[][] fight(int attackingTroops, int defendingTroops) {
 		if (!isValidArgument(attackingTroops, true) || !isValidArgument(defendingTroops, false)) {
 			throw new IllegalArgumentException();
 		}
@@ -61,7 +62,11 @@ public class Fight {
 				attackingZone.decreaseZone(1);
 			}
 		}
-
+		
+		int[][] rolledDie = new int[2][(defendingTroops > attackingTroops ? defendingTroops : attackingTroops)];
+		for(int i = 0; i<defendingTroops;i++) { rolledDie[0][i] = defendingDice[i];}
+		for(int i = 0; i<attackingTroops;i++) { rolledDie[0][i] = attackingDice[i];}
+		return rolledDie;
 	}
 
 	private boolean isValidArgument(int attackingTroops, boolean isAttacker) {
