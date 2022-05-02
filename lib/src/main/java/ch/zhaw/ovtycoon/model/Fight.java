@@ -5,6 +5,7 @@ import ch.zhaw.ovtycoon.Config;
 public class Fight {
 	private Zone attackingZone;
 	private Zone defendingZone;
+	private Dice dice;
 
 	/**
 	 * Instantiates a new Fight object.
@@ -13,12 +14,13 @@ public class Fight {
 	 * 
 	 * @throws IllegalArgumentException	if one of the zones is null
 	 */
-	public Fight(Zone attackingZone, Zone defendingZone) {
+	public Fight(Zone attackingZone, Zone defendingZone, Dice dice) {
 		if(attackingZone == null || defendingZone == null) {
 			throw new IllegalArgumentException();
 		}
 		this.attackingZone = attackingZone;
 		this.defendingZone = defendingZone;
+		this.dice = dice;
 	}
 	
 	/**
@@ -44,8 +46,6 @@ public class Fight {
 		if (!isValidArgument(attackingTroops, true) || !isValidArgument(defendingTroops, false)) {
 			throw new IllegalArgumentException();
 		}
-
-		Dice dice = new Dice();
 		int[] attackingDice = dice.rollDice(attackingTroops);
 		int[] defendingDice = dice.rollDice(defendingTroops);
 

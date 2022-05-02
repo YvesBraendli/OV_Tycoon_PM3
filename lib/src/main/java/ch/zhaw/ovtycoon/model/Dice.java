@@ -7,7 +7,7 @@ import ch.zhaw.ovtycoon.Config;
 
 public class Dice {
 	private final Random random = new Random();   
-	
+	private int[] rolledDice;
 	/**
 	 * This method rolls Dice from one to maxDiceValue.
 	 * 
@@ -22,7 +22,7 @@ public class Dice {
 			return null;
 		}
 		
-		int[] rolledDice = new int[amount];	
+		rolledDice = new int[amount];	
 		for (int i = 0; i < amount; i++) {
 			// +1 because bound is not included in nextInt.
 			rolledDice[i] = (random.nextInt(Config.MAX_DICE_VALUE) + 1);
@@ -30,5 +30,11 @@ public class Dice {
 		Arrays.sort(rolledDice);
 		return rolledDice;			
 	}
+	
+	public int[] getRolledDice() {
+		return rolledDice;
+	}
+	
+	
 
 }

@@ -7,12 +7,15 @@ import java.util.Map.*;
 
 import ch.zhaw.ovtycoon.Config;
 import ch.zhaw.ovtycoon.Config.RegionName;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 
 public class Game {
 	private HashMap<Config.RegionName, ArrayList<Zone>> gameMap;
 	private HashMap<Zone,Player> zoneOwner = new HashMap<Zone,Player>();
 	private Player[] players;
-	
+	private Dice dice;
+	private SimpleObjectProperty<Dice> diceProperty;
 	/**
 	 * Initializes the gameMap and creates players with their corresponding colors
 	 * @param playerAmount number of players
@@ -21,7 +24,11 @@ public class Game {
 		MapInitializer mapInit = new MapInitializer();
 		gameMap = mapInit.getGameMap();	
 		zoneOwner = mapInit.getOwnerList();
+		dice = new Dice();
+		diceProperty = new SimpleObjectProperty<>(dice);
 		players = new Player[playerAmount];
+		
+		dice.rollDice(2);
 		//TODO get player color and name
 	}
 	
@@ -91,4 +98,9 @@ public class Game {
 		}
 		return null;
 	}
+	
+	public ObjectProperty<Dice> dicePropertyProperty(){
+		return diceProperty;
+	}
+	
 }
