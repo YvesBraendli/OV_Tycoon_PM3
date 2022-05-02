@@ -46,6 +46,10 @@ public class Game {
 		return winner;
 	}
 	
+	public Boolean hasWinner() {
+		if(getWinner() != null) return true;
+		return false;
+	}
 	/**
 	 * Checks if a player owns all zones in a region
 	 * @param region
