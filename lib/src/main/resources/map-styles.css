@@ -8,7 +8,8 @@
 }
 
 .fight-label {
-    -fx-background-color: #0F05A0; /* zueri - blau */
+    /*-fx-background-color: #0F05A0; */
+    -fx-background-color: black;
     -fx-font-family: Arial;
     -fx-text-fill: white;
     -fx-font-size: 30px;
@@ -18,7 +19,6 @@
 
 .zone-tooltip {
     -fx-background-color: black;
-    -fx-fill: grey;
     -fx-text-fill: white;
     -fx-alignment: center;
 }

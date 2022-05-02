@@ -21,6 +21,7 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
@@ -108,40 +109,125 @@ public class MapController {
         zonesWithNeighbours = mapNeighboursStringMapToZones(mapLoaderService.getNeighboursMap());
         hoverableZones = zoneSquares;
         addPlayers();
+        highlightCurrPlayerLarge(testBackend.getCurrPlayer());
         showActionChange();
+    }
+
+    List<HBox> plyrs = new ArrayList<>();
+
+    private void highlightCurrPlayerLarge(ZoneColor currPlayer) {
+        HBox playerBoxLarge = buildAndGetPlayerHBoxBig(currPlayer);
+        playerBoxLarge.setTranslateX((labelStackPane.getMaxWidth() - playerBoxLarge.getPrefWidth()) / 2.0d);
+        playerBoxLarge.setTranslateY((labelStackPane.getMaxHeight() - playerBoxLarge.getPrefHeight()) / 2.0d);
+        KeyFrame showPlayerKf = new KeyFrame(Duration.seconds(1), event -> labelStackPane.getChildren().add(playerBoxLarge));
+        KeyFrame removePlayerKf = new KeyFrame(Duration.seconds(3), event -> labelStackPane.getChildren().remove(playerBoxLarge));
+        new Timeline(showPlayerKf, removePlayerKf).play();
     }
 
     private void addPlayers() {
         for (ZoneColor player : testBackend.getPlayers()) {
-            Label playerLabel = new Label(player.name());
-            playerLabel.setPrefHeight(25.0d);
-            playerLabel.setPrefWidth(150.0d);
-            String playerColor = player.getColorAsHexString().substring(0, 8).replace("0x", "#");
-            playerLabel.getStyleClass().add("player-label");
-            playerLabel.setStyle(String.format("-fx-background-color: %s;", playerColor));
-            playerLabel.setId(player.name());
-            playerLabels.add(playerLabel);
-            playersVBox.getChildren().add(playerLabel);
-            if (player == testBackend.getCurrPlayer()) highlightPlayerLabel(playerLabel);
+            HBox playerHBox = buildAndGetPlayerHBox(player);
+            plyrs.add(playerHBox);
+            playersVBox.getChildren().add(playerHBox);
+            if (player == testBackend.getCurrPlayer()) highlightPlayerTile(player.name());
         }
+
         testBackend.getNextPlayer().addListener((obs, oldVal, newVal) -> {
-            highlightCurrPlayer(oldVal, newVal);
+            highlightCurrPlayerTile(oldVal.name(), newVal.name());
+            highlightCurrPlayerLarge(newVal);
         });
     }
 
-    private void highlightCurrPlayer(ZoneColor prev, ZoneColor currPlayer) {
-        Label prevLabel = playerLabels.stream().filter(label -> label.getId().equals(prev.name())).findFirst().orElse(null);
-        Label curr = playerLabels.stream().filter(label -> label.getId().equals(currPlayer.name())).findFirst().orElse(null);
-        if (prevLabel == null || curr == null) return;
-        prevLabel.setPrefWidth(150.0d);
-        prevLabel.setPrefHeight(25.0d);
-        highlightPlayerLabel(curr);
+    private void highlightPlayerTile(String id) {
+        HBox toBeHighlighted = plyrs.stream().filter(box -> id.equals(box.getId())).findFirst().orElse(null);
+        if (toBeHighlighted == null) return;
+        toBeHighlighted.setPrefWidth(175.0d);
+        toBeHighlighted.setPrefHeight(35.0d);
+        toBeHighlighted.setMaxWidth(175.0d);
+        toBeHighlighted.setMaxHeight(35.0d);
 
+        ImageView iv = (ImageView) toBeHighlighted.getChildren().get(0);
+        iv.setFitHeight(toBeHighlighted.getPrefHeight());
+        iv.setFitWidth(toBeHighlighted.getPrefHeight());
+
+        Label l = (Label) toBeHighlighted.getChildren().get(1);
+        l.setPrefHeight(toBeHighlighted.getPrefHeight());
+        l.setPrefWidth(toBeHighlighted.getPrefWidth() - toBeHighlighted.getPrefHeight());
     }
 
-    private void highlightPlayerLabel(Label label) {
-        label.setPrefWidth(175.0d);
-        label.setPrefHeight(35.0d);
+    private void highlightCurrPlayerTile(String idOld, String idNew) {
+        HBox toBeUnHighlighted = plyrs.stream().filter(box -> idOld.equals(box.getId())).findFirst().orElse(null);
+        if (toBeUnHighlighted == null) return;
+        toBeUnHighlighted.setPrefWidth(150.0d);
+        toBeUnHighlighted.setPrefHeight(25.0d);
+        toBeUnHighlighted.setMaxWidth(150.0d);
+        toBeUnHighlighted.setMaxHeight(25.0d);
+
+        ImageView iv = (ImageView) toBeUnHighlighted.getChildren().get(0);
+        iv.setFitHeight(toBeUnHighlighted.getPrefHeight());
+        iv.setFitWidth(toBeUnHighlighted.getPrefHeight());
+
+        Label l = (Label) toBeUnHighlighted.getChildren().get(1);
+        l.setPrefHeight(toBeUnHighlighted.getPrefHeight());
+        l.setPrefWidth(toBeUnHighlighted.getPrefWidth() - toBeUnHighlighted.getPrefHeight());
+        highlightPlayerTile(idNew);
+    }
+
+    private HBox buildAndGetPlayerHBox(ZoneColor player) {
+        String playerColor = player.getColorAsHexString().substring(0, 8).replace("0x", "#");
+        HBox playerBox = new HBox();
+        playerBox.setPrefHeight(25.0d);
+        playerBox.setPrefWidth(150.0d);
+        playerBox.setMaxHeight(25.0d);
+        playerBox.setMaxWidth(150.0d);
+        playerBox.setAlignment(Pos.TOP_RIGHT);
+        playerBox.setStyle("-fx-border-width: 0.5px; -fx-border-color: black;");
+
+        String imgName = player.name().toLowerCase();
+        Image plrImg = new Image(getClass().getClassLoader().getResource(imgName + ".png").toExternalForm());
+        ImageView plyrIV = new ImageView();
+        plyrIV.setFitHeight(25.0d);
+        plyrIV.setFitWidth(25.0d);
+        plyrIV.setImage(plrImg);
+        playerBox.getChildren().add(plyrIV);
+
+        Label plrLabel = new Label(player.name());
+        plrLabel.setPrefHeight(25.0d);
+        plrLabel.setPrefWidth(125.0d);
+        plrLabel.setStyle(String.format("-fx-background-color: %s; -fx-text-fill: white;", playerColor));
+        playerBox.getChildren().add(plrLabel);
+
+        playerBox.setId(player.name());
+        return playerBox;
+    }
+
+    private HBox buildAndGetPlayerHBoxBig(ZoneColor player) {
+        String playerColor = player.getColorAsHexString().substring(0, 8).replace("0x", "#");
+        HBox playerBox = new HBox();
+        playerBox.setPrefHeight(100.0d);
+        playerBox.setPrefWidth(500.0d);
+        playerBox.setMaxHeight(100.0d);
+        playerBox.setMaxWidth(500.0d);
+        playerBox.setAlignment(Pos.TOP_RIGHT);
+        playerBox.setStyle("-fx-background-color: white;");
+
+        String imgName = player.name().toLowerCase();
+        Image plrImg = new Image(getClass().getClassLoader().getResource(imgName + ".png").toExternalForm());
+        ImageView plyrIV = new ImageView();
+        plyrIV.setFitHeight(100.0d);
+        plyrIV.setFitWidth(100.0d);
+        plyrIV.setImage(plrImg);
+        playerBox.getChildren().add(plyrIV);
+
+        Label plrLabel = new Label(player.name());
+        plrLabel.setPrefHeight(100.0d);
+        plrLabel.setPrefWidth(400.0d);
+        plrLabel.setAlignment(Pos.CENTER);
+        plrLabel.setStyle(String.format("-fx-background-color: %s; -fx-text-fill: white; -fx-font-family: Arial; -fx-font-size: 40px;", playerColor));
+        playerBox.getChildren().add(plrLabel);
+
+        playerBox.setId(player.name());
+        return playerBox;
     }
 
     private void nextAction() {
@@ -171,9 +257,10 @@ public class MapController {
 
         highlightClickableZonesTl.stop();
         removeAllOverlaidPixels();
-
-        KeyFrame showActionChangeLabelKf = new KeyFrame(Duration.seconds(2), (event) -> this.labelStackPane.getChildren().add(label));
-        KeyFrame removeActionChangeLabelKf = new KeyFrame(Duration.seconds(5), event -> {
+        int showActionChangeDurationSeconds = testBackend.getAction() == Action.DEFEND ? 3 : 0;
+        int removeActionChangeLabelDurationSeconds = showActionChangeDurationSeconds + 3;
+        KeyFrame showActionChangeLabelKf = new KeyFrame(Duration.seconds(showActionChangeDurationSeconds), (event) -> this.labelStackPane.getChildren().add(label));
+        KeyFrame removeActionChangeLabelKf = new KeyFrame(Duration.seconds(removeActionChangeLabelDurationSeconds), event -> {
             this.labelStackPane.getChildren().remove(label);
             overlayStackPane.setStyle("-fx-background-color: transparent;");
             if (testBackend.getAction() == Action.DEFEND) {
@@ -250,17 +337,16 @@ public class MapController {
         highlightClickableZonesTl.stop();
         ZoneColor currPlayerColor = testBackend.getCurrPlayer();
         Color mix = colorService.mixColors(neighbourOverlayColor, colorService.getColor(currPlayerColor.getColorAsHexString()));
-        updateAndGetClickableZones();
+        updateClickableZones();
         KeyFrame highlightZonesKf = new KeyFrame(Duration.seconds(1), event -> clickableZones.forEach(zone -> setZoneActive(zone, new ArrayList<>(), mix, false)));
         KeyFrame removeHighlightedZonesKf = new KeyFrame(Duration.seconds(2), event -> removeAllOverlaidPixels());
         highlightClickableZonesTl = new Timeline(highlightZonesKf, removeHighlightedZonesKf);
         highlightClickableZonesTl.setCycleCount(30);
-        System.out.println("playing");
         highlightClickableZonesTl.play();
     }
 
     // TODO should depend on action
-    private void updateAndGetClickableZones() {
+    private void updateClickableZones() {
         ZoneColor currPlayerColor = testBackend.getCurrPlayer();
         clickableZones = zoneSquares.stream().filter(zone -> zone.getColor() == currPlayerColor).collect(Collectors.toList());
     }
