@@ -20,12 +20,8 @@ public class Zone{
 		return alreadyVisited;
 	}
 
-	public void setAlreadyVisitedTrue(){
-		alreadyVisited = true;
-	}
-
-	public void setAlreadyVisitedFalse(){
-		alreadyVisited = false;
+	public void setAlreadyVisited(boolean alreadyVisitedState){
+		alreadyVisited = alreadyVisitedState;
 	}
 	
 	public String getName() {

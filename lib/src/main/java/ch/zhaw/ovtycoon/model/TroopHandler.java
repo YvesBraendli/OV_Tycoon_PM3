@@ -53,7 +53,7 @@ public class TroopHandler {
     }
 
     private boolean zonesHaveDirectConnection(Zone originZone, Zone targetZone, Game game, Player player) {
-        originZone.setAlreadyVisitedTrue();
+        originZone.setAlreadyVisited(true);
         if (originZone == targetZone) {
             return true;
         } else {
@@ -66,7 +66,7 @@ public class TroopHandler {
                 }
             }
         }
-        originZone.setAlreadyVisitedFalse();
+        originZone.setAlreadyVisited(false);
         return false;
     }
 
