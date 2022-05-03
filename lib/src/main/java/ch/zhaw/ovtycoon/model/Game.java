@@ -126,18 +126,11 @@ public class Game {
 		return zonesOwnedByPlayer;
 	}
 	
-	public ArrayList<Zone> getAttackableZones(Player player){
+	public ArrayList<Zone> getAttackableZones(Zone zone, Player player){
+		if(zone.getTroops()<1) return null;
 		ArrayList<Zone> zonesOwnedByPlayer = getZonesOwnedbyPlayer(player);
-		ArrayList<Zone> neighbourZones = new ArrayList<Zone>();
-		ArrayList<Zone> currentNeighbours = new ArrayList<Zone>();
-		
-		for(Zone zone: zonesOwnedByPlayer) {
-			if(zone.getTroops()>1) {
-				currentNeighbours = zone.getNeighbours();
-				currentNeighbours.removeAll(zonesOwnedByPlayer);
-				neighbourZones.addAll(currentNeighbours);
-			}
-		}
+		ArrayList<Zone> neighbourZones = zone.getNeighbours();
+		neighbourZones.removeAll(zonesOwnedByPlayer);
 		
 		return neighbourZones;
 		

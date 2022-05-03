@@ -65,8 +65,8 @@ public class RisikoController extends Application {
     	return translateZoneListToNameList(game.getZonesOwnedbyPlayer(game.getPlayer(playerColor)));
     }
     
-    public ArrayList<String> getAttackableZones(PlayerColor playerColor){
-    	return translateZoneListToNameList(game.getAttackableZones(game.getPlayer(playerColor)));
+    public ArrayList<String> getAttackableZones(String attackerZoneName, PlayerColor playerColor){
+    	return translateZoneListToNameList(game.getAttackableZones(game.getZone(attackerZoneName), game.getPlayer(playerColor)));
     }
     
     public ArrayList<String> getPossibleAttackerZones(PlayerColor playerColor){
