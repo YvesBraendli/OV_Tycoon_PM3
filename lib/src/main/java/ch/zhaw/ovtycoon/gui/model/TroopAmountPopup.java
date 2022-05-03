@@ -8,8 +8,9 @@ import javafx.scene.layout.VBox;
 /**
  * Popup for moving troops with label, text field and confirm button
  */
-// TODO should depend on current move when other moves implemented
 public class TroopAmountPopup extends VBox {
+    public static final double TROOP_AMOUNT_POPUP_PREF_WIDTH = 200.0d;
+    public static final double TROOP_AMOUNT_POPUP_PREF_HEIGHT = 150.0d;
     private int minTrpAmt;
     private int maxTrpAmt;
     private Integer troopAmount = minTrpAmt;
@@ -18,8 +19,8 @@ public class TroopAmountPopup extends VBox {
     private final Button confirmBtn = new Button();
 
     public TroopAmountPopup(int minTrpAmt, int maxTrpAmt) {
-        setPrefWidth(200.0d);
-        setPrefHeight(150.0d);
+        setPrefWidth(TROOP_AMOUNT_POPUP_PREF_WIDTH);
+        setPrefHeight(TROOP_AMOUNT_POPUP_PREF_HEIGHT);
         this.minTrpAmt = minTrpAmt;
         this.maxTrpAmt = maxTrpAmt;
         getStyleClass().add("troop-amount-box");

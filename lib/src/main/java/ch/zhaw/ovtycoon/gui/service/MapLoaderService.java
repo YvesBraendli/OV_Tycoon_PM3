@@ -63,7 +63,7 @@ public class MapLoaderService {
                         String center = matcher.group(7);
                         String[] centerCoordinates = center.split(",");
                         zoneSquare.setCenter(new Pixel(Integer.parseInt(centerCoordinates[0]), Integer.parseInt(centerCoordinates[1])));
-                        setTroopsCountText(zoneSquare); // TODO move to ZoneSquare class
+                        setTroopsCountText(zoneSquare);
                         zoneSquares.add(zoneSquare);
                     }
                 }
@@ -72,17 +72,16 @@ public class MapLoaderService {
         catch (IOException ioException) {
             ioException.printStackTrace();
         }
-        zoneSquares.forEach(zsq -> setXBorderStripes(zsq)); // TODO why faster without multithreading?
+        zoneSquares.forEach(zsq -> setXBorderStripes(zsq));
         System.out.println(String.format("Finished stripe init in %d ms", System.currentTimeMillis() - start));
         return zoneSquares;
     }
 
-    // TODO current impl doesnt work if !mapClr(i - 1) mapClr(i) !mapClr(i+1)
     private void setXBorderStripes(ZoneSquare zsq) {
         Square sqr = zsq.getSquare();
         ZoneColor zoneColor = zsq.getColor();
         List<HorizontalStripe> stripes = new ArrayList<>();
-        for (int i = sqr.getStartY(); i <= sqr.getEndY(); i++) { // TODO check if index out of bounds exception possible here
+        for (int i = sqr.getStartY(); i <= sqr.getEndY(); i++) {
             HorizontalStripe currStripe = new HorizontalStripe();
 
             boolean enteredZone = false;

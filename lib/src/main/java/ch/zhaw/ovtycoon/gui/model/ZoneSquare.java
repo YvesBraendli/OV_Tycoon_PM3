@@ -4,7 +4,6 @@ import javafx.scene.text.Text;
 
 import java.util.List;
 
-// TODO make everything except color and txt final
 public class ZoneSquare {
     private Square square;
     private ZoneColor color;
@@ -76,15 +75,12 @@ public class ZoneSquare {
         return txt != null ? txt.equals(that.txt) : that.txt == null;
     }
 
-    // TODO document changes to default hash code method
     @Override
     public int hashCode() {
         int result = square != null ? square.hashCode() : 0;
-        // result = 31 * result + (color != null ? color.hashCode() : 0);
         result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (border != null ? border.hashCode() : 0);
         result = 31 * result + (center != null ? center.hashCode() : 0);
-        // result = 31 * result + (txt != null ? txt.hashCode() : 0);
         return result;
     }
 }

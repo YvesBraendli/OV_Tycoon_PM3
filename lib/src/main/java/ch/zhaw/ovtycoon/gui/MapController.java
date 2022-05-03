@@ -323,24 +323,24 @@ public class MapController {
         highlightClickableZonesTl.play();
     }
 
-    // TODO should depend on action
     private void updateClickableZones() {
         ZoneColor currPlayerColor = testBackend.getCurrPlayer();
-        clickableZones = zoneSquares.stream().filter(zone -> zone.getColor() == currPlayerColor).collect(Collectors.toList());
+        int minTroopsForZoneToBeClickable = testBackend.getAction() == Action.DEFEND ? 0 : 2;
+        clickableZones = zoneSquares.stream()
+                .filter(zone -> zone.getColor() == currPlayerColor && getZoneTroopsAmount(zone) >= minTroopsForZoneToBeClickable)
+                .collect(Collectors.toList());
     }
 
     private void reinforcement() {
         testBackend.diceThrow();
         placeTroopsFinishedListener = (observable, oldValue, newValue) -> {
             if (newValue) {
-                // TODO bug: reinforcementClickHandler not removed properly
                 testBackend.finishedPlacingTroops().removeListener(placeTroopsFinishedListener);
                 mapClickEnabled = false;
                 nextAction();
             }
         };
         testBackend.finishedPlacingTroops().addListener(placeTroopsFinishedListener);
-        System.out.println("added event handler");
         Label label = new Label();
         label.setText("Warte auf Wuerfelwurf...");
         label.setPrefWidth(400.0d);
@@ -534,7 +534,6 @@ public class MapController {
         // System.out.println(String.format("Click handling took %d ms", System.currentTimeMillis() - startTime));
     }
 
-    // TODO check if npe fixed
     public List<ZoneSquare> getValidNeighboursForAction(Action action) {
         switch (action) {
             case ATTACK:

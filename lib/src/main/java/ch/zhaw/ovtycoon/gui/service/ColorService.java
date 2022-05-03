@@ -8,7 +8,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ColorService {
-    private static final Pattern HEX_COLOR_PATTERN = Pattern.compile("^0x([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$");
+    private static final Pattern JAVAFX_COLOR_AS_HEX_STRING_PATTERN = Pattern.compile("^0x([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$");
+    private static final int HEXADECIMAL_RADIX = 16;
+    private static final int JAVAFX_COLOR_HEX_STRING_PARTS_AMOUNT = 4;
+    private static final double HIGHEST_BYTE_NUMBER_AS_DOUBLE = 255.0d;
     private PixelReader pixelReader;
 
     public ColorService(PixelReader pixelReader) {
@@ -17,9 +20,8 @@ public class ColorService {
 
     public ColorService() {}
 
-    // TODO throw exception if called & pixel reader is null
     public boolean isZoneColor(int x, int y, ZoneColor zoneColor) {
-        if (pixelReader == null) throw new UnsupportedOperationException();
+        if (pixelReader == null) throw new UnsupportedOperationException("Operation \"isZoneColor\" not supported: pixelReader is null");
         return zoneColor == getZoneColor(pixelReader.getColor(x, y).toString());
     }
 
@@ -42,11 +44,11 @@ public class ColorService {
     }
 
     public Color getColor(String hex) {
-        Matcher matcher = HEX_COLOR_PATTERN.matcher(hex);
-        double[] colorParams = new double[4];
-        if (!matcher.find() || matcher.groupCount() != 4) return null;
+        Matcher matcher = JAVAFX_COLOR_AS_HEX_STRING_PATTERN.matcher(hex);
+        double[] colorParams = new double[JAVAFX_COLOR_HEX_STRING_PARTS_AMOUNT];
+        if (!matcher.find() || matcher.groupCount() != JAVAFX_COLOR_HEX_STRING_PARTS_AMOUNT) return null;
         for (int i = 0; i < matcher.groupCount(); i++) {
-            colorParams[i] = Integer.parseInt(matcher.group(i + 1), 16) / 255.0d;
+            colorParams[i] = Integer.parseInt(matcher.group(i + 1), HEXADECIMAL_RADIX) / HIGHEST_BYTE_NUMBER_AS_DOUBLE;
         }
         return new Color(colorParams[0], colorParams[1], colorParams[2], colorParams[3]);
     }
