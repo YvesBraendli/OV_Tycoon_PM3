@@ -3,7 +3,6 @@ package ch.zhaw.ovtycoon;
 import ch.zhaw.ovtycoon.gui.MapController;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.PerspectiveCamera;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
@@ -14,8 +13,6 @@ public class RisikoController extends Application {
         FXMLLoader fxmlLoader = new FXMLLoader(MapController.class.getClassLoader().getResource("zones-map-view.fxml"));
         Scene scene = new Scene(fxmlLoader.load(), 1000, 900);
         scene.getStylesheets().add(getClass().getClassLoader().getResource("map-styles.css").toExternalForm());
-        PerspectiveCamera cam = new PerspectiveCamera();
-        scene.setCamera(cam);
         stage.setTitle("OV-Tycoon");
         stage.setScene(scene);
         stage.show();

@@ -19,7 +19,7 @@ public class ColorService {
 
     // TODO throw exception if called & pixel reader is null
     public boolean isZoneColor(int x, int y, ZoneColor zoneColor) {
-        if (pixelReader == null) return false;
+        if (pixelReader == null) throw new UnsupportedOperationException();
         return zoneColor == getZoneColor(pixelReader.getColor(x, y).toString());
     }
 
