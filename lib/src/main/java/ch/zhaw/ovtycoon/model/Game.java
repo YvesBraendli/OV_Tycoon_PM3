@@ -143,6 +143,21 @@ public class Game {
 		
 	}
 	
+	public ArrayList<Zone> getPossibleAttackerZones(Player player){
+		ArrayList<Zone> zonesOwnedByPlayer = getZonesOwnedbyPlayer(player);
+		ArrayList<Zone> possibleAttackerZones = new ArrayList<Zone>();
+		for(Zone zone: zonesOwnedByPlayer) {
+			if(zone.getTroops()>1) {
+				for(Zone neighbour : zone.getNeighbours()) {
+					if(zoneOwner.get(neighbour) != player) {
+						possibleAttackerZones.add(zone);
+					}
+				}
+			}
+		}
+		return possibleAttackerZones;
+	}
+	
 	/**
 	 * Returns a zone object by name
 	 * @param zoneName enum
