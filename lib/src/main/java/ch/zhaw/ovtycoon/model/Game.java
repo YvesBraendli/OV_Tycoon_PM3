@@ -164,6 +164,9 @@ public class Game {
 		return zonesWithMovableTroops;
 	}
 	
+	public ArrayList<Zone> getZoneNeighbours(Zone zone){
+		return zone.getNeighbours();
+	}
 	/**
 	 * Returns a zone object by name
 	 * @param zoneName enum
@@ -191,7 +194,7 @@ public class Game {
 		}
 		return null;
 	}
-	
+
 	
 	/**
 	 * Returs the last set of rolled die

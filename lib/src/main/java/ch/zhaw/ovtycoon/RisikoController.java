@@ -81,6 +81,10 @@ public class RisikoController extends Application {
     	return translateZoneListToNameList(game.getZonesWithMovableTroops(game.getPlayer(playerColor)));
     }
     
+    public ArrayList<String> getZoneNeighbours(String zoneName){
+    	return translateZoneListToNameList(game.getZoneNeighbours(game.getZone(zoneName)));
+    }
+    
     private ArrayList<String> translateZoneListToNameList(ArrayList<Zone> zoneList){
     	ArrayList<String> zoneNameList = new ArrayList<String>();
     	for(Zone zone: zoneList) {
