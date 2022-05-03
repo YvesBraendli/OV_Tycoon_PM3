@@ -126,6 +126,23 @@ public class Game {
 		return zonesOwnedByPlayer;
 	}
 	
+	public ArrayList<Zone> getAttackableZones(Player player){
+		ArrayList<Zone> zonesOwnedByPlayer = getZonesOwnedbyPlayer(player);
+		ArrayList<Zone> neighbourZones = new ArrayList<Zone>();
+		ArrayList<Zone> currentNeighbours = new ArrayList<Zone>();
+		
+		for(Zone zone: zonesOwnedByPlayer) {
+			if(zone.getTroops()>1) {
+				currentNeighbours = zone.getNeighbours();
+				currentNeighbours.removeAll(zonesOwnedByPlayer);
+				neighbourZones.addAll(currentNeighbours);
+			}
+		}
+		
+		return neighbourZones;
+		
+	}
+	
 	/**
 	 * Returns a zone object by name
 	 * @param zoneName enum
@@ -153,6 +170,7 @@ public class Game {
 		}
 		return null;
 	}
+	
 	
 	/**
 	 * Returs the last set of rolled die
