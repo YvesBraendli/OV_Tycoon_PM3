@@ -5,7 +5,9 @@ import java.util.HashMap;
 import java.util.Map.*;
 
 import ch.zhaw.ovtycoon.Config;
+import ch.zhaw.ovtycoon.RisikoController;
 import ch.zhaw.ovtycoon.Config.RegionName;
+import javafx.application.Application;
 
 
 public class Game {
@@ -13,6 +15,8 @@ public class Game {
 	private HashMap<Zone,Player> zoneOwner = new HashMap<Zone,Player>();
 	private Player[] players;
 	private int[][] lastRolledDie;
+	private TroopHandler troopHandler;
+
 	/**
 	 * Initializes the gameMap and creates players with their corresponding colors
 	 * @param playerAmount number of players
@@ -22,8 +26,11 @@ public class Game {
 		gameMap = mapInit.getGameMap();	
 		zoneOwner = mapInit.getOwnerList();
 		players = new Player[playerAmount];
+		troopHandler = new TroopHandler(playerAmount);
 		//TODO get player color and name
 	}
+	
+
 	
 	/**
 	 * starts the game
@@ -31,6 +38,22 @@ public class Game {
 	public void start() {
 		//TODO implement game flow, update JavaDoc
 		
+	}
+
+
+	
+	/**
+	 * This method is responsible for the initial troop setting, which starts at the beginning of the game.
+	 * It sets one troop of the player in the zone, afterwards it has to be called again for the next player.
+	 * 
+	 * @param player The player instance which wants to add troops to a zone.
+	 * @param zoneToPlaceTroop The zone, in which the player wants to add his troop unit.
+	 * 
+	 * @return true, if the troop was successfully added to the wished zone.
+	 */
+	public boolean setInitialTroops(Player player, Zone zoneToPlaceTroop) {
+		boolean wasSuccessfull = false;
+		return wasSuccessfull;
 	}
 	
 	/**
