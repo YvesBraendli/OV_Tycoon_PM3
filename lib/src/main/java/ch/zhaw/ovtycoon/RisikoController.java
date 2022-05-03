@@ -1,10 +1,13 @@
 package ch.zhaw.ovtycoon;
 
+import java.util.ArrayList;
+
 import ch.zhaw.ovtycoon.Config.PlayerColor;
 import ch.zhaw.ovtycoon.Config.RegionName;
 import ch.zhaw.ovtycoon.gui.MapController;
 import ch.zhaw.ovtycoon.model.Game;
 import ch.zhaw.ovtycoon.model.Player;
+import ch.zhaw.ovtycoon.model.Zone;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -49,13 +52,21 @@ public class RisikoController extends Application {
     	return game.getZoneOwner(game.getZone(zoneName)).getColor();
     }
     
-    public Boolean isZoneOwner(String zoneName, PlayerColor playerColor) {
+    public boolean isZoneOwner(String zoneName, PlayerColor playerColor) {
     	return game.isZoneOwner(game.getPlayer(playerColor), game.getZone(zoneName));
     }
     
-    public Boolean isValidAttack(String zoneNameAttacking, String zoneNameAttacked, PlayerColor attackerColor) {
+    public boolean isValidAttack(String zoneNameAttacking, String zoneNameAttacked, PlayerColor attackerColor) {
     	if(isZoneOwner(zoneNameAttacking, attackerColor) && !isZoneOwner(zoneNameAttacked, attackerColor)) return true;
     	return false;
+    }
+    
+    public ArrayList<String> getZonesOwnedbyPlayer(PlayerColor playerColor){
+    	ArrayList<String> zonesOwnedByPlayer = new ArrayList<String>();
+    	for(Zone zone: game.getZonesOwnedbyPlayer(game.getPlayer(playerColor))) {
+    		zonesOwnedByPlayer.add(zone.getName());
+    	}
+    	return zonesOwnedByPlayer;
     }
     
     

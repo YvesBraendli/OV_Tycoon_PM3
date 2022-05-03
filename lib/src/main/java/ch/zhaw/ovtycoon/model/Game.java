@@ -69,7 +69,7 @@ public class Game {
 		return winner;
 	}
 	
-	public Boolean hasWinner() {
+	public boolean hasWinner() {
 		if(getWinner() != null) return true;
 		return false;
 	}
@@ -114,6 +114,16 @@ public class Game {
 	 */
 	public Boolean isZoneOwner(Player player, Zone zone) {
 		return (zoneOwner.get(zone) == player);
+	}
+	
+	public ArrayList<Zone> getZonesOwnedbyPlayer(Player player){
+		ArrayList<Zone> zonesOwnedByPlayer = new ArrayList<Zone>();
+		for(Zone zone: zoneOwner.keySet()) {
+			if(isZoneOwner(player, zone)) {
+				zonesOwnedByPlayer.add(zone);
+			}
+		}
+		return zonesOwnedByPlayer;
 	}
 	
 	/**
