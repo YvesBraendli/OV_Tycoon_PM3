@@ -52,6 +52,10 @@ public class RisikoController extends Application {
     	return game.getZoneOwner(game.getZone(zoneName)).getColor();
     }
     
+    public int getZoneTroops(String zoneName) {
+    	return game.getZone(zoneName).getTroops();
+    }
+    
     public boolean isZoneOwner(String zoneName, PlayerColor playerColor) {
     	return game.isZoneOwner(game.getPlayer(playerColor), game.getZone(zoneName));
     }
@@ -73,6 +77,9 @@ public class RisikoController extends Application {
     	return translateZoneListToNameList(game.getPossibleAttackerZones(game.getPlayer(playerColor)));
     }
     
+    public ArrayList<String> getZonesWithMovableTroops(PlayerColor playerColor){
+    	return translateZoneListToNameList(game.getZonesWithMovableTroops(game.getPlayer(playerColor)));
+    }
     
     private ArrayList<String> translateZoneListToNameList(ArrayList<Zone> zoneList){
     	ArrayList<String> zoneNameList = new ArrayList<String>();
@@ -81,6 +88,8 @@ public class RisikoController extends Application {
     	}
     	return zoneNameList;
     }
+    
+    
     
     
     
