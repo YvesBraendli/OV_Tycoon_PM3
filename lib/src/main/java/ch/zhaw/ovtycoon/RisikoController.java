@@ -53,5 +53,14 @@ public class RisikoController extends Application {
     	return game.isZoneOwner(game.getPlayer(playerColor), game.getZone(zoneName));
     }
     
+    public Boolean isValidAttack(String zoneNameAttacking, String zoneNameAttacked, PlayerColor attackerColor) {
+    	if(isZoneOwner(zoneNameAttacking, attackerColor) && !isZoneOwner(zoneNameAttacked, attackerColor)) return true;
+    	return false;
+    }
+    
+    
+    
+    
+    
     
 }
