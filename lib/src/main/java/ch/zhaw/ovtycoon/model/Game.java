@@ -14,6 +14,7 @@ public class Game {
 	private HashMap<Config.RegionName, ArrayList<Zone>> gameMap;
 	private HashMap<Zone,Player> zoneOwner = new HashMap<Zone,Player>();
 	private Player[] players;
+	private int currentPlayerIndex;
 	private int[][] lastRolledDie;
 	private TroopHandler troopHandler;
 
@@ -86,6 +87,14 @@ public class Game {
 				return null;
 		}
 		return regionOwner;
+	}
+	
+	public Player getCurrentPlayer() {
+		return players[currentPlayerIndex];
+	}
+	
+	public void switchToNextPlayer() {
+		currentPlayerIndex = currentPlayerIndex+1 == players.length ? 0 : currentPlayerIndex++;
 	}
 	
 	/**

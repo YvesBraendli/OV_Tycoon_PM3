@@ -52,6 +52,10 @@ public class RisikoController extends Application {
     	return game.getZoneOwner(game.getZone(zoneName)).getColor();
     }
     
+    public PlayerColor getCurrentPlayer() {
+    	return game.getCurrentPlayer().getColor();
+    }
+    
     public int getZoneTroops(String zoneName) {
     	return game.getZone(zoneName).getTroops();
     }
