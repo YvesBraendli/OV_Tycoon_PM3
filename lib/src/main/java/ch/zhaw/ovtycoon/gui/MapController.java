@@ -15,6 +15,9 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.canvas.Canvas;
@@ -65,6 +68,7 @@ public class MapController {
     private PixelWriter mapPw;
     private ChangeListener<Boolean> placeTroopsFinishedListener;
     private SimpleBooleanProperty sourceOrTargetNull = new SimpleBooleanProperty(true);
+    private SimpleBooleanProperty showingAnimation = new SimpleBooleanProperty(false);
 
     private final int overlayEffectShift = 5;
     private List<ZoneSquare> zoneSquares;
@@ -101,6 +105,7 @@ public class MapController {
         nextMoveBtn.setOnMouseClicked(event -> nextAction());
         this.buttonHBox.getChildren().add(nextMoveBtn);
         actionBtn.setOnMouseClicked(event -> onActionButtonClick());
+        nextMoveBtn.disableProperty().bind(showingAnimation);
         actionBtn.disableProperty().bindBidirectional(sourceOrTargetNull);
         zonesWithNeighbours = mapNeighboursStringMapToZones(mapLoaderService.getNeighboursMap());
         hoverableZones = zoneSquares;
@@ -113,9 +118,55 @@ public class MapController {
         HBox playerBoxLarge = buildAndGetPlayerHBoxBig(currPlayer);
         playerBoxLarge.setTranslateX((labelStackPane.getMaxWidth() - playerBoxLarge.getPrefWidth()) / 2.0d);
         playerBoxLarge.setTranslateY((labelStackPane.getMaxHeight() - playerBoxLarge.getPrefHeight()) / 2.0d);
-        KeyFrame showPlayerKf = new KeyFrame(Duration.seconds(1), event -> labelStackPane.getChildren().add(playerBoxLarge));
+        KeyFrame showPlayerKf = new KeyFrame(Duration.seconds(0), event -> labelStackPane.getChildren().add(playerBoxLarge));
         KeyFrame removePlayerKf = new KeyFrame(Duration.seconds(3), event -> labelStackPane.getChildren().remove(playerBoxLarge));
-        new Timeline(showPlayerKf, removePlayerKf).play();
+        Timeline highlightPlayerTl = new Timeline(showPlayerKf, removePlayerKf);
+        System.out.println("hightlight player large" + highlightPlayerTl);
+        playAnimation(highlightPlayerTl, true);
+    }
+
+    private void stopAnimation(Timeline tlPlaying) {
+        tlPlaying.stop();
+        // showingAnimation.set(false);
+    }
+
+    private void playAnimation(Timeline tlToPlay, boolean isBlocking) {
+        System.out.println("playing " + tlToPlay);
+        final EventHandler<ActionEvent> finishedPlayingAnimation = fin -> {
+          if (isBlocking) {
+              showingAnimation.set(false);
+          }
+          System.out.println("finished showing animation " + tlToPlay);
+          System.out.println("showing: " + showingAnimation.get());
+          tlToPlay.setOnFinished(null);
+        };
+        System.out.println(showingAnimation.get());
+        // if no animation is currently playing
+        if (!showingAnimation.get()) {
+            System.out.println("showing animation in if " + tlToPlay);
+            if (isBlocking) {
+                showingAnimation.set(true);
+            }
+            System.out.println("showing anim " + showingAnimation.get());
+            tlToPlay.setOnFinished(finishedPlayingAnimation);
+            tlToPlay.play();
+        } else {
+            final ChangeListener<Boolean> listener = new ChangeListener<Boolean>() {
+                @Override
+                public void changed(ObservableValue<? extends Boolean> obs, Boolean oldVal, Boolean newVal) {
+                    if (!newVal) {
+                        if (isBlocking) {
+                            showingAnimation.set(true);
+                        }
+                        tlToPlay.setOnFinished(finishedPlayingAnimation);
+                        System.out.println("showing animation in else");
+                        tlToPlay.play();
+                        showingAnimation.removeListener(this);
+                    }
+                }
+            };
+            showingAnimation.addListener(listener);
+        }
     }
 
     private void addPlayers() {
@@ -128,6 +179,7 @@ public class MapController {
 
         testBackend.getNextPlayer().addListener((obs, oldVal, newVal) -> {
             highlightCurrPlayerTile(oldVal.name(), newVal.name());
+            System.out.println("highlight");
             highlightCurrPlayerLarge(newVal);
         });
     }
@@ -156,7 +208,6 @@ public class MapController {
         playerBox.maxWidthProperty().bind(playerBox.prefWidthProperty());
         playerBox.setAlignment(Pos.TOP_RIGHT);
         playerBox.setStyle("-fx-border-width: 0.5px; -fx-border-color: black;");
-
         String imgName = player.name().toLowerCase();
         Image plrImg = new Image(getClass().getClassLoader().getResource(imgName + ".png").toExternalForm());
         ImageView plyrIV = new ImageView();
@@ -232,9 +283,9 @@ public class MapController {
         label.setTranslateY((labelStackPane.getMaxHeight()  - label.getPrefHeight()) / 2.0d);
         overlayStackPane.setStyle("-fx-background-color: black; -fx-opacity: 0.5;");
 
-        highlightClickableZonesTl.stop();
+        stopAnimation(highlightClickableZonesTl);
         removeAllOverlaidPixels();
-        int showActionChangeDurationSeconds = testBackend.getAction() == Action.DEFEND ? 3 : 0;
+        int showActionChangeDurationSeconds = 0; // testBackend.getAction() == Action.DEFEND ? 3 : 0;
         int removeActionChangeLabelDurationSeconds = showActionChangeDurationSeconds + 3;
         KeyFrame showActionChangeLabelKf = new KeyFrame(Duration.seconds(showActionChangeDurationSeconds), (event) -> this.labelStackPane.getChildren().add(label));
         KeyFrame removeActionChangeLabelKf = new KeyFrame(Duration.seconds(removeActionChangeLabelDurationSeconds), event -> {
@@ -251,7 +302,8 @@ public class MapController {
             }
         });
         Timeline actionChangeTl = new Timeline(showActionChangeLabelKf, removeActionChangeLabelKf);
-        actionChangeTl.play();
+        System.out.println("action change tl " + actionChangeTl);
+        playAnimation(actionChangeTl, true);
     }
 
     private void handleMapHover(MouseEvent mouseEvent) {
@@ -312,7 +364,7 @@ public class MapController {
     }
 
     private void highLightClickableZones() {
-        highlightClickableZonesTl.stop();
+        stopAnimation(highlightClickableZonesTl);
         ZoneColor currPlayerColor = testBackend.getCurrPlayer();
         Color mix = colorService.mixColors(neighbourOverlayColor, colorService.getColor(currPlayerColor.getColorAsHexString()));
         updateClickableZones();
@@ -320,7 +372,7 @@ public class MapController {
         KeyFrame removeHighlightedZonesKf = new KeyFrame(Duration.seconds(2), event -> removeAllOverlaidPixels());
         highlightClickableZonesTl = new Timeline(highlightZonesKf, removeHighlightedZonesKf);
         highlightClickableZonesTl.setCycleCount(30);
-        highlightClickableZonesTl.play();
+        playAnimation(highlightClickableZonesTl, false);
     }
 
     private void updateClickableZones() {
@@ -365,7 +417,7 @@ public class MapController {
         });
 
         Timeline reinforcementTl = new Timeline(waitingForDiceThrowKf, troopsReceivedKf, setTroopsKf, removeLabelKf);
-        reinforcementTl.play();
+        playAnimation(reinforcementTl, true);
     }
 
     private void reinforcementClickHandler(MouseEvent mouseEvent) {
@@ -374,7 +426,7 @@ public class MapController {
         int y = (int) mouseEvent.getY();
         ZoneSquare sqr = getZoneAtCoordinates(x, y);
         if (sqr == null || !clickableZones.contains(sqr)) return;
-        highlightClickableZonesTl.stop();
+        stopAnimation(highlightClickableZonesTl);
         removeAllOverlaidPixels();
         mapClickEnabled = false;
 
@@ -452,7 +504,7 @@ public class MapController {
             }
         });
         Timeline fightTl = new Timeline(waitingForDiceThrowKf, winnerKf, finishFightKf);
-        fightTl.play();
+        playAnimation(fightTl, true);
     }
 
     private void addPlayerColorsToZones() {
@@ -486,7 +538,7 @@ public class MapController {
 
         ZoneSquare sqr = getZoneAtCoordinates(x, y);
         if (sqr != null && sqr.getBorder() != null && clickableZones.contains(sqr)) {
-            highlightClickableZonesTl.stop();
+            stopAnimation(highlightClickableZonesTl);
             removeAllOverlaidPixels();
             List<Pixel> overlaidPixels = new ArrayList<>();
             if (source == null || sqr == source) {
