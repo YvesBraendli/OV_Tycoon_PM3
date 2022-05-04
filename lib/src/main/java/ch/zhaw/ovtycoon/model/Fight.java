@@ -14,13 +14,13 @@ public class Fight {
 	 * 
 	 * @throws IllegalArgumentException	if one of the zones is null
 	 */
-	public Fight(Zone attackingZone, Zone defendingZone, Dice dice) {
+	public Fight(Zone attackingZone, Zone defendingZone) {
 		if(attackingZone == null || defendingZone == null) {
 			throw new IllegalArgumentException();
 		}
 		this.attackingZone = attackingZone;
 		this.defendingZone = defendingZone;
-		this.dice = dice;
+		dice = new Dice();
 	}
 	
 	/**

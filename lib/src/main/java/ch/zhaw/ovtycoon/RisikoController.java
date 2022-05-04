@@ -23,8 +23,8 @@ public class RisikoController{
 	}
 
     
-    public int[][] getLastRolledDie(){
-    	return game.getLastRolledDie();
+    public int[][] runFight(String attacker, String defender, int numOfAttacker, int numOfDefender){
+    	return game.runFight(game.getZone(attacker), game.getZone(defender), numOfAttacker, numOfDefender);
     }
     
     public PlayerColor getWinner() {

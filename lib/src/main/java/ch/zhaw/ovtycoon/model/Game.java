@@ -15,7 +15,6 @@ public class Game {
 	private HashMap<Zone,Player> zoneOwner = new HashMap<Zone,Player>();
 	private Player[] players;
 	private int currentPlayerIndex;
-	private int[][] lastRolledDie;
 	private TroopHandler troopHandler;
 
 	/**
@@ -31,17 +30,20 @@ public class Game {
 		//TODO get player color and name
 	}
 	
-
-	
 	/**
-	 * starts the game
+	 * Runs a fight between two zones
+	 * 
+	 * @param attacker Zone which started the attack
+	 * @param defender Zone which defends
+	 * @param numOfAttackers 
+	 * @param numOfDefenders
+	 * @return a 2d array containing the defenders roll in the first column and the attackers in the second
 	 */
-	public void start() {
-		//TODO implement game flow, update JavaDoc
-		
+	public int[][] runFight(Zone attacker, Zone defender, int numOfAttackers, int numOfDefenders) {
+		Fight fight = new Fight(attacker, defender);
+		return fight.fight(numOfAttackers, numOfDefenders);
 	}
-
-
+	
 	
 	/**
 	 * This method is responsible for the initial troop setting, which starts at the beginning of the game.
@@ -70,6 +72,10 @@ public class Game {
 		return winner;
 	}
 	
+	/**
+	 * Checks if a winner exists
+	 * @return true if a player one, false if not
+	 */
 	public boolean hasWinner() {
 		if(getWinner() != null) return true;
 		return false;
@@ -202,14 +208,5 @@ public class Game {
 			}
 		}
 		return null;
-	}
-
-	
-	/**
-	 * Returs the last set of rolled die
-	 * @return a 2d array containing the defenders roll in the first column and the attackers in the second
-	 */
-	public int[][] getLastRolledDie(){
-		return lastRolledDie;
 	}
 }
