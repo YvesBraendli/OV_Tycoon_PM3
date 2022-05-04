@@ -17,11 +17,6 @@ public class Game {
     private TroopHandler troopHandler;
     private ArrayList<Zone> movementNeighbours = new ArrayList<Zone>();
 
-    public static void main(String[] args) {
-        Game game = new Game();
-        game.initGame(5);
-    }
-
     /**
      * Initializes the gameMap and creates players with their corresponding colors
      *
