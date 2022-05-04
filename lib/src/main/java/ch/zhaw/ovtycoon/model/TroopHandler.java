@@ -13,34 +13,15 @@ public class TroopHandler {
     }
 
     /**
-     * This method moves units from a player from one zone of the gameMap to another. It checks,
-     * if the player is the zone owner of both zones, if there are enough troop units in the
-     * "RemoveUnitsFrom" zone and also if there is an valid connection between those two zones.
-     * If the tests are valid, the method removes the troop units from the desired zone of the player
-     * and ads the same amount to the target zone.
+     * This method moves units from a player from one zone of the gameMap to another.
      *
      * @param zoneToRemoveUnitsFrom    The zone, from which the troop units needs to be removed.
      * @param zoneToMoveUnitsTo        The zone, to which the player desires to move his troop units.
-     * @param player                   The instance of the current player, which wants to move his troops.
      * @param numberOfTroopUnitsToMove The number of troops, the player desires to move to another zone.
-     * @param game                     The instance of the current game.
-     * @return true, if the movement of the troop units passed successfully
      */
-    public boolean moveUnits(Zone zoneToRemoveUnitsFrom, Zone zoneToMoveUnitsTo, Player player, int numberOfTroopUnitsToMove, Game game) {
-        boolean successful = false;
-        if (moveIsValid(zoneToRemoveUnitsFrom, zoneToMoveUnitsTo, player, numberOfTroopUnitsToMove, game)) {
-            successful = true;
+    public void moveUnits(Zone zoneToRemoveUnitsFrom, Zone zoneToMoveUnitsTo,int numberOfTroopUnitsToMove) {
             zoneToMoveUnitsTo.setTroops(zoneToMoveUnitsTo.getTroops() + numberOfTroopUnitsToMove);
             zoneToRemoveUnitsFrom.setTroops(zoneToRemoveUnitsFrom.getTroops() - numberOfTroopUnitsToMove);
-        }
-        return successful;
-    }
-
-    private boolean moveIsValid(Zone zoneToRemoveUnitsFrom, Zone zoneToMoveUnitsTo, Player player, int numberOfTroopUnitsToMove, Game game) {
-        return game.getZoneOwner(zoneToMoveUnitsTo) == player
-                && game.getZoneOwner(zoneToRemoveUnitsFrom) == player
-                && (zoneToRemoveUnitsFrom.getTroops() >= numberOfTroopUnitsToMove + Config.MIN_NUMBER_OF_TROOPS_IN_ZONE)
-                && zonesHaveDirectConnection(zoneToRemoveUnitsFrom, zoneToMoveUnitsTo, game, player);
     }
 
     /**
@@ -51,23 +32,4 @@ public class TroopHandler {
     public int getNumberOfTroopsPerPlayer() {
         return numberOfTroopsPerPlayer;
     }
-
-    private boolean zonesHaveDirectConnection(Zone originZone, Zone targetZone, Game game, Player player) {
-        originZone.setAlreadyVisited(true);
-        if (originZone == targetZone) {
-            return true;
-        } else {
-            for (Zone adjacentZone : originZone.getNeighbours()) {
-                if (!adjacentZone.getAlreadyVisited()
-                        && game.getZoneOwner(adjacentZone) == player) {
-                    if (zonesHaveDirectConnection(adjacentZone, targetZone, game, player)) {
-                        return true;
-                    }
-                }
-            }
-        }
-        originZone.setAlreadyVisited(false);
-        return false;
-    }
-
 }

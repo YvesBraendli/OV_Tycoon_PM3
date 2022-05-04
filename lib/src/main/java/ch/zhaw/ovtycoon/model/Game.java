@@ -58,25 +58,14 @@ public class Game {
         return wasSuccessfull;
     }
 
+    /**
+     * Instantiates a new object of the neighbours Array List and fills it with the valid zones.
+     * @param originZone The Zone, from which the player wants to move his troop units away
+     * @param player The player instance of the current player.
+     */
     public void createMovementNeighbourList(Zone originZone, Player player) {
         movementNeighbours = new ArrayList<>();
         createNeighboursList(originZone, player);
-    }
-
-    private void createNeighboursList(Zone originZone, Player player) {
-        originZone.setAlreadyVisited(true);
-        if (originZone.getAlreadyVisited()) {
-            movementNeighbours.add(originZone);
-        }
-        for (Zone adjacentZone : originZone.getNeighbours()) {
-            if (!adjacentZone.getAlreadyVisited()
-                    && getZoneOwner(adjacentZone) == player) {
-                createNeighboursList(adjacentZone, player);
-            }
-        }
-        if (originZone.getAlreadyVisited()) {
-            originZone.setAlreadyVisited(false);
-        }
     }
 
     /**
@@ -142,5 +131,21 @@ public class Game {
             }
         }
         return null;
+    }
+
+    private void createNeighboursList(Zone originZone, Player player) {
+        originZone.setAlreadyVisited(true);
+        if (originZone.getAlreadyVisited()) {
+            movementNeighbours.add(originZone);
+        }
+        for (Zone adjacentZone : originZone.getNeighbours()) {
+            if (!adjacentZone.getAlreadyVisited()
+                    && getZoneOwner(adjacentZone) == player) {
+                createNeighboursList(adjacentZone, player);
+            }
+        }
+        if (originZone.getAlreadyVisited()) {
+            originZone.setAlreadyVisited(false);
+        }
     }
 }
