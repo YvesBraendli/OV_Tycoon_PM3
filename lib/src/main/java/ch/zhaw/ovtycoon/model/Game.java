@@ -30,15 +30,14 @@ public class Game {
 		//TODO get player color and name
 	}
 	
-	/**
-	 * Runs a fight between two zones
-	 * 
-	 * @param attacker Zone which started the attack
-	 * @param defender Zone which defends
-	 * @param numOfAttackers 
-	 * @param numOfDefenders
-	 * @return a 2d array containing the defenders roll in the first column and the attackers in the second
-	 */
+    /**
+     * starts a fight, between two zones
+     * @param attacker - attacking zone
+     * @param defender - defending zone
+     * @param numOfAttacker - number of troops, which will attack
+     * @param numOfDefender - number of troops, which will defend
+     * @return a 2d array containing the defenders roll in the first column and the attackers in the second
+     */
 	public int[][] runFight(Zone attacker, Zone defender, int numOfAttackers, int numOfDefenders) {
 		Fight fight = new Fight(attacker, defender);
 		return fight.fight(numOfAttackers, numOfDefenders);
@@ -61,7 +60,7 @@ public class Game {
 	
 	/**
 	 * Checks for a winner. A winner is defined by owning all zones
-	 * @return
+	 * @return Player which won
 	 */
 	public Player getWinner() {
 		Player winner = zoneOwner.get(gameMap.get(RegionName.Oberland).get(0));
@@ -80,10 +79,11 @@ public class Game {
 		if(getWinner() != null) return true;
 		return false;
 	}
+	
 	/**
 	 * Checks if a player owns all zones in a region
-	 * @param region
-	 * @return Player
+	 * @param region 
+	 * @return Player the owner of the region or null
 	 */
 	public Player getRegionOwner(RegionName region) {
 		Player regionOwner = zoneOwner.get(gameMap.get(region).get(0));
@@ -95,10 +95,17 @@ public class Game {
 		return regionOwner;
 	}
 	
+	/**
+	 * Gets current player
+	 * @return the current player (crazy i know)
+	 */
 	public Player getCurrentPlayer() {
 		return players[currentPlayerIndex];
 	}
 	
+	/**
+	 * Switches to next player in the list and to the first if its currently the last players turn
+	 */
 	public void switchToNextPlayer() {
 		currentPlayerIndex = currentPlayerIndex+1 == players.length ? 0 : currentPlayerIndex++;
 	}
@@ -131,6 +138,11 @@ public class Game {
 		return (zoneOwner.get(zone) == player);
 	}
 	
+	/**
+	 * Searches for all zones which are oned by a specific player
+	 * @param player to search zones for
+	 * @return ArrayList of the zones owned by the player
+	 */
 	public ArrayList<Zone> getZonesOwnedbyPlayer(Player player){
 		ArrayList<Zone> zonesOwnedByPlayer = new ArrayList<Zone>();
 		for(Zone zone: zoneOwner.keySet()) {
@@ -141,8 +153,15 @@ public class Game {
 		return zonesOwnedByPlayer;
 	}
 	
-	public ArrayList<Zone> getAttackableZones(Zone zone, Player player){
+	/**
+	 * Gets zones which are classified as "attackable"
+	 * An attackable zone needs to be next to a zone owned by the player and must not be owned by the player
+	 * @param zone the attacker zone
+	 * @return ArrayList of the zones that can be attacked from the current zone
+	 */
+	public ArrayList<Zone> getAttackableZones(Zone zone){
 		if(zone.getTroops()<1) return null;
+		Player player = getZoneOwner(zone);
 		ArrayList<Zone> zonesOwnedByPlayer = getZonesOwnedbyPlayer(player);
 		ArrayList<Zone> neighbourZones = zone.getNeighbours();
 		neighbourZones.removeAll(zonesOwnedByPlayer);
@@ -151,6 +170,13 @@ public class Game {
 		
 	}
 	
+	/**
+	 * Gets zones which can be used to attack. 
+	 * This is defined by having more than one troop on the zone
+	 * and being next to a zone which is not owned by the player
+	 * @param player to check for
+	 * @return ArrayList of possible attacking zones
+	 */
 	public ArrayList<Zone> getPossibleAttackerZones(Player player){
 		ArrayList<Zone> zonesOwnedByPlayer = getZonesOwnedbyPlayer(player);
 		ArrayList<Zone> possibleAttackerZones = new ArrayList<Zone>();
@@ -166,6 +192,13 @@ public class Game {
 		return possibleAttackerZones;
 	}
 	
+	/**
+	 * Gets zones which have movable troops
+	 * zones have movable troops if they have more than one troop on them 
+	 * and have a neighborzone which is owned by the same player
+	 * @param player to check for
+	 * @return ArrayList of zones with movable troops
+	 */
 	public ArrayList<Zone> getZonesWithMovableTroops(Player player) {
 		ArrayList<Zone> zonesOwnedByPlayer = getZonesOwnedbyPlayer(player);
 		ArrayList<Zone> zonesWithMovableTroops = new ArrayList<Zone>();
@@ -179,9 +212,15 @@ public class Game {
 		return zonesWithMovableTroops;
 	}
 	
+	/**
+	 * gets neighbours of zone
+	 * @param zone
+	 * @return ArrayList with neighbours
+	 */
 	public ArrayList<Zone> getZoneNeighbours(Zone zone){
 		return zone.getNeighbours();
 	}
+	
 	/**
 	 * Returns a zone object by name
 	 * @param zoneName enum
