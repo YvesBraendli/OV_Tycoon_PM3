@@ -65,7 +65,7 @@ public class Fight {
 		
 		int[][] rolledDie = new int[2][(defendingTroops > attackingTroops ? defendingTroops : attackingTroops)];
 		for(int i = 0; i<defendingTroops;i++) { rolledDie[0][i] = defendingDice[i];}
-		for(int i = 0; i<attackingTroops;i++) { rolledDie[0][i] = attackingDice[i];}
+		for(int i = 0; i<attackingTroops;i++) { rolledDie[1][i] = attackingDice[i];}
 		return rolledDie;
 	}
 

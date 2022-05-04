@@ -21,12 +21,12 @@ public class FightTests {
 		attackingZone.setTroops(2);
 		defendingZone = new Zone(ZoneName.Zone110.toString());
 		defendingZone.setTroops(1);
-		testee = new Fight(attackingZone, defendingZone, dice);
+		testee = new Fight(attackingZone, defendingZone);
 	}
 	
 	@Test
 	public void constructor_attackingZoneArgumentNull_throwException() {
-		assertThrows(IllegalArgumentException.class, () -> new Fight(null, defendingZone, dice));	
+		assertThrows(IllegalArgumentException.class, () -> new Fight(null, defendingZone));	
 	}
 	
 	@Test
