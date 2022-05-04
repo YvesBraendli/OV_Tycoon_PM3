@@ -15,7 +15,7 @@ public class Game {
     private HashMap<Zone, Player> zoneOwner = new HashMap<Zone, Player>();
     private Player[] players;
     private TroopHandler troopHandler;
-    private ArrayList<Zone> movementNeighbours;
+    private ArrayList<Zone> movementNeighbours = new ArrayList<Zone>();
 
     public static void main(String[] args) {
         Game game = new Game();
@@ -35,7 +35,6 @@ public class Game {
         troopHandler = new TroopHandler(playerAmount);
         //TODO get player color and name
     }
-
 
     /**
      * starts the game
@@ -59,13 +58,21 @@ public class Game {
     }
 
     /**
-     * Instantiates a new object of the neighbours Array List and fills it with the valid zones.
+     * Instantiates a new object of the neighbours Array List, fills it with all the zone, in which a player can move
+     * his troops units from the origin zone (If the zone belongs to him) and returns this list.
      * @param originZone The Zone, from which the player wants to move his troop units away
      * @param player The player instance of the current player.
+     * @return A list, in which all the possible movement zones for a player and the specified origin zone are contained.
      */
-    public void createMovementNeighbourList(Zone originZone, Player player) {
+    public ArrayList<Zone> getPossibleMovementNeighbours(Zone originZone, Player player) {
         movementNeighbours = new ArrayList<>();
         createNeighboursList(originZone, player);
+        for(int i=0; i<movementNeighbours.size();i++){
+            if(movementNeighbours.get(i)==originZone){
+                movementNeighbours.remove(i);
+            }
+        }
+        return movementNeighbours;
     }
 
     /**
@@ -135,17 +142,25 @@ public class Game {
 
     private void createNeighboursList(Zone originZone, Player player) {
         originZone.setAlreadyVisited(true);
-        if (originZone.getAlreadyVisited()) {
-            movementNeighbours.add(originZone);
-        }
         for (Zone adjacentZone : originZone.getNeighbours()) {
             if (!adjacentZone.getAlreadyVisited()
                     && getZoneOwner(adjacentZone) == player) {
                 createNeighboursList(adjacentZone, player);
             }
         }
-        if (originZone.getAlreadyVisited()) {
+        if (originZone.getAlreadyVisited()&&!alreadyInList(originZone)) {
             originZone.setAlreadyVisited(false);
+            movementNeighbours.add(originZone);
         }
+    }
+
+    private boolean alreadyInList (Zone zone){
+        boolean alreadyAdded = false;
+        for (int i = 0;i<movementNeighbours.size();i++){
+            if(movementNeighbours.get(i)==zone){
+                alreadyAdded=true;
+            }
+        }
+        return alreadyAdded;
     }
 }
