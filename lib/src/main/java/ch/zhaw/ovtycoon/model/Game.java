@@ -15,7 +15,6 @@ public class Game {
     private HashMap<Zone, Player> zoneOwner = new HashMap<Zone, Player>();
     private Player[] players;
     private TroopHandler troopHandler;
-    private ArrayList<Zone> movementNeighbours = new ArrayList<Zone>();
 
     /**
      * Initializes the gameMap and creates players with their corresponding colors
@@ -60,8 +59,8 @@ public class Game {
      * @return A list, in which all the possible movement zones for a player and the specified origin zone are contained.
      */
     public ArrayList<Zone> getPossibleMovementNeighbours(Zone originZone, Player player) {
-        movementNeighbours = new ArrayList<>();
-        createNeighboursList(originZone, player);
+        ArrayList<Zone> movementNeighbours = new ArrayList<Zone>();
+        createNeighboursList(originZone, player, movementNeighbours);
         for(int i=0; i<movementNeighbours.size();i++){
             if(movementNeighbours.get(i)==originZone){
                 movementNeighbours.remove(i);
@@ -135,21 +134,21 @@ public class Game {
         return null;
     }
 
-    private void createNeighboursList(Zone originZone, Player player) {
+    private void createNeighboursList(Zone originZone, Player player, ArrayList<Zone> movementNeighbours) {
         originZone.setAlreadyVisited(true);
         for (Zone adjacentZone : originZone.getNeighbours()) {
             if (!adjacentZone.getAlreadyVisited()
                     && getZoneOwner(adjacentZone) == player) {
-                createNeighboursList(adjacentZone, player);
+                createNeighboursList(adjacentZone, player, movementNeighbours);
             }
         }
-        if (originZone.getAlreadyVisited()&&!alreadyInList(originZone)) {
+        if (originZone.getAlreadyVisited()&&!alreadyInList(originZone, movementNeighbours)) {
             originZone.setAlreadyVisited(false);
             movementNeighbours.add(originZone);
         }
     }
 
-    private boolean alreadyInList (Zone zone){
+    private boolean alreadyInList (Zone zone, ArrayList<Zone> movementNeighbours){
         boolean alreadyAdded = false;
         for (int i = 0;i<movementNeighbours.size();i++){
             if(movementNeighbours.get(i)==zone){
