@@ -26,7 +26,7 @@ public class MapLoaderService {
     // startX, offsetX, startY, offsetY, color, name
     private static final Pattern ZONE_SQUARE_DATA_PATTERN = Pattern.compile("sX=([0-9]+), oX=([0-9]+), sY=([0-9]+), oY=([0-9]+), color=([^,]+), name=([^,]+), center=\\(([0-9]+,[0-9]+)\\);");
     private static final int DATA_GROUP_COUNT = 7;
-    private static final String ZONES_TXT_PATH_POSTFIX = "\\src\\main\\resources\\zones.txt";
+    private static final String ZONES_TXT_PATH_POSTFIX = "/src/main/resources/zones.txt";
 
     private final PixelReader imagePixelReader;
     private final ColorService colorService;
@@ -42,7 +42,7 @@ public class MapLoaderService {
         try {
             String dir = System.getProperty("user.dir");
             if (!dir.contains("lib")) {
-                dir += "\\lib";
+                dir += "/lib";
             }
             String zonesTxtPath = dir + ZONES_TXT_PATH_POSTFIX;
             File zones = new File(zonesTxtPath);
@@ -122,7 +122,7 @@ public class MapLoaderService {
         try {
             String dir = System.getProperty("user.dir");
             if (!dir.contains("lib")) {
-                dir += "\\lib";
+                dir += "/lib";
             }
             String nTxtPath = dir + ZONES_TXT_PATH_POSTFIX;
             nTxtPath = nTxtPath.replace("zones.txt", "neighbours.txt");
