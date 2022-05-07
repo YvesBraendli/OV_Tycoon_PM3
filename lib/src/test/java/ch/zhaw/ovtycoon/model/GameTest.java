@@ -8,6 +8,7 @@ import org.junit.Test;
 import ch.zhaw.ovtycoon.Config.RegionName;
 import ch.zhaw.ovtycoon.Config.ZoneName;
 
+import java.util.ArrayList;
 
 
 public class GameTest {
@@ -22,7 +23,50 @@ public class GameTest {
 		a = new Player("a");
 		b = new Player("b");
 	}
-	
+
+	@Test
+	public void getNeighboursList_multipleNeighbours(){
+		//arrange
+		testee.setZoneOwner(a, testee.getZone("Zone121"));
+		testee.setZoneOwner(a, testee.getZone("Zone140"));
+		testee.setZoneOwner(a, testee.getZone("Zone141"));
+		testee.setZoneOwner(a, testee.getZone("Zone142"));
+		testee.setZoneOwner(a, testee.getZone("Zone143"));
+		testee.setZoneOwner(a, testee.getZone("Zone131"));
+		testee.setZoneOwner(a, testee.getZone("Zone133"));
+		testee.setZoneOwner(a, testee.getZone("Zone172"));
+
+		testee.setZoneOwner(b, testee.getZone("Zone130"));
+		testee.setZoneOwner(b, testee.getZone("Zone132"));
+
+		//act
+		ArrayList<Zone> testZone = testee.getPossibleMovementNeighbours(testee.getZone("Zone121"),a);
+		boolean checkNeighboursSetRight = allNeighboursCorrect(createNeighboursManually(),testZone);
+
+		//assert
+		assertTrue(testZone.size()==7);
+		assertTrue(checkNeighboursSetRight);
+	}
+
+	@Test
+	public void getNeighboursList_noNeighbours(){
+		//arrange
+		testee.setZoneOwner(a, testee.getZone("Zone111"));
+
+		testee.setZoneOwner(b, testee.getZone("Zone117"));
+		testee.setZoneOwner(b, testee.getZone("Zone112"));
+		testee.setZoneOwner(b, testee.getZone("Zone121"));
+		testee.setZoneOwner(b, testee.getZone("Zone110"));
+		testee.setZoneOwner(b, testee.getZone("Zone154"));
+
+		//act
+		ArrayList<Zone> testZone = testee.getPossibleMovementNeighbours(testee.getZone("Zone111"),a);
+
+		//assert
+		assertTrue(testZone.size()==0);
+	}
+
+
 	@Test
 	public void getRegionOwner_noOwner() {
 		//Arrange
@@ -180,6 +224,34 @@ public class GameTest {
 		
 		//Assert
 		assertTrue(winner == a);
+	}
+
+	private ArrayList<Zone> createNeighboursManually(){
+		ArrayList<Zone> neighbours = new ArrayList<>();
+		neighbours.add(testee.getZone("Zone140"));
+		neighbours.add(testee.getZone("Zone141"));
+		neighbours.add(testee.getZone("Zone142"));
+		neighbours.add(testee.getZone("Zone143"));
+		neighbours.add(testee.getZone("Zone131"));
+		neighbours.add(testee.getZone("Zone133"));
+		neighbours.add(testee.getZone("Zone172"));
+		return neighbours;
+	}
+
+	private boolean allNeighboursCorrect(ArrayList<Zone> neighboursManually,ArrayList<Zone> neighboursAutomatic){
+		boolean hasNoMatch = false;
+		for (int i=0; i<neighboursManually.size();i++){
+			boolean flag = false;
+			for (int j=0; j<neighboursAutomatic.size();j++){
+				if(neighboursManually.get(i)==neighboursAutomatic.get(j)){
+					flag = true;
+				}
+			}
+			if(flag){
+				hasNoMatch=true;
+			}
+		}
+		return hasNoMatch;
 	}
 	
 }

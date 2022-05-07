@@ -248,4 +248,48 @@ public class Game {
 		}
 		return null;
 	}
+
+
+    /**
+     * Instantiates a new object of the neighbours Array List, fills it with all the zone, in which a player can move
+     * his troops units from the origin zone (If the zone belongs to him) and returns this list.
+     * @param originZone The Zone, from which the player wants to move his troop units away
+     * @param player The player instance of the current player.
+     * @return A list, in which all the possible movement zones for a player and the specified origin zone are contained.
+     */
+    public ArrayList<Zone> getPossibleMovementNeighbours(Zone originZone, Player player) {
+        ArrayList<Zone> movementNeighbours = new ArrayList<Zone>();
+        createNeighboursList(originZone, player, movementNeighbours);
+        for(int i=0; i<movementNeighbours.size();i++){
+            if(movementNeighbours.get(i)==originZone){
+                movementNeighbours.remove(i);
+            }
+        }
+        return movementNeighbours;
+    }
+
+    private void createNeighboursList(Zone originZone, Player player, ArrayList<Zone> movementNeighbours) {
+        originZone.setAlreadyVisited(true);
+        for (Zone adjacentZone : originZone.getNeighbours()) {
+            if (!adjacentZone.getAlreadyVisited()
+                    && getZoneOwner(adjacentZone) == player) {
+                createNeighboursList(adjacentZone, player, movementNeighbours);
+            }
+        }
+        if (originZone.getAlreadyVisited()&&!alreadyInList(originZone, movementNeighbours)) {
+            originZone.setAlreadyVisited(false);
+            movementNeighbours.add(originZone);
+        }
+    }
+
+    private boolean alreadyInList (Zone zone, ArrayList<Zone> movementNeighbours){
+        boolean alreadyAdded = false;
+        for (int i = 0;i<movementNeighbours.size();i++){
+            if(movementNeighbours.get(i)==zone){
+                alreadyAdded=true;
+            }
+        }
+        return alreadyAdded;
+    }
+
 }
