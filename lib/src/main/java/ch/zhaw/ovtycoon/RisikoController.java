@@ -171,6 +171,17 @@ public class RisikoController{
     	return translateZoneListToNameList(game.getZoneNeighbours(game.getZone(zoneName)));
     }
     
+    /**
+     * Instantiates a new object of the neighbours Array List, fills it with all the zone, in which a player can move
+     * his troops units from the origin zone (If the zone belongs to him) and returns this list.
+     * @param zoneName The Zone, from which the player wants to move his troop units away
+     * @param playerColor The player instance of the current player.
+     * @return A list, in which all the possible movement zones for a player and the specified origin zone are contained.
+     */
+    public ArrayList<String> getPossibleMovementNeighbours(String zoneName, PlayerColor playerColor) {
+    	return translateZoneListToNameList(game.getPossibleMovementNeighbours(game.getZone(zoneName),game.getPlayer(playerColor)));
+    }
+    
     private ArrayList<String> translateZoneListToNameList(ArrayList<Zone> zoneList){
     	ArrayList<String> zoneNameList = new ArrayList<String>();
     	for(Zone zone: zoneList) {
@@ -178,6 +189,8 @@ public class RisikoController{
     	}
     	return zoneNameList;
     }
+    
+    
     
     
     
