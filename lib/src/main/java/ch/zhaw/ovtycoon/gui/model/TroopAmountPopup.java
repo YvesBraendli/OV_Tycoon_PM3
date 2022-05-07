@@ -49,15 +49,11 @@ public class TroopAmountPopup extends VBox {
         getChildren().addAll(troopAmountLabel, troopAmountTextField, confirmBtn);
     }
 
-    public void setMaxTrpAmt(int maxTrpAmt) {
+    public void reconfigure(int maxTrpAmt, String labelText) {
         this.maxTrpAmt.setValue(maxTrpAmt);
+        this.labelText = labelText;
         troopAmountLabel.setText(String.format(labelText, minTrpAmt, maxTrpAmt));
         troopAmountTextField.setText(Integer.toString(minTrpAmt)); // reset value in text field to min amount
-    }
-
-    public void setLabelText(String labelText) {
-        this.labelText = labelText;
-        troopAmountLabel.setText(String.format(labelText, minTrpAmt, maxTrpAmt.get()));
     }
 
     public Integer getTroopAmount() {

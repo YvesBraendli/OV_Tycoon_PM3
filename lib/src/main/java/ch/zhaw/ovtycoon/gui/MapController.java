@@ -436,8 +436,7 @@ public class MapController {
                 } else {
                     promptingDefender.set(true);
                     attackerTroops.set(popup.getTroopAmount());
-                    popup.setMaxTrpAmt(2);
-                    popup.setLabelText(defenderText);
+                    popup.reconfigure(2, defenderText);
                 }
             }
         });
