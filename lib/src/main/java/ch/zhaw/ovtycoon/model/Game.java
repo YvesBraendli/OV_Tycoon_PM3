@@ -19,6 +19,7 @@ public class Game {
 	private int currentPlayerIndex;
 	private TroopHandler troopHandler;
 	private ObjectProperty<PlayerColor> eliminatedPlayer;
+	private ObjectProperty<PlayerColor> newRegionOwner;
 
 	/**
 	 * Initializes the gameMap and creates players with their corresponding colors
@@ -31,21 +32,35 @@ public class Game {
 		players = new Player[playerAmount];
 		troopHandler = new TroopHandler(playerAmount);
 		eliminatedPlayer = new SimpleObjectProperty<PlayerColor>(null);
+		newRegionOwner = new SimpleObjectProperty<PlayerColor>(null);
 		//TODO get player color and name
 	}
 	
     /**
      * starts a fight, between two zones
+     * After the fight a zone gets reassigned if the defender does not have any more troops stationed.
+     * Additionally it gets checked if the defender was eliminated and if the attacker now owns a new region.
+     * 
      * @param attacker - attacking zone
      * @param defender - defending zone
      * @param numOfAttacker - number of troops, which will attack
      * @param numOfDefender - number of troops, which will defend
-     * @return a 2d array containing the defenders roll in the first column and the attackers in the second
+     * @return a Data Transfer Object (DTO) of the rolls made
      */
 	public DiceRoll runFight(Zone attacker, Zone defender, int numOfAttackers, int numOfDefenders) {
 		Fight fight = new Fight(attacker, defender);
 		DiceRoll diceRoll = fight.fight(numOfAttackers, numOfDefenders);
-		tryEliminatePlayer(getZoneOwner(defender));
+		if(defender.getTroops() == 0) {
+			
+			tryEliminatePlayer(getZoneOwner(defender));
+			Player attackingPlayer = getZoneOwner(attacker);
+			setZoneOwner(attackingPlayer, defender);
+			defender.setTroops(numOfAttackers); //TODO possible bug fix in fight necessary decreasing troop numbers of zones
+			
+			if(getRegionOwner(getRegionOfZone(defender)) == attackingPlayer) {
+				setNewRegionOwner(attackingPlayer);
+			}
+		}
 		return diceRoll;
 	}
 	
@@ -99,6 +114,20 @@ public class Game {
 				return null;
 		}
 		return regionOwner;
+	}
+	
+	/**
+	 * Returns the region name which contains a specific zone
+	 * @param zone
+	 * @return region name of region which contains zone
+	 */
+	public RegionName getRegionOfZone(Zone zone) {
+		for(Entry<RegionName,ArrayList<Zone>> region : gameMap.entrySet()) {
+			if(region.getValue().contains(zone)){
+				return region.getKey();
+			}
+		}
+		return null;
 	}
 	
 	/**
@@ -326,14 +355,21 @@ public class Game {
     
     public PlayerColor getEliminatedPlayer() {
     	return eliminatedPlayer.get();
-    }
-    
+    }   
     public ObjectProperty<PlayerColor> getEliminiatedPlayerProperty() {
     	return eliminatedPlayer;
-    }
-    
+    }   
     public void setEliminiatedPlayer(Player player) {
     	eliminatedPlayer.set(player.getColor());
     }
 
+    public PlayerColor getNewRegionOwner() {
+    	return newRegionOwner.get();
+    }
+    public ObjectProperty<PlayerColor> getNewRegionOwnerProperty(){
+    	return newRegionOwner;
+    }
+    public void setNewRegionOwner(Player player) {
+    	newRegionOwner.set(player.getColor());
+    }
 }

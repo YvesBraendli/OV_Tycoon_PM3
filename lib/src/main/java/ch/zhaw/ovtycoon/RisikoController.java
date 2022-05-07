@@ -10,6 +10,7 @@ import ch.zhaw.ovtycoon.model.Game;
 import ch.zhaw.ovtycoon.model.Player;
 import ch.zhaw.ovtycoon.model.Zone;
 import javafx.application.Application;
+import javafx.beans.property.ObjectProperty;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
@@ -33,6 +34,9 @@ public class RisikoController{
 
     /**
      * starts a fight, between two zones
+     * After the fight a zone gets reassigned if the defender does not have any more troops stationed.
+     * Additionally it gets checked if the defender was eliminated and if the attacker now owns a new region.
+     * 
      * @param attacker - attacking zone
      * @param defender - defending zone
      * @param numOfAttacker - number of troops, which will attack
@@ -181,6 +185,22 @@ public class RisikoController{
      */
     public ArrayList<String> getPossibleMovementNeighbours(String zoneName, PlayerColor playerColor) {
     	return translateZoneListToNameList(game.getPossibleMovementNeighbours(game.getZone(zoneName),game.getPlayer(playerColor)));
+    }
+    
+    /**
+     * Gets the eliminated player property to implement a listener.
+     * The property changes if after a fight a player does not own any more zones
+     */
+    public ObjectProperty<PlayerColor> getEliminatedPlayerProperty(){
+    	return game.getEliminiatedPlayerProperty();
+    }
+    
+    /**
+     * Gets the new region owner property to implement a listener.
+     * The property changes if after a fight a player owns a new region.
+     */
+    public ObjectProperty<PlayerColor> getNewRegionOwnerProperty(){
+    	return game.getEliminiatedPlayerProperty();
     }
     
     private ArrayList<String> translateZoneListToNameList(ArrayList<Zone> zoneList){
