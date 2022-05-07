@@ -1,12 +1,14 @@
 package ch.zhaw.ovtycoon.model;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Before;
 import org.junit.Test;
 
+import ch.zhaw.ovtycoon.Config.PlayerColor;
 import ch.zhaw.ovtycoon.Config.RegionName;
-import ch.zhaw.ovtycoon.Config.ZoneName;
 
 import java.util.ArrayList;
 
@@ -15,13 +17,28 @@ public class GameTest {
 	private Game testee;
 	private Player a;
 	private Player b;
+	private Player c;
+	private Player[] players;
 	
 	@Before
 	public void init() {
 		testee = new Game();
-		testee.initGame(2);
+		testee.initGame(3);
+		initPlayer();
+	}
+	
+	private void initPlayer() {
 		a = new Player("a");
 		b = new Player("b");
+		c = new Player("c");
+		a.setColor(PlayerColor.BLACK);
+		b.setColor(PlayerColor.BLUE);
+		c.setColor(PlayerColor.RED);
+		players = new Player[3];
+		players[0] = a;
+		players[1] = b;
+		players[2] = c;
+		testee.setPlayerList(players);
 	}
 
 	@Test
@@ -82,7 +99,7 @@ public class GameTest {
 		//Act
 		Player owner = testee.getRegionOwner(RegionName.MeilenZurich);
 		//Assert
-		assertTrue(owner == null);
+		assertEquals(owner, null);
 		
 	}
 	
@@ -101,7 +118,7 @@ public class GameTest {
 		//Act
 		Player owner = testee.getRegionOwner(RegionName.MeilenZurich);
 		//Assert
-		assertTrue(a == owner);
+		assertEquals(a, owner);
 		
 	}
 	
@@ -163,7 +180,7 @@ public class GameTest {
 		Player winner = testee.getWinner();
 		
 		//Assert
-		assertTrue(winner == null);
+		assertEquals(winner, null);
 	}
 	
 	@Test
@@ -223,8 +240,428 @@ public class GameTest {
 		Player winner = testee.getWinner();
 		
 		//Assert
-		assertTrue(winner == a);
+		assertEquals(winner, a);
 	}
+
+	@Test
+	public void switchToNextPlayer_nextPlayerInQueueActive() {	
+		//Act
+		boolean retVal = testee.switchToNextPlayer();
+		
+		//Assert
+		assertEquals(testee.getCurrentPlayer(), b);
+		assertTrue(retVal);
+		
+	}
+	
+	@Test
+	public void switchToNextPlayer_nextPlayerInQueueEliminated() {
+		//Arrange
+		testee.tryEliminatePlayer(b);
+		
+		//Act
+		boolean retVal = testee.switchToNextPlayer();
+		
+		//Assert
+		assertEquals(testee.getCurrentPlayer(), c);
+		assertTrue(retVal);
+	}
+	
+	@Test
+	public void switchToNextPlayer_currentPlayerLastInArray() {
+		//Arrange
+		testee.switchToNextPlayer();
+		testee.switchToNextPlayer();
+		Player startPlayer = testee.getCurrentPlayer();
+
+		
+		//Act
+		boolean retVal = testee.switchToNextPlayer();
+		
+		//Assert
+		assertEquals(startPlayer, c);
+		assertEquals(testee.getCurrentPlayer(), a);	
+		assertTrue(retVal);
+	}
+	
+	@Test
+	public void switchToNextPlayer_currentPlayerLastInArray_FirstPlayerEliminated() {
+		//Arrange
+		testee.switchToNextPlayer();
+		testee.switchToNextPlayer();
+		testee.tryEliminatePlayer(a);
+		Player startPlayer = testee.getCurrentPlayer();
+		
+		//Act
+		boolean retVal = testee.switchToNextPlayer();
+		
+		//Assert
+		assertEquals(startPlayer, c);
+		assertEquals(testee.getCurrentPlayer(), b);	
+		assertTrue(retVal);
+	}
+	
+	@Test
+	public void switchToNextPlayer_allPlayerEliminated() {
+		//Arrange
+		testee.tryEliminatePlayer(a);
+		testee.tryEliminatePlayer(b);
+		testee.tryEliminatePlayer(c);
+		
+		//Act
+		boolean retVal = testee.switchToNextPlayer();
+		
+		//Assert
+		assertEquals(testee.getCurrentPlayer(), a);	
+		assertFalse(retVal);
+		
+	}
+	
+	@Test
+	public void isZoneOwner() {
+		//Arrange
+		testee.setZoneOwner(a, testee.getZone("Zone110"));
+		
+		//Act
+		Player retVal = testee.getZoneOwner(testee.getZone("Zone110"));
+				
+		//Assert
+		assertEquals(a, retVal);
+	}
+	
+	@Test
+	public void getZonesOwnedByPlayer() {
+		//Arrange
+		testee.setZoneOwner(a, testee.getZone("Zone110"));
+		testee.setZoneOwner(a, testee.getZone("Zone117"));
+		testee.setZoneOwner(a, testee.getZone("Zone180"));
+		testee.setZoneOwner(a, testee.getZone("Zone123"));
+		testee.setZoneOwner(a, testee.getZone("Zone121"));
+		
+		ArrayList<Zone> expected = new ArrayList<Zone>();
+		expected.add(testee.getZone("Zone110"));
+		expected.add(testee.getZone("Zone117"));
+		expected.add(testee.getZone("Zone180"));
+		expected.add(testee.getZone("Zone123"));
+		expected.add(testee.getZone("Zone121"));
+		
+		//Act
+		ArrayList<Zone> actual = testee.getZonesOwnedbyPlayer(a);
+		
+		//Assert
+		assertEquals(expected.size(), actual.size());
+		assertTrue(actual.containsAll(expected));
+	}
+	
+	@Test
+	public void getZonesOwnedByPlayer_noZonesOwned() {
+		//Act
+		ArrayList<Zone> actual = testee.getZonesOwnedbyPlayer(a);
+		
+		//Assert
+		assertEquals(0, actual.size());
+	}
+	
+	@Test
+	public void getAttackableZones() {
+		//Arrange
+		testee.setZoneOwner(a, testee.getZone("Zone114"));
+		testee.setZoneOwner(a, testee.getZone("Zone113"));
+		testee.setZoneOwner(a, testee.getZone("Zone121"));
+		testee.setZoneOwner(a, testee.getZone("Zone111"));
+		testee.setZoneOwner(a, testee.getZone("Zone117"));
+		testee.setZoneOwner(a, testee.getZone("Zone154"));
+		testee.setZoneOwner(a, testee.getZone("Zone118"));
+		testee.setZoneOwner(a, testee.getZone("Zone155"));
+		testee.setZoneOwner(a, testee.getZone("Zone156"));
+		testee.setZoneOwner(a, testee.getZone("Zone151"));
+		testee.setZoneOwner(a, testee.getZone("Zone152"));
+		testee.setZoneOwner(a, testee.getZone("Zone153"));
+		testee.setZoneOwner(a, testee.getZone("Zone150"));
+		testee.setZoneOwner(a, testee.getZone("Zone181"));
+		
+		testee.setZoneOwner(b, testee.getZone("Zone112"));
+		testee.getZone("Zone112").setTroops(10);
+		
+		ArrayList<Zone> expected = new ArrayList<Zone>();
+		expected.add(testee.getZone("Zone118"));
+		expected.add(testee.getZone("Zone117"));
+		expected.add(testee.getZone("Zone111"));
+		expected.add(testee.getZone("Zone121"));
+		expected.add(testee.getZone("Zone123"));
+		expected.add(testee.getZone("Zone113"));
+		
+		//Act
+		ArrayList<Zone> actual = testee.getAttackableZones(testee.getZone("Zone112"));
+				
+		//Assert
+		assertEquals(expected.size(), actual.size());
+		assertTrue(actual.containsAll(expected));
+
+	}
+	
+	@Test
+	public void getAttackableZones_attackerHasNotEnoughTroups() {
+		//Arrange
+		testee.setZoneOwner(a, testee.getZone("Zone114"));
+		testee.setZoneOwner(a, testee.getZone("Zone113"));
+		testee.setZoneOwner(a, testee.getZone("Zone121"));
+		testee.setZoneOwner(a, testee.getZone("Zone111"));
+		testee.setZoneOwner(c, testee.getZone("Zone117"));
+		testee.setZoneOwner(c, testee.getZone("Zone154"));
+		testee.setZoneOwner(c, testee.getZone("Zone118"));
+		testee.setZoneOwner(c, testee.getZone("Zone123"));
+		
+		testee.setZoneOwner(b, testee.getZone("Zone112"));
+		testee.getZone("Zone112").setTroops(1);
+
+		
+		//Act
+		ArrayList<Zone> actual = testee.getAttackableZones(testee.getZone("Zone112"));
+				
+		//Assert
+		assertEquals(0, actual.size());
+	}
+	
+	@Test
+	public void getAttackableZones_noAttackableZonesAround() {
+		//Arrange
+		testee.setZoneOwner(a, testee.getZone("Zone114"));
+		testee.setZoneOwner(a, testee.getZone("Zone113"));
+		testee.setZoneOwner(a, testee.getZone("Zone121"));
+		testee.setZoneOwner(a, testee.getZone("Zone111"));
+		testee.setZoneOwner(a, testee.getZone("Zone117"));
+		testee.setZoneOwner(a, testee.getZone("Zone154"));
+		testee.setZoneOwner(a, testee.getZone("Zone118"));
+		testee.setZoneOwner(a, testee.getZone("Zone123"));
+		testee.setZoneOwner(a, testee.getZone("Zone112"));
+		testee.getZone("Zone112").setTroops(10);
+
+		
+		//Act
+		ArrayList<Zone> actual = testee.getAttackableZones(testee.getZone("Zone112"));
+				
+		//Assert
+		assertEquals(0, actual.size());
+	}
+	
+	@Test
+	public void getPossibleAttackerZones_Cluster() {
+		//Arrange
+		testee.setZoneOwner(a, testee.getZone("Zone113"));
+		testee.setZoneOwner(a, testee.getZone("Zone121"));
+		testee.setZoneOwner(a, testee.getZone("Zone111"));
+		testee.setZoneOwner(a, testee.getZone("Zone117"));
+		testee.setZoneOwner(a, testee.getZone("Zone154"));
+		testee.setZoneOwner(a, testee.getZone("Zone118"));
+		testee.setZoneOwner(a, testee.getZone("Zone123"));
+		testee.setZoneOwner(a, testee.getZone("Zone112"));
+		
+		testee.getZone("Zone114").setTroops(10);
+		testee.getZone("Zone113").setTroops(10);
+		testee.getZone("Zone121").setTroops(10);
+		testee.getZone("Zone111").setTroops(10);
+		testee.getZone("Zone117").setTroops(10);
+		testee.getZone("Zone154").setTroops(10);
+		testee.getZone("Zone118").setTroops(10);
+		testee.getZone("Zone123").setTroops(10);
+		testee.getZone("Zone112").setTroops(10);
+		
+		ArrayList<Zone> expected = new ArrayList<Zone>();
+		expected.add(testee.getZone("Zone123"));
+		expected.add(testee.getZone("Zone121"));
+		expected.add(testee.getZone("Zone111"));
+		expected.add(testee.getZone("Zone154"));
+		expected.add(testee.getZone("Zone113"));
+		
+		//Act
+		ArrayList<Zone> actual = testee.getPossibleAttackerZones(a);
+		
+		//Assert
+		assertEquals(expected.size(), actual.size());
+		assertTrue(actual.containsAll(expected));
+		
+	}
+	
+	@Test
+	public void getPossibleAttackerZones_SingleSpread() {
+		//Arrange
+		testee.setZoneOwner(a, testee.getZone("Zone113"));
+		testee.setZoneOwner(a, testee.getZone("Zone135"));
+		testee.setZoneOwner(a, testee.getZone("Zone170"));
+		
+		testee.getZone("Zone113").setTroops(10);
+		testee.getZone("Zone135").setTroops(10);
+		testee.getZone("Zone170").setTroops(1);
+
+		
+		ArrayList<Zone> expected = new ArrayList<Zone>();
+		expected.add(testee.getZone("Zone113"));
+		expected.add(testee.getZone("Zone135"));
+
+		//Act
+		ArrayList<Zone> actual = testee.getPossibleAttackerZones(a);
+		
+		//Assert
+		assertEquals(expected.size(), actual.size());
+		assertTrue(actual.containsAll(expected));
+		
+	}
+	
+	@Test
+	public void getZonesWithMovableTroops_singleZones() {
+		//Arrange
+		testee.setZoneOwner(a, testee.getZone("Zone113"));
+		testee.setZoneOwner(a, testee.getZone("Zone135"));
+		testee.setZoneOwner(a, testee.getZone("Zone173"));
+		
+		testee.getZone("Zone113").setTroops(10);
+		testee.getZone("Zone135").setTroops(10);
+		testee.getZone("Zone170").setTroops(10);
+		
+		//Act
+		ArrayList<Zone> actual = testee.getZonesWithMovableTroops(a);
+		
+		//Assert
+		assertEquals(0, actual.size());
+
+	}
+	
+	@Test
+	public void getZonesWithMovableTroops() {
+		//Arrange
+		testee.setZoneOwner(a, testee.getZone("Zone113"));
+		testee.setZoneOwner(a, testee.getZone("Zone135"));
+		testee.setZoneOwner(a, testee.getZone("Zone170"));
+		testee.setZoneOwner(a, testee.getZone("Zone171"));
+		
+		testee.getZone("Zone113").setTroops(10);
+		testee.getZone("Zone135").setTroops(10);
+		testee.getZone("Zone170").setTroops(10);
+		testee.getZone("Zone171").setTroops(10);
+		
+		ArrayList<Zone> expected = new ArrayList<Zone>();
+		expected.add(testee.getZone("Zone171"));
+		expected.add(testee.getZone("Zone170"));
+		expected.add(testee.getZone("Zone135"));
+		
+		//Act
+		ArrayList<Zone> actual = testee.getZonesWithMovableTroops(a);
+
+		
+		//Assert
+		assertEquals(expected.size(), actual.size());
+		assertTrue(actual.containsAll(expected));
+
+	}
+	
+	@Test
+	public void getZonesWithMovableTroops_notEnoughTroopsToMove() {
+		//Arrange
+		testee.setZoneOwner(a, testee.getZone("Zone113"));
+		testee.setZoneOwner(a, testee.getZone("Zone135"));
+		testee.setZoneOwner(a, testee.getZone("Zone170"));
+		testee.setZoneOwner(a, testee.getZone("Zone171"));
+		
+		testee.getZone("Zone113").setTroops(10);
+		testee.getZone("Zone135").setTroops(10);
+		testee.getZone("Zone170").setTroops(10);
+		testee.getZone("Zone171").setTroops(1);
+		
+		ArrayList<Zone> expected = new ArrayList<Zone>();
+		expected.add(testee.getZone("Zone170"));
+		expected.add(testee.getZone("Zone135"));
+		
+		//Act
+		ArrayList<Zone> actual = testee.getZonesWithMovableTroops(a);
+
+		
+		//Assert
+		assertEquals(expected.size(), actual.size());
+		assertTrue(actual.containsAll(expected));
+
+	}
+	
+	@Test
+	public void tryEliminatePlayer_ownsNoZones() {
+		//Act
+		testee.tryEliminatePlayer(a);
+		
+		//Assert
+		assertTrue(a.isEliminated());
+		
+	}
+	
+	@Test
+	public void tryEliminatePlayer_stillOwnsZones() {
+		//Arrange
+		testee.setZoneOwner(a, testee.getZone("Zone113"));
+		
+		//Act
+		testee.tryEliminatePlayer(a);
+		
+		//Assert
+		assertFalse(a.isEliminated());
+		
+	}
+	
+	@Test
+	public void getZone_ExistingZone() {
+		//Arrange
+		String searchZoneName = "Zone110";
+		
+		//Act
+		Zone returnVal = testee.getZone(searchZoneName);
+		
+		//Assert
+		assertTrue(returnVal != null && returnVal.getName().equals(searchZoneName));	
+	}
+	
+	@Test
+	public void getZone_NoneExistingZone() {
+		//Arrange
+		String searchZoneName = "Zone310";
+		
+		//Act
+		Zone returnVal = testee.getZone(searchZoneName);
+		
+		//Assert
+		assertEquals(returnVal, null);	
+	}		
+	
+	
+	@Test
+	public void getPlayer_existingPlayer() {
+		//Act
+		Player returnVal = testee.getPlayer(PlayerColor.BLACK);
+		
+		//Assert
+		assertEquals(returnVal, a);
+	}
+	
+	@Test
+	public void getPlayer_NoneExistingPlayer() {
+		//Act
+		Player returnVal = testee.getPlayer(PlayerColor.GREEN);
+		
+		//Assert
+		assertEquals(returnVal,null);
+	}
+	
+	@Test
+	public void getRegionOfZone() {
+		//Arrange
+		RegionName expected = RegionName.Unterland;
+		Zone testZone = testee.getZone("Zone117");
+		
+		//Act
+		RegionName actual = testee.getRegionOfZone(testZone);
+		
+		//Assert
+		assertEquals(expected, actual);	
+	}
+	
+
 
 	private ArrayList<Zone> createNeighboursManually(){
 		ArrayList<Zone> neighbours = new ArrayList<>();

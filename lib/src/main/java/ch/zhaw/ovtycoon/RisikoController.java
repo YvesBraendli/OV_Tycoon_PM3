@@ -127,13 +127,18 @@ public class RisikoController{
     
     /**
      * Checks if a planned attack is valid
-     * @param zoneNameAttacking
-     * @param zoneNameAttacked
-     * @param attackerColor
+     * An attack is valid if the zone is owned by the player, the attacked zone is not owned by the player
+     * and the zones are neighbours
+     * 
+     * @param zoneNameAttacking The Attacker
+     * @param zoneNameAttacked The Defender
+     * @param attackerColor Player Color of attacker
      * @return true if valid else false
-     */ //TODO check if neighbour
+     */
     public boolean isValidAttack(String zoneNameAttacking, String zoneNameAttacked, PlayerColor attackerColor) {
-    	if(isZoneOwner(zoneNameAttacking, attackerColor) && !isZoneOwner(zoneNameAttacked, attackerColor)) return true;
+    	if(isZoneOwner(zoneNameAttacking, attackerColor) 
+    			&& !isZoneOwner(zoneNameAttacked, attackerColor)
+    					&& getZoneNeighbours(zoneNameAttacking).contains(zoneNameAttacked)) return true;
     	return false;
     }
     

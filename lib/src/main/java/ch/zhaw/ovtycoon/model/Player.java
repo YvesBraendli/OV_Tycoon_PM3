@@ -5,11 +5,10 @@ import ch.zhaw.ovtycoon.Config;
 public class Player {
     private String name;
     private Config.PlayerColor color = null;
-    private boolean isEliminated;
+    private boolean isEliminated = false;
 
     public Player(String name){
         this.name = name;
-        isEliminated = false;
     }
 
     public String getName() {
@@ -31,5 +30,4 @@ public class Player {
 	public void setEliminated() {
 		isEliminated = true;
 	}
-    
 }

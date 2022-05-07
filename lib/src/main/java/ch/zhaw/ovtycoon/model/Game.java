@@ -20,6 +20,15 @@ public class Game {
 	private TroopHandler troopHandler;
 	private ObjectProperty<PlayerColor> eliminatedPlayer;
 	private ObjectProperty<PlayerColor> newRegionOwner;
+	
+	/**
+	 * TODO REMOVE AFTER PLAYER INIT IMPLEMENTATION
+	 * Helperfunction for testing until player implementation is complete
+	 * @param p
+	 */
+	public void setPlayerList(Player[] players) {
+		this.players = players;
+	}
 
 	/**
 	 * Initializes the gameMap and creates players with their corresponding colors
@@ -33,8 +42,9 @@ public class Game {
 		troopHandler = new TroopHandler(playerAmount);
 		eliminatedPlayer = new SimpleObjectProperty<PlayerColor>(null);
 		newRegionOwner = new SimpleObjectProperty<PlayerColor>(null);
-		//TODO get player color and name
+		//TODO get player color
 	}
+	
 	
     /**
      * starts a fight, between two zones
@@ -55,7 +65,7 @@ public class Game {
 			tryEliminatePlayer(getZoneOwner(defender));
 			Player attackingPlayer = getZoneOwner(attacker);
 			setZoneOwner(attackingPlayer, defender);
-			defender.setTroops(numOfAttackers); //TODO possible bug fix in fight necessary decreasing troop numbers of zones
+			defender.setTroops(numOfAttackers);
 			
 			if(getRegionOwner(getRegionOfZone(defender)) == attackingPlayer) {
 				setNewRegionOwner(attackingPlayer);
@@ -150,24 +160,21 @@ public class Game {
 	
 	/**
 	 * Switches to next player in the list and to the first if its currently the last players turn
-	 * @return return new current player index or -1 if no next player could be determined
+	 * @return true if the switch was successfull, false if no active player could be found
 	 */
-	public int switchToNextPlayer() {
-		for(int i = currentPlayerIndex+1; i<players.length;i++) {
-			if(!players[i].isEliminated()) {
-				currentPlayerIndex = i;
-				return currentPlayerIndex;
-			}
-		}
-		for(int i = 0; i<players.length;i++) {
-			if(!players[i].isEliminated()) {
-				currentPlayerIndex = i;
-				return currentPlayerIndex;
-			}
-		}
-		return -1;
+	public boolean switchToNextPlayer() {
+		return switchToNextPlayer(0, true);
 	}
-	
+	private boolean switchToNextPlayer(int rec, boolean switched) {
+		if(rec == players.length) {
+			currentPlayerIndex = 0;
+			return false;
+		}
+		currentPlayerIndex = currentPlayerIndex+1 == players.length ? 0 : currentPlayerIndex+1;
+		if(players[currentPlayerIndex].isEliminated()) switched = switchToNextPlayer(rec+1, true);
+		return switched;
+	}
+
 	/**
 	 * Sets a new owner for a zone
 	 * @param owner
@@ -208,6 +215,7 @@ public class Game {
 				zonesOwnedByPlayer.add(zone);
 			}
 		}
+		zonesOwnedByPlayer.trimToSize();
 		return zonesOwnedByPlayer;
 	}
 	
@@ -215,17 +223,18 @@ public class Game {
 	 * Gets zones which are classified as "attackable"
 	 * An attackable zone needs to be next to a zone owned by the player and must not be owned by the player
 	 * @param zone the attacker zone
-	 * @return ArrayList of the zones that can be attacked from the current zone
+	 * @return ArrayList of the zones that can be attacked from the attacker zone
 	 */
 	public ArrayList<Zone> getAttackableZones(Zone zone){
-		if(zone.getTroops()<1) return null;
+		ArrayList<Zone> neighbourZones = new ArrayList<Zone>();
+		if(zone.getTroops()<=1) return neighbourZones;
 		Player player = getZoneOwner(zone);
 		ArrayList<Zone> zonesOwnedByPlayer = getZonesOwnedbyPlayer(player);
-		ArrayList<Zone> neighbourZones = zone.getNeighbours();
+		neighbourZones = zone.getNeighbours();
 		neighbourZones.removeAll(zonesOwnedByPlayer);
-		
+		neighbourZones.trimToSize();
 		return neighbourZones;
-		
+	
 	}
 	
 	/**
@@ -243,10 +252,12 @@ public class Game {
 				for(Zone neighbour : zone.getNeighbours()) {
 					if(zoneOwner.get(neighbour) != player) {
 						possibleAttackerZones.add(zone);
+						break;
 					}
 				}
 			}
 		}
+		possibleAttackerZones.trimToSize();
 		return possibleAttackerZones;
 	}
 	
@@ -267,6 +278,7 @@ public class Game {
 				}
 			}
 		}
+		zonesWithMovableTroops.trimToSize();
 		return zonesWithMovableTroops;
 	}
 	
@@ -315,7 +327,7 @@ public class Game {
 	 */
 	public void tryEliminatePlayer(Player player) {
 		if(getZonesOwnedbyPlayer(player).isEmpty()) {
-			player.setEliminated(); 
+			player.setEliminated();
 			setEliminiatedPlayer(player);	
 		}
 	}
