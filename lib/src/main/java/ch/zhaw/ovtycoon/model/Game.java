@@ -64,6 +64,16 @@ public class Game {
 		return diceRoll;
 	}
 	
+    /**
+     * moves troops from one zone to the other
+     * no validation is made if the move is valid. for this the method getPossibleMovementNeighbours() should be used
+     * @param from zone which the troops get moved from
+     * @param to zone which the troops get moved to
+     * @param numberOfTroops
+     */
+	public void moveUnits(Zone from, Zone to, int numberOfTroops) {
+		troopHandler.moveUnits(from, to, currentPlayerIndex);
+	}
 	
 	/**
 	 * This method is responsible for the initial troop setting, which starts at the beginning of the game.

@@ -47,6 +47,17 @@ public class RisikoController{
     	return game.runFight(game.getZone(attacker), game.getZone(defender), numOfAttacker, numOfDefender);
     }
     
+    /**
+     * moves troops from one zone to the other
+     * no validation is made if the move is valid. for this the method getPossibleMovementNeighbours() should be used
+     * @param from zone which the troops get moved from
+     * @param to zone which the troops get moved to
+     * @param numberOfTroops
+     */
+    public void moveUnits(String from, String to, int numberOfTroops) {
+    	game.moveUnits(game.getZone(from), game.getZone(to), numberOfTroops);
+    }
+    
 	/**
 	 * Checks for a winner. A winner is defined by owning all zones
 	 * @return Color of the winner
