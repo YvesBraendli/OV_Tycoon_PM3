@@ -15,9 +15,9 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
+import javafx.event.EventHandler;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.canvas.Canvas;
@@ -39,6 +39,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class MapController {
@@ -85,6 +87,11 @@ public class MapController {
     private TestBackend testBackend = new TestBackend();
     private ColorService colorService = new ColorService();
     private MapLoaderService mapLoaderService;
+
+    private final String moveTroopsText = "Du kannst %d - %d Truppen verschieben";
+    private final String reinforcementText = "Du kannst %d - %d Truppen setzen";
+    private final String attackerText = "Du kannst mit %d - %d Truppen angreifen";
+    private final String defenderText = "Du kannst dich mit %d - %d Truppen verteidigen";
 
 
     @FXML
@@ -279,8 +286,8 @@ public class MapController {
         label.setPrefWidth(400.0d);
         label.setPrefHeight(100.0d);
         label.getStyleClass().add("action-label");
-        label.setTranslateX((labelStackPane.getMaxWidth()  - label.getPrefWidth()) / 2.0d);
-        label.setTranslateY((labelStackPane.getMaxHeight()  - label.getPrefHeight()) / 2.0d);
+        label.setTranslateX((labelStackPane.getMaxWidth() - label.getPrefWidth()) / 2.0d);
+        label.setTranslateY((labelStackPane.getMaxHeight() - label.getPrefHeight()) / 2.0d);
         overlayStackPane.setStyle("-fx-background-color: black; -fx-opacity: 0.5;");
 
         stopAnimation(highlightClickableZonesTl);
@@ -320,7 +327,8 @@ public class MapController {
         } else if (hoveredZone.equals(currHovered)) {
             return;
         }
-        if (currHovered != null && this.labelStackPane.getChildren().size() > this.zoneSquares.size()) labelStackPane.getChildren().remove(labelStackPane.getChildren().size() - 1);
+        if (currHovered != null && this.labelStackPane.getChildren().size() > this.zoneSquares.size())
+            labelStackPane.getChildren().remove(labelStackPane.getChildren().size() - 1);
         currHovered = hoveredZone;
         String name = hoveredZone.getName().replace("Zone", "Zone ");
         ZoneTooltip t = new ZoneTooltip(name);
@@ -333,9 +341,14 @@ public class MapController {
         actionBtn.setDisable(true);
         mapClickEnabled = false;
         switch (actionBtn.getAction()) {
-            case ATTACK: attack(); break;
-            case MOVE: moveTroops(0); break;
-            default: break;
+            case ATTACK:
+                initAttack();
+                break;
+            case MOVE:
+                moveTroops(0);
+                break;
+            default:
+                break;
         }
     }
 
@@ -343,11 +356,11 @@ public class MapController {
     private void moveTroops(int minAmount) {
         if (source == null || target == null) return;
         int sourceTroops = Integer.parseInt(source.getTxt().getText());
-        TroopAmountPopup troopAmountPopup = new TroopAmountPopup(minAmount, sourceTroops - 1);
+        TroopAmountPopup troopAmountPopup = new TroopAmountPopup(minAmount, sourceTroops - 1, moveTroopsText);
         troopAmountPopup.setTranslateX((labelStackPane.getWidth() - troopAmountPopup.getPrefWidth()) / 2.0d);
         troopAmountPopup.setTranslateY((labelStackPane.getHeight() - troopAmountPopup.getPrefHeight()) / 2.0d);
         labelStackPane.getChildren().add(troopAmountPopup);
-        troopAmountPopup.getConfirmBtn().setOnMouseClicked(mouseEvent -> {
+        troopAmountPopup.getConfirmBtn().setOnMouseClicked(click -> {
             // if move: oldAmt + movedAmt, if attack: movedAmt
             int troopAmtNew = minAmount == 0 ? Integer.parseInt(target.getTxt().getText()) + troopAmountPopup.getTroopAmount() : troopAmountPopup.getTroopAmount();
             target.getTxt().setText(Integer.toString(troopAmtNew));
@@ -368,7 +381,7 @@ public class MapController {
         ZoneColor currPlayerColor = testBackend.getCurrPlayer();
         Color mix = colorService.mixColors(neighbourOverlayColor, colorService.getColor(currPlayerColor.getColorAsHexString()));
         updateClickableZones();
-        KeyFrame highlightZonesKf = new KeyFrame(Duration.seconds(1), event -> clickableZones.forEach(zone -> setZoneActive(zone, new ArrayList<>(), mix, false)));
+        KeyFrame highlightZonesKf = new KeyFrame(Duration.seconds(1), event -> clickableZones.forEach(zone -> setZoneActive(zone, mix, false)));
         KeyFrame removeHighlightedZonesKf = new KeyFrame(Duration.seconds(2), event -> removeAllOverlaidPixels());
         highlightClickableZonesTl = new Timeline(highlightZonesKf, removeHighlightedZonesKf);
         highlightClickableZonesTl.setCycleCount(30);
@@ -399,8 +412,8 @@ public class MapController {
         label.setPrefHeight(100.0d);
         label.setMaxHeight(200.0d);
         label.getStyleClass().add("action-label");
-        label.setTranslateX((labelStackPane.getWidth()  - label.getPrefWidth()) / 2.0d);
-        label.setTranslateY((labelStackPane.getHeight()  - label.getPrefHeight()) / 2.0d);
+        label.setTranslateX((labelStackPane.getWidth() - label.getPrefWidth()) / 2.0d);
+        label.setTranslateY((labelStackPane.getHeight() - label.getPrefHeight()) / 2.0d);
 
         KeyFrame waitingForDiceThrowKf = new KeyFrame(Duration.seconds(0), (event) -> {
             overlayStackPane.setStyle("-fx-background-color: black; -fx-opacity: 0.5;");
@@ -433,20 +446,19 @@ public class MapController {
         clickableZones = new ArrayList<>();
 
         hoverableZones = new ArrayList<>();
-        List<Pixel> overlaidPixels = new ArrayList<>();
         int currTroopsAmt = Integer.parseInt(sqr.getTxt().getText());
         overlayStackPane.setStyle("-fx-background-color: black; -fx-opacity: 0.5;");
-        setZoneActive(sqr, overlaidPixels, overlayColor, false);
-        overlaidZones.put(sqr.getName(), overlaidPixels);
-        TroopAmountPopup troopAmountPopup = new TroopAmountPopup(0, testBackend.getTroopsToPlace());
+        setZoneActive(sqr, overlayColor, false);
+        TroopAmountPopup troopAmountPopup = new TroopAmountPopup(0, testBackend.getTroopsToPlace(), reinforcementText);
         troopAmountPopup.setTranslateX((labelStackPane.getWidth() - troopAmountPopup.getPrefWidth()) / 2.0d);
         troopAmountPopup.setTranslateY((labelStackPane.getHeight() - troopAmountPopup.getPrefHeight()) / 2.0d);
 
         // remove label of last hovered zone
-        if (labelStackPane.getChildren().size() > zoneSquares.size()) labelStackPane.getChildren().remove(labelStackPane.getChildren().size() - 1);
+        if (labelStackPane.getChildren().size() > zoneSquares.size())
+            labelStackPane.getChildren().remove(labelStackPane.getChildren().size() - 1);
 
         labelStackPane.getChildren().add(troopAmountPopup);
-        troopAmountPopup.getConfirmBtn().setOnMouseClicked(mE -> {
+        troopAmountPopup.getConfirmBtn().setOnMouseClicked(click -> {
             sqr.getTxt().setText(Integer.toString(currTroopsAmt + troopAmountPopup.getTroopAmount()));
             testBackend.placeTroops(troopAmountPopup.getTroopAmount());
             labelStackPane.getChildren().remove(troopAmountPopup);
@@ -459,8 +471,30 @@ public class MapController {
         });
     }
 
-    private void attack() {
+    private void initAttack() {
         if (source == null || target == null) return;
+        TroopAmountPopup popup = promptUserForTroopAmount(3, attackerText);
+        AtomicBoolean promptingDefender = new AtomicBoolean(false);
+        AtomicInteger attackerTroops = new AtomicInteger(1);
+        popup.getConfirmBtn().setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent click) {
+                if (promptingDefender.get()) {
+                    labelStackPane.getChildren().remove(popup);
+                    popup.getConfirmBtn().removeEventHandler(MouseEvent.ANY, this);
+                    System.out.println(String.format("a: %d, d: %d", attackerTroops.get(), popup.getTroopAmount()));
+                    performAttack(attackerTroops.get(), popup.getTroopAmount());
+                } else {
+                    promptingDefender.set(true);
+                    attackerTroops.set(popup.getTroopAmount());
+                    popup.reconfigure(2, defenderText);
+                }
+            }
+        });
+    }
+
+    private void performAttack(int attackerTroops, int defenderTroops) {
+        System.out.println(String.format("a: %d, d: %d", attackerTroops, defenderTroops));
         testBackend.diceThrow();
         int diceThrowResult = testBackend.getDiceThrowResult();
         Label label = new Label();
@@ -468,11 +502,11 @@ public class MapController {
         label.setPrefWidth(400.0d);
         label.setPrefHeight(200.0d);
         label.getStyleClass().add("action-label");
-        label.setTranslateX((labelStackPane.getWidth()  - label.getPrefWidth()) / 2.0d);
-        label.setTranslateY((labelStackPane.getHeight()  - label.getPrefHeight()) / 2.0d);
+        label.setTranslateX((labelStackPane.getWidth() - label.getPrefWidth()) / 2.0d);
+        label.setTranslateY((labelStackPane.getHeight() - label.getPrefHeight()) / 2.0d);
 
         String winner = diceThrowResult > 3 ? source.getColor().name() : target.getColor().name();
-        String loser =  diceThrowResult > 3 ? target.getColor().name() : source.getColor().name();
+        String loser = diceThrowResult > 3 ? target.getColor().name() : source.getColor().name();
 
         String fightResult = diceThrowResult > 3 ? "%s hat eine Zone von %s erobert" : "Der Angriff von %s wurde von %s erfolgreich abgewehrt";
 
@@ -488,9 +522,9 @@ public class MapController {
             // attacker wins
             if (diceThrowResult > 3) {
                 Color attackerColor = colorService.getColor(source.getColor().getColorAsHexString());
-                drawZone(target, attackerColor, mapPw);
+                drawZone(target, attackerColor);
 
-                moveTroops(1);
+                moveTroops(attackerTroops);
             } else {
                 mapClickEnabled = true;
                 hoverableZones = zoneSquares;
@@ -513,11 +547,17 @@ public class MapController {
             int randomInt = random.nextInt(3);
             Color clr = null;
             switch (randomInt) {
-                case 0: clr = colorService.getColor(ZoneColor.PLAYER_GREEN.getColorAsHexString()); break;
-                case 1: clr = colorService.getColor(ZoneColor.PLAYER_BLUE.getColorAsHexString()); break;
-                default: clr = colorService.getColor(ZoneColor.PLAYER_RED.getColorAsHexString()); break;
+                case 0:
+                    clr = colorService.getColor(ZoneColor.PLAYER_GREEN.getColorAsHexString());
+                    break;
+                case 1:
+                    clr = colorService.getColor(ZoneColor.PLAYER_BLUE.getColorAsHexString());
+                    break;
+                default:
+                    clr = colorService.getColor(ZoneColor.PLAYER_RED.getColorAsHexString());
+                    break;
             }
-            this.drawZone(zoneSquares.get(i), clr, mapPw);
+            this.drawZone(zoneSquares.get(i), clr);
         }
     }
 
@@ -540,18 +580,16 @@ public class MapController {
         if (sqr != null && sqr.getBorder() != null && clickableZones.contains(sqr)) {
             stopAnimation(highlightClickableZonesTl);
             removeAllOverlaidPixels();
-            List<Pixel> overlaidPixels = new ArrayList<>();
             if (source == null || sqr == source) {
                 source = sqr;
-                List< ZoneSquare> validTargets = new ArrayList<>(getValidNeighboursForAction(testBackend.getAction()));
+                List<ZoneSquare> validTargets = new ArrayList<>(getValidNeighboursForAction(testBackend.getAction()));
                 hoverableZones = new ArrayList<>(validTargets);
                 hoverableZones.add(source);
 
                 clickableZones = new ArrayList<>(hoverableZones);
 
                 markNeighbours(validTargets);
-                this.setZoneActive(sqr, overlaidPixels, overlayColor, true);
-                overlaidZones.put(sqr.getName(), overlaidPixels);
+                this.setZoneActive(sqr, overlayColor, true);
 
                 sourceOrTargetNull.set(source == null || target == null);
             } else {
@@ -561,11 +599,11 @@ public class MapController {
                 }
                 target = sqr;
                 this.overlaidZones.keySet().stream().filter((zone) -> !(zone.equals(source.getName()) || zone.equals(target.getName()))).collect(Collectors.toList()).forEach(zoneToInactivate -> inactivateZone(zoneToInactivate));
-                if (labelStackPane.getChildren().size() > zoneSquares.size()) labelStackPane.getChildren().remove(labelStackPane.getChildren().size() - 1);
+                if (labelStackPane.getChildren().size() > zoneSquares.size())
+                    labelStackPane.getChildren().remove(labelStackPane.getChildren().size() - 1);
                 actionBtn.setDisable(false);
-                this.drawZone(sqr, colorService.getColor(sqr.getColor().getColorAsHexString()), pw);
-                this.setZoneActive(source, overlaidPixels, overlayColor, true);
-                overlaidZones.put(source.getName(), overlaidPixels);
+                this.setZoneActive(sqr, colorService.getColor(sqr.getColor().getColorAsHexString()), false);
+                this.setZoneActive(source, overlayColor, true);
                 hoverableZones = new ArrayList<>();
                 clickableZones = new ArrayList<>();
 
@@ -622,9 +660,7 @@ public class MapController {
     private void markNeighbours(List<ZoneSquare> neighbours) {
         neighbours.forEach((n) -> {
             Color nOverLay = colorService.mixColors(neighbourOverlayColor, colorService.getColor(n.getColor().getColorAsHexString()));
-            List<Pixel> overlayPixels = new ArrayList<>();
-            setZoneActive(n, overlayPixels, nOverLay, false);
-            overlaidZones.put(n.getName(), overlayPixels);
+            setZoneActive(n, nOverLay, false);
         });
     }
 
@@ -648,14 +684,15 @@ public class MapController {
     private void inactivateZone(String zoneName) {
         List<Pixel> overlaidPixelsToRemove = overlaidZones.get(zoneName);
         if (overlaidPixelsToRemove == null) return;
-        overlaidPixelsToRemove.forEach((pixel) -> pw.setColor(pixel.getX(), pixel.getY(), transparentColor));
+        overlaidPixelsToRemove.forEach(pixel -> pw.setColor(pixel.getX(), pixel.getY(), transparentColor));
         overlaidZones.remove(zoneName);
     }
 
-    private void setZoneActive(ZoneSquare sqr, List<Pixel> overlaidPixels, Color overlayColor, boolean shift) {
+    private void setZoneActive(ZoneSquare sqr, Color overlayColor, boolean shift) {
         Color currColor = colorService.getColor(sqr.getColor().getColorAsHexString());
         if (currColor == null) return;
         Color mix = colorService.mixColors(overlayColor, currColor);
+        List<Pixel> overlaidPixels = new ArrayList<>();
         for (HorizontalStripe stripe : sqr.getBorder()) {
             int y = stripe.getY();
             for (int x = stripe.getStartX(); x <= stripe.getEndX(); x++) {
@@ -675,19 +712,22 @@ public class MapController {
         overlaidZones.put(sqr.getName(), overlaidPixels);
     }
 
-    private void drawZone(ZoneSquare sqr, Color c, PixelWriter pw) {
-        boolean drawingOverlay = pw == this.pw;
-        if (drawingOverlay) overlaidZones.put(sqr.getName(), new ArrayList<>());
+    private void drawZone(ZoneSquare sqr, Color c) {
         for (HorizontalStripe str : sqr.getBorder()) {
             int y = str.getY();
             for (int x = str.getStartX(); x <= str.getEndX(); x++) {
-                pw.setColor(x, y, c);
-                if (drawingOverlay) {
-                    overlaidZones.get(sqr.getName()).add(new Pixel(x, y));
-                }
+                mapPw.setColor(x, y, c);
             }
         }
         sqr.setColor(colorService.getZoneColor(c.toString()));
+    }
+
+    private TroopAmountPopup promptUserForTroopAmount(int maxAmt, String text) {
+        TroopAmountPopup popup = new TroopAmountPopup(1, maxAmt, text);
+        popup.setTranslateX((labelStackPane.getWidth() - popup.getPrefWidth()) / 2.0d);
+        popup.setTranslateY((labelStackPane.getHeight() - popup.getPrefHeight()) / 2.0d);
+        labelStackPane.getChildren().add(popup);
+        return popup;
     }
 }
 
