@@ -5,10 +5,11 @@ import java.util.HashMap;
 import java.util.Map.*;
 
 import ch.zhaw.ovtycoon.Config;
-import ch.zhaw.ovtycoon.RisikoController;
 import ch.zhaw.ovtycoon.data.DiceRoll;
+import ch.zhaw.ovtycoon.Config.PlayerColor;
 import ch.zhaw.ovtycoon.Config.RegionName;
-import javafx.application.Application;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.ObjectProperty;
 
 
 public class Game {
@@ -17,6 +18,7 @@ public class Game {
 	private Player[] players;
 	private int currentPlayerIndex;
 	private TroopHandler troopHandler;
+	private ObjectProperty<PlayerColor> eliminatedPlayer;
 
 	/**
 	 * Initializes the gameMap and creates players with their corresponding colors
@@ -28,6 +30,7 @@ public class Game {
 		zoneOwner = mapInit.getOwnerList();
 		players = new Player[playerAmount];
 		troopHandler = new TroopHandler(playerAmount);
+		eliminatedPlayer = new SimpleObjectProperty<PlayerColor>(null);
 		//TODO get player color and name
 	}
 	
@@ -41,7 +44,9 @@ public class Game {
      */
 	public DiceRoll runFight(Zone attacker, Zone defender, int numOfAttackers, int numOfDefenders) {
 		Fight fight = new Fight(attacker, defender);
-		return fight.fight(numOfAttackers, numOfDefenders);
+		DiceRoll diceRoll = fight.fight(numOfAttackers, numOfDefenders);
+		tryEliminatePlayer(getZoneOwner(defender));
+		return diceRoll;
 	}
 	
 	
@@ -106,9 +111,22 @@ public class Game {
 	
 	/**
 	 * Switches to next player in the list and to the first if its currently the last players turn
+	 * @return return new current player index or -1 if no next player could be determined
 	 */
-	public void switchToNextPlayer() {
-		currentPlayerIndex = currentPlayerIndex+1 == players.length ? 0 : currentPlayerIndex++;
+	public int switchToNextPlayer() {
+		for(int i = currentPlayerIndex+1; i<players.length;i++) {
+			if(!players[i].isEliminated()) {
+				currentPlayerIndex = i;
+				return currentPlayerIndex;
+			}
+		}
+		for(int i = 0; i<players.length;i++) {
+			if(!players[i].isEliminated()) {
+				currentPlayerIndex = i;
+				return currentPlayerIndex;
+			}
+		}
+		return -1;
 	}
 	
 	/**
@@ -249,6 +267,19 @@ public class Game {
 		}
 		return null;
 	}
+	
+	/**
+	 * Sets the eliminated flag in the player object and updates the property 
+	 * if the player does not own any zones anymore
+	 * 
+	 * @param player to check for elimination
+	 */
+	public void tryEliminatePlayer(Player player) {
+		if(getZonesOwnedbyPlayer(player).isEmpty()) {
+			player.setEliminated(); 
+			setEliminiatedPlayer(player);	
+		}
+	}
 
 
     /**
@@ -291,6 +322,18 @@ public class Game {
             }
         }
         return alreadyAdded;
+    }
+    
+    public PlayerColor getEliminatedPlayer() {
+    	return eliminatedPlayer.get();
+    }
+    
+    public ObjectProperty<PlayerColor> getEliminiatedPlayerProperty() {
+    	return eliminatedPlayer;
+    }
+    
+    public void setEliminiatedPlayer(Player player) {
+    	eliminatedPlayer.set(player.getColor());
     }
 
 }
