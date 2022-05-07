@@ -15,7 +15,7 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.canvas.Canvas;
@@ -309,11 +309,11 @@ public class MapController {
         troopAmountPopup.setTranslateX((labelStackPane.getWidth() - troopAmountPopup.getPrefWidth()) / 2.0d);
         troopAmountPopup.setTranslateY((labelStackPane.getHeight() - troopAmountPopup.getPrefHeight()) / 2.0d);
         labelStackPane.getChildren().add(troopAmountPopup);
-        troopAmountPopup.getTroopAmt().addListener((obs, old, n) -> {
+        troopAmountPopup.getConfirmBtn().setOnMouseClicked(click -> {
             // if move: oldAmt + movedAmt, if attack: movedAmt
-            int troopAmtNew = minAmount == 0 ? Integer.parseInt(target.getTxt().getText()) + n.intValue() : n.intValue();
+            int troopAmtNew = minAmount == 0 ? Integer.parseInt(target.getTxt().getText()) + troopAmountPopup.getTroopAmount() : troopAmountPopup.getTroopAmount();
             target.getTxt().setText(Integer.toString(troopAmtNew));
-            source.getTxt().setText(Integer.toString(sourceTroops - n.intValue()));
+            source.getTxt().setText(Integer.toString(sourceTroops - troopAmountPopup.getTroopAmount()));
             labelStackPane.getChildren().remove(troopAmountPopup);
             mapClickEnabled = true;
             hoverableZones = zoneSquares;
@@ -407,9 +407,9 @@ public class MapController {
             labelStackPane.getChildren().remove(labelStackPane.getChildren().size() - 1);
 
         labelStackPane.getChildren().add(troopAmountPopup);
-        troopAmountPopup.getTroopAmt().addListener((obs, old, n) -> {
-            sqr.getTxt().setText(Integer.toString(currTroopsAmt + n.intValue()));
-            testBackend.placeTroops(n.intValue());
+        troopAmountPopup.getConfirmBtn().setOnMouseClicked(click -> {
+            sqr.getTxt().setText(Integer.toString(currTroopsAmt + troopAmountPopup.getTroopAmount()));
+            testBackend.placeTroops(troopAmountPopup.getTroopAmount());
             labelStackPane.getChildren().remove(troopAmountPopup);
             mapClickEnabled = true;
             hoverableZones = zoneSquares;
@@ -420,31 +420,31 @@ public class MapController {
         });
     }
 
-    // TODO ev löschen da falls true der action button sowieso disabled ist
     private void initAttack() {
         if (source == null || target == null) return;
         TroopAmountPopup popup = promptUserForTroopAmount(3, attackerText);
         AtomicBoolean promptingDefender = new AtomicBoolean(false);
         AtomicInteger attackerTroops = new AtomicInteger(1);
-        popup.getTroopAmt().addListener(new ChangeListener<Number>() {
+        popup.getConfirmBtn().setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
-            public void changed(ObservableValue<? extends Number> obs, Number old, Number n) {
-                if (n.intValue() == -1) return;
+            public void handle(MouseEvent click) {
                 if (promptingDefender.get()) {
                     labelStackPane.getChildren().remove(popup);
-                    popup.getTroopAmt().removeListener(this);
-                    performAttack(attackerTroops.get(), n.intValue());
+                    popup.getConfirmBtn().removeEventHandler(MouseEvent.ANY, this);
+                    System.out.println(String.format("a: %d, d: %d", attackerTroops.get(), popup.getTroopAmount()));
+                    performAttack(attackerTroops.get(), popup.getTroopAmount());
                 } else {
                     promptingDefender.set(true);
-                    attackerTroops.set(n.intValue());
+                    attackerTroops.set(popup.getTroopAmount());
                     popup.setMaxTrpAmt(2);
-                    popup.setText(defenderText);
+                    popup.setLabelText(defenderText);
                 }
             }
         });
     }
 
     private void performAttack(int attackerTroops, int defenderTroops) {
+        System.out.println(String.format("a: %d, d: %d", attackerTroops, defenderTroops));
         testBackend.diceThrow();
         int diceThrowResult = testBackend.getDiceThrowResult();
         Label label = new Label();
@@ -552,7 +552,7 @@ public class MapController {
                 if (labelStackPane.getChildren().size() > zoneSquares.size())
                     labelStackPane.getChildren().remove(labelStackPane.getChildren().size() - 1);
                 actionBtn.setDisable(false);
-                this.setZoneActive(sqr, colorService.getColor(sqr.getColor().getColorAsHexString()), false); // TODO check if this works like drawZone
+                this.setZoneActive(sqr, colorService.getColor(sqr.getColor().getColorAsHexString()), false);
                 this.setZoneActive(source, overlayColor, true);
                 hoverableZones = new ArrayList<>();
                 clickableZones = new ArrayList<>();
