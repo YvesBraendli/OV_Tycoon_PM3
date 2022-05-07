@@ -1,6 +1,7 @@
 package ch.zhaw.ovtycoon.model;
 
 import ch.zhaw.ovtycoon.Config;
+import ch.zhaw.ovtycoon.data.DiceRoll;
 
 public class Fight {
 	private Zone attackingZone;
@@ -43,7 +44,7 @@ public class Fight {
 	 * @throws IllegalArgumentException if arguments are invalid.
 	 * @return rolledDie, a 2d array containing the defenders roll in the first column and the attackers in the second
 	 */
-	public int[][] fight(int attackingTroops, int defendingTroops) {
+	public DiceRoll fight(int attackingTroops, int defendingTroops) {
 		if (!isValidArgument(attackingTroops, true) || !isValidArgument(defendingTroops, false)) {
 			throw new IllegalArgumentException();
 		}
@@ -63,9 +64,7 @@ public class Fight {
 			}
 		}
 		
-		int[][] rolledDie = new int[2][(defendingTroops > attackingTroops ? defendingTroops : attackingTroops)];
-		for(int i = 0; i<defendingTroops;i++) { rolledDie[0][i] = defendingDice[i];}
-		for(int i = 0; i<attackingTroops;i++) { rolledDie[1][i] = attackingDice[i];}
+		DiceRoll rolledDie = new DiceRoll(attackingDice, defendingDice, attackingTroops, defendingTroops);
 		return rolledDie;
 	}
 

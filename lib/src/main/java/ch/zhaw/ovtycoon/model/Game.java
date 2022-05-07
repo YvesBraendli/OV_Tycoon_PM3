@@ -6,6 +6,7 @@ import java.util.Map.*;
 
 import ch.zhaw.ovtycoon.Config;
 import ch.zhaw.ovtycoon.RisikoController;
+import ch.zhaw.ovtycoon.data.DiceRoll;
 import ch.zhaw.ovtycoon.Config.RegionName;
 import javafx.application.Application;
 
@@ -38,7 +39,7 @@ public class Game {
      * @param numOfDefender - number of troops, which will defend
      * @return a 2d array containing the defenders roll in the first column and the attackers in the second
      */
-	public int[][] runFight(Zone attacker, Zone defender, int numOfAttackers, int numOfDefenders) {
+	public DiceRoll runFight(Zone attacker, Zone defender, int numOfAttackers, int numOfDefenders) {
 		Fight fight = new Fight(attacker, defender);
 		return fight.fight(numOfAttackers, numOfDefenders);
 	}

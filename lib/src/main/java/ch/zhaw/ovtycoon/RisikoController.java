@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import ch.zhaw.ovtycoon.Config.PlayerColor;
 import ch.zhaw.ovtycoon.Config.RegionName;
+import ch.zhaw.ovtycoon.data.DiceRoll;
 import ch.zhaw.ovtycoon.gui.MapController;
 import ch.zhaw.ovtycoon.model.Game;
 import ch.zhaw.ovtycoon.model.Player;
@@ -36,9 +37,9 @@ public class RisikoController{
      * @param defender - defending zone
      * @param numOfAttacker - number of troops, which will attack
      * @param numOfDefender - number of troops, which will defend
-     * @return a 2d array containing the defenders roll in the first column and the attackers in the second
+     * @return a Data Transfer Object (DTO) of the rolls made
      */
-    public int[][] runFight(String attacker, String defender, int numOfAttacker, int numOfDefender){
+    public DiceRoll runFight(String attacker, String defender, int numOfAttacker, int numOfDefender){
     	return game.runFight(game.getZone(attacker), game.getZone(defender), numOfAttacker, numOfDefender);
     }
     
