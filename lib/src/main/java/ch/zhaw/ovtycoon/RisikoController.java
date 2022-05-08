@@ -11,7 +11,8 @@ public class RisikoController extends Application {
     @Override
     public void start(Stage stage) throws Exception {
         FXMLLoader fxmlLoader = new FXMLLoader(MapController.class.getClassLoader().getResource("zones-map-view.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 1000, 1000);
+        Scene scene = new Scene(fxmlLoader.load(), 1000, 900);
+        scene.getStylesheets().add(getClass().getClassLoader().getResource("map-styles.css").toExternalForm());
         stage.setTitle("OV-Tycoon");
         stage.setScene(scene);
         stage.show();
