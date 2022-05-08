@@ -1,9 +1,10 @@
 package ch.zhaw.ovtycoon.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Objects;
 
-public class Zone{
+public class Zone implements Serializable {
 	private String name;
 	private int troops;
 	private ArrayList<Zone> neighbours;

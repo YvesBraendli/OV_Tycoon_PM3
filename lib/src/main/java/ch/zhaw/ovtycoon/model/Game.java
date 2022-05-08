@@ -1,5 +1,6 @@
 package ch.zhaw.ovtycoon.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -10,7 +11,7 @@ import ch.zhaw.ovtycoon.RisikoController;
 import ch.zhaw.ovtycoon.Config.RegionName;
 import javafx.application.Application;
 
-public class Game {
+public class Game implements Serializable {
     private HashMap<Config.RegionName, ArrayList<Zone>> gameMap;
     private HashMap<Zone, Player> zoneOwner = new HashMap<Zone, Player>();
     private Player[] players;
