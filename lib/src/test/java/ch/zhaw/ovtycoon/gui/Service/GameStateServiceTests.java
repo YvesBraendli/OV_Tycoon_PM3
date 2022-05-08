@@ -1,5 +1,6 @@
 package ch.zhaw.ovtycoon.gui.Service;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import ch.zhaw.ovtycoon.Config;
@@ -10,7 +11,6 @@ import ch.zhaw.ovtycoon.model.Zone;
 import org.junit.Test;
 
 import ch.zhaw.ovtycoon.Config.ZoneName;
-
 
 public class GameStateServiceTests {
     private GameStateService testee = new GameStateService();
@@ -46,4 +46,26 @@ public class GameStateServiceTests {
         assertTrue(zone.equals(loadedZone));
     }
 
+    @Test
+    public void saveAndReloadGameObject_returnsSamePlayer() {
+        // Arrange
+        ZoneName zoneName = Config.ZoneName.Zone140;
+        String playerName = "tester";
+        Config.PlayerColor playerColor = Config.PlayerColor.YELLOW;
+        Game game = new Game();
+        Zone zone = new Zone(zoneName.toString());
+        Player player = new Player(playerName);
+        player.setColor(playerColor);
+        game.setZoneOwner(player, zone);
+
+        // Act
+        testee.saveGameState(game);
+        Game loadedGame = testee.loadGameState();
+        Zone loadedZone = loadedGame.getZone(zoneName);
+        Player loadedPlayer = loadedGame.getZoneOwner(loadedZone);
+
+        // Assert
+        assertEquals(playerName ,loadedPlayer.getName());
+        assertEquals(playerColor ,loadedPlayer.getColor());
+    }
 }
