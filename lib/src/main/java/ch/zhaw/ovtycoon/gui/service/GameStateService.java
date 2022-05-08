@@ -3,14 +3,20 @@ package ch.zhaw.ovtycoon.gui.service;
 import ch.zhaw.ovtycoon.model.Game;
 import java.io.*;
 
+/**
+ * Service to use for persisting and reloading the GameState.
+ */
 public class GameStateService {
-    private final String fileName = "yourfile2.txt";
+    private final String fileName = "serializedGameState.txt";
 
+    /**
+     * Deserializes the current game state from a textfile, and makes it possible to reload the whole game object.
+     * @return the loaded game object, returns null if the object does not exist or couldn't be loaded
+     */
     public Game loadGameState(){
         Game game = null;
-        FileInputStream fileInputStream = null;
         try {
-            fileInputStream = new FileInputStream(fileName);
+            FileInputStream fileInputStream = new FileInputStream(fileName);
             ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
             game = (Game) objectInputStream.readObject();
             objectInputStream.close();
@@ -21,10 +27,14 @@ public class GameStateService {
         return game;
     }
 
+    /**
+     * Serializes the current game state to a textfile, and persists the whole object.
+     * @param game the object to be serialized
+     * @return  true if the object could be successfully persisted, false if not
+     */
     public boolean saveGameState(Game game){
-        FileOutputStream fileOutputStream = null;
         try {
-            fileOutputStream = new FileOutputStream(fileName);
+            FileOutputStream fileOutputStream = new FileOutputStream(fileName);
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
             objectOutputStream.writeObject(game);
             objectOutputStream.flush();
