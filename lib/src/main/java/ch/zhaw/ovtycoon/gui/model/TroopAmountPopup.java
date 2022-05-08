@@ -14,7 +14,7 @@ public class TroopAmountPopup extends VBox {
     public static final double TROOP_AMOUNT_POPUP_PREF_HEIGHT = 150.0d;
     private int minTrpAmt;
     private final SimpleIntegerProperty maxTrpAmt = new SimpleIntegerProperty();
-    private Integer troopAmount = minTrpAmt;
+    private Integer troopAmount;
     private final Label troopAmountLabel = new Label();
     private final TextField troopAmountTextField = new TextField();
     private final Button confirmBtn = new Button();
@@ -27,6 +27,7 @@ public class TroopAmountPopup extends VBox {
         this.minTrpAmt = minTrpAmt;
         this.maxTrpAmt.setValue(maxTrpAmt);
         this.labelText = labelText;
+        this.troopAmount = minTrpAmt;
         getStyleClass().add("troop-amount-box");
         troopAmountLabel.getStyleClass().add("troop-amount-label");
         troopAmountLabel.setText(String.format(labelText, minTrpAmt, maxTrpAmt));
