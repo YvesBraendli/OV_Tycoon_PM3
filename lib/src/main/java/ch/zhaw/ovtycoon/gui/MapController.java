@@ -2,7 +2,10 @@ package ch.zhaw.ovtycoon.gui;
 
 import ch.zhaw.ovtycoon.TestBackend;
 import ch.zhaw.ovtycoon.gui.model.Action;
+import ch.zhaw.ovtycoon.gui.model.CustomTimeline;
 import ch.zhaw.ovtycoon.gui.model.HorizontalStripe;
+import ch.zhaw.ovtycoon.gui.model.Notification;
+import ch.zhaw.ovtycoon.gui.model.NotificationType;
 import ch.zhaw.ovtycoon.gui.model.Pixel;
 import ch.zhaw.ovtycoon.gui.model.TroopAmountPopup;
 import ch.zhaw.ovtycoon.gui.model.ZoneColor;
@@ -14,9 +17,9 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
-import javafx.event.EventHandler;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.canvas.Canvas;
@@ -37,14 +40,18 @@ import javafx.util.Duration;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class MapController {
+    @FXML
+    private StackPane stackPane;
     @FXML
     private Image mapImage;
     @FXML
@@ -69,10 +76,10 @@ public class MapController {
     private Timeline highlightClickableZonesTl = new Timeline();
     private PixelWriter pw;
     private PixelWriter mapPw;
-    private SimpleBooleanProperty sourceOrTargetNull = new SimpleBooleanProperty(true);
-    private SimpleBooleanProperty showingAnimation = new SimpleBooleanProperty(false);
-    private SimpleBooleanProperty actionButtonVisible = new SimpleBooleanProperty(false);
-    private SimpleBooleanProperty showingPopup = new SimpleBooleanProperty(false);
+    private final SimpleBooleanProperty sourceOrTargetNull = new SimpleBooleanProperty(true);
+    private final SimpleBooleanProperty showingAnimation = new SimpleBooleanProperty(false);
+    private final SimpleBooleanProperty actionButtonVisible = new SimpleBooleanProperty(false);
+    private final SimpleBooleanProperty showingPopup = new SimpleBooleanProperty(false);
 
     private final int overlayEffectShift = 5;
     private List<ZoneSquare> zoneSquares;
@@ -81,6 +88,7 @@ public class MapController {
 
     private List<ZoneSquare> clickableZones = new ArrayList<>();
     private List<ZoneSquare> hoverableZones = new ArrayList<>();
+    private final Queue<CustomTimeline> waitingTls = new LinkedList<>();
     private boolean mapClickEnabled = true;
 
     private ZoneSquare source;
@@ -107,7 +115,6 @@ public class MapController {
         zoneSquares.forEach(zoneSquare -> labelStackPane.getChildren().add(zoneSquare.getTxt()));
         this.addPlayerColorsToZones();
         labelStackPane.setOnMouseMoved(mouseEvent -> handleMapHover(mouseEvent));
-        nextMoveBtn.setText("Phase beenden");
         nextMoveBtn.setOnMouseClicked(event -> nextAction());
         actionBtn.setOnMouseClicked(event -> onActionButtonClick());
         nextMoveBtn.disableProperty().bind(showingAnimation.or(showingPopup));
@@ -117,6 +124,7 @@ public class MapController {
         hoverableZones = zoneSquares;
         addPlayers();
         highlightCurrPlayerLarge(testBackend.getCurrPlayer());
+        showNotification(NotificationType.INFO, "Spielstart");
         showActionChange();
     }
 
@@ -131,38 +139,42 @@ public class MapController {
 
     private void stopAnimation(Timeline tlPlaying) {
         tlPlaying.stop();
-        // showingAnimation.set(false);
     }
 
     private void playAnimation(Timeline tlToPlay, boolean isBlocking) {
-        final EventHandler<ActionEvent> finishedPlayingAnimation = fin -> {
-          if (isBlocking) {
-              showingAnimation.set(false);
-          }
-          tlToPlay.setOnFinished(null);
-        };
-        // if no animation is currently playing
-        if (!showingAnimation.get()) {
-            if (isBlocking) {
-                showingAnimation.set(true);
-            }
-            tlToPlay.setOnFinished(finishedPlayingAnimation);
-            tlToPlay.play();
-        } else {
-            final ChangeListener<Boolean> listener = new ChangeListener<Boolean>() {
-                @Override
-                public void changed(ObservableValue<? extends Boolean> obs, Boolean oldVal, Boolean newVal) {
-                    if (!newVal) {
-                        if (isBlocking) {
-                            showingAnimation.set(true);
-                        }
-                        tlToPlay.setOnFinished(finishedPlayingAnimation);
-                        tlToPlay.play();
-                        showingAnimation.removeListener(this);
+        final EventHandler<ActionEvent> handler = new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent fin) {
+                if (waitingTls.isEmpty()) {
+                    showingAnimation.set(false);
+                } else {
+                    CustomTimeline customTl = waitingTls.remove();
+                    if (customTl.isBlocking()) {
+                        customTl.getTimeline().setOnFinished(this);
+                    } else {
+                        showingAnimation.set(false);
                     }
+                    if (tlToPlay.getOnFinished() != null) {
+                        tlToPlay.setOnFinished(null);
+                    }
+                    customTl.getTimeline().play();
                 }
-            };
-            showingAnimation.addListener(listener);
+            }
+        };
+        // if no blocking animation is currently playing
+        if (!showingAnimation.get()) {
+            // if animation to play is blocking
+            if (isBlocking) {
+                CustomTimeline currAnim = new CustomTimeline(tlToPlay, isBlocking);
+                System.out.println(isBlocking);
+                showingAnimation.set(true);
+                currAnim.getTimeline().setOnFinished(handler);
+                currAnim.getTimeline().play();
+            } else {
+                tlToPlay.play();
+            }
+        } else { // already playing blocking animation
+            waitingTls.add(new CustomTimeline(tlToPlay, isBlocking));
         }
     }
 
@@ -732,6 +744,15 @@ public class MapController {
     private void removePopup(TroopAmountPopup popup) {
         this.showingPopup.set(false);
         labelStackPane.getChildren().remove(popup);
+    }
+
+    private void showNotification(NotificationType type, String text) {
+        Notification notification = new Notification(type, text, 688.0d);
+        System.out.println(stackPane.getChildren());
+        KeyFrame showNotificationKf = new KeyFrame(Duration.ZERO, event -> stackPane.getChildren().add(notification));
+        KeyFrame removeNotificationKf = new KeyFrame(Duration.seconds(2), event -> stackPane.getChildren().remove(notification));
+        Timeline notificationTl = new Timeline(showNotificationKf, removeNotificationKf);
+        playAnimation(notificationTl, true);
     }
 }
 
