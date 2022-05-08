@@ -281,11 +281,11 @@ public class MapController {
         KeyFrame showActionChangeLabelKf = new KeyFrame(Duration.seconds(showActionChangeDurationSeconds), (event) -> this.labelStackPane.getChildren().add(label));
         KeyFrame removeActionChangeLabelKf = new KeyFrame(Duration.seconds(removeActionChangeLabelDurationSeconds), event -> {
             this.labelStackPane.getChildren().remove(label);
-            overlayStackPane.setStyle("-fx-background-color: transparent;");
             if (testBackend.getAction() == Action.DEFEND) {
                 reinforcement();
                 labelStackPane.setOnMouseClicked(mouseEvent -> reinforcementClickHandler(mouseEvent));
             } else {
+                overlayStackPane.setStyle("-fx-background-color: transparent;");
                 labelStackPane.setOnMouseClicked(mouseEvent -> onMapClick(mouseEvent));
                 hoverableZones = zoneSquares;
                 mapClickEnabled = true;
