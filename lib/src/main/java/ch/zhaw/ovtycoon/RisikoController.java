@@ -1,19 +1,14 @@
 package ch.zhaw.ovtycoon;
 
-import java.util.ArrayList;
-
 import ch.zhaw.ovtycoon.Config.PlayerColor;
 import ch.zhaw.ovtycoon.Config.RegionName;
 import ch.zhaw.ovtycoon.data.DiceRoll;
-import ch.zhaw.ovtycoon.gui.MapController;
 import ch.zhaw.ovtycoon.model.Game;
 import ch.zhaw.ovtycoon.model.Player;
 import ch.zhaw.ovtycoon.model.Zone;
-import javafx.application.Application;
 import javafx.beans.property.ObjectProperty;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Scene;
-import javafx.stage.Stage;
+
+import java.util.ArrayList;
 
 /**
  * Interface between ÖVTycoon front- and backend
@@ -226,15 +221,4 @@ public class RisikoController{
     	}
     	return zoneNameList;
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
 }
