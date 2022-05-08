@@ -1,10 +1,12 @@
 package ch.zhaw.ovtycoon.model;
 
 import ch.zhaw.ovtycoon.Config;
+import ch.zhaw.ovtycoon.data.DiceRoll;
 
 public class Fight {
 	private Zone attackingZone;
 	private Zone defendingZone;
+	private Dice dice;
 
 	/**
 	 * Instantiates a new Fight object.
@@ -19,6 +21,7 @@ public class Fight {
 		}
 		this.attackingZone = attackingZone;
 		this.defendingZone = defendingZone;
+		dice = new Dice();
 	}
 	
 	/**
@@ -39,13 +42,12 @@ public class Fight {
 	 *                        Config.MAX_THROWABLE_DICE and not bigger than troops
 	 *                        in defending zone.
 	 * @throws IllegalArgumentException if arguments are invalid.
+	 * @return rolledDie, a 2d array containing the defenders roll in the first column and the attackers in the second
 	 */
-	public void fight(int attackingTroops, int defendingTroops) {
+	public DiceRoll fight(int attackingTroops, int defendingTroops) {
 		if (!isValidArgument(attackingTroops, true) || !isValidArgument(defendingTroops, false)) {
 			throw new IllegalArgumentException();
 		}
-
-		Dice dice = new Dice();
 		int[] attackingDice = dice.rollDice(attackingTroops);
 		int[] defendingDice = dice.rollDice(defendingTroops);
 
@@ -61,7 +63,9 @@ public class Fight {
 				attackingZone.decreaseZone(1);
 			}
 		}
-
+		
+		DiceRoll rolledDie = new DiceRoll(attackingDice, defendingDice, attackingTroops, defendingTroops);
+		return rolledDie;
 	}
 
 	private boolean isValidArgument(int attackingTroops, boolean isAttacker) {
