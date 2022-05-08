@@ -6,8 +6,7 @@ import java.util.Random;
 import ch.zhaw.ovtycoon.Config;
 
 public class Dice {
-	private final Random random = new Random();   
-	
+	private final Random random = new Random();  
 	/**
 	 * This method rolls Dice from one to maxDiceValue.
 	 * 

@@ -26,46 +26,51 @@ public class TroopHandlerTest {
         gameInstance = new Game();
         gameInstance.initGame(1);
         numberOfTroopsInZone = 20;
-        fillTroopUnitsInZone(gameInstance.getZone(Config.ZoneName.Zone140));
-        fillTroopUnitsInZone(gameInstance.getZone(Config.ZoneName.Zone141));
+        fillTroopUnitsInZone(gameInstance.getZone("Zone140"));
+        fillTroopUnitsInZone(gameInstance.getZone("Zone141"));
+
     }
 
     @Test
     public void movedRigthAmountsOfUnits() {
         //Arrange
-        int troopsUnitsAfterMovementInOriginZone = gameInstance.getZone(Config.ZoneName.Zone140).getTroops() - troopUnitsToMove;
-        int troopsUnitsAfterMovementInTargetZone = gameInstance.getZone(Config.ZoneName.Zone141).getTroops() + troopUnitsToMove;
+        int troopsUnitsAfterMovementInOriginZone = gameInstance.getZone("Zone140").getTroops() - troopUnitsToMove;
+        int troopsUnitsAfterMovementInTargetZone = gameInstance.getZone("Zone141").getTroops() + troopUnitsToMove;
         //Act
-        troopHandlerTestOnePlayer.moveUnits(gameInstance.getZone((Config.ZoneName.Zone140)),
-                gameInstance.getZone((Config.ZoneName.Zone141)), troopUnitsToMove);
+        troopHandlerTestOnePlayer.moveUnits(gameInstance.getZone(("Zone140")),
+                gameInstance.getZone(("Zone141")), troopUnitsToMove);
+
         //Test
-        assertTrue(troopsUnitsAfterMovementInOriginZone == gameInstance.getZone(Config.ZoneName.Zone140).getTroops());
-        assertTrue(troopsUnitsAfterMovementInTargetZone == gameInstance.getZone(Config.ZoneName.Zone141).getTroops());
+        assertTrue(troopsUnitsAfterMovementInOriginZone == gameInstance.getZone("Zone140").getTroops());
+        assertTrue(troopsUnitsAfterMovementInTargetZone == gameInstance.getZone("Zone141").getTroops());
     }
 
     @Test
     public void movedUnitsToTheRightZone() {
         //Arrange
-        int troopsUnitsBeforeMovementInTargetZone = gameInstance.getZone(Config.ZoneName.Zone141).getTroops();
+        int troopsUnitsBeforeMovementInTargetZone = gameInstance.getZone("Zone141").getTroops();
         //Act
-        troopHandlerTestOnePlayer.moveUnits(gameInstance.getZone((Config.ZoneName.Zone140)),
-                gameInstance.getZone((Config.ZoneName.Zone141)), troopUnitsToMove);
+        troopHandlerTestOnePlayer.moveUnits(gameInstance.getZone(("Zone140")),
+                gameInstance.getZone(("Zone141")), troopUnitsToMove);
+
         //Test
-        assertTrue(troopsUnitsBeforeMovementInTargetZone < gameInstance.getZone(Config.ZoneName.Zone141).getTroops());
+        assertTrue(troopsUnitsBeforeMovementInTargetZone < gameInstance.getZone("Zone141").getTroops());
     }
 
     @Test
     public void removedUnitsFromTheRightZone() {
         //Arrange
-        int troopsUnitsBeforeMovementInOriginZone = gameInstance.getZone(Config.ZoneName.Zone140).getTroops();
+        int troopsUnitsBeforeMovementInOriginZone = gameInstance.getZone("Zone140").getTroops();
         //Act
-        troopHandlerTestOnePlayer.moveUnits(gameInstance.getZone((Config.ZoneName.Zone140)),
-                gameInstance.getZone((Config.ZoneName.Zone141)),troopUnitsToMove);
-        //Test
-        assertTrue(troopsUnitsBeforeMovementInOriginZone > gameInstance.getZone(Config.ZoneName.Zone140).getTroops());
+        troopHandlerTestOnePlayer.moveUnits(gameInstance.getZone(("Zone140")),
+        		gameInstance.getZone(("Zone141")),troopUnitsToMove);
+       //Test
+        assertTrue(troopsUnitsBeforeMovementInOriginZone > gameInstance.getZone("Zone140").getTroops());
     }
 
     @Test
+
+
     public void unitDistributionWithOddBigPlayerNumberRight() {
         //Arrange
         int numberOfTroopsPerPlayer = Config.NUMBER_OF_TROOPS_TOTAL_IN_GAME / oddBigPlayerNumber;
