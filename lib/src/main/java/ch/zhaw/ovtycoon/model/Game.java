@@ -84,7 +84,38 @@ public class Game {
 	public void moveUnits(Zone from, Zone to, int numberOfTroops) {
 		troopHandler.moveUnits(from, to, currentPlayerIndex);
 	}
-	
+
+	/**
+	 * calculates the amount of reinforcements a player gets
+	 * amount of reinforcements is defined as follows:
+	 * 	 (#ofZones/3) + (#ofRegions * 2) = #newTroops
+	 *
+	 * min. amount of reinforcement is 3
+	 *
+	 * @param player current player
+	 * @return amount of reinforcement
+	 */
+	private int getAmountOfReinforcement(Player player){
+		int reinforcements = (getZonesOwnedbyPlayer(player).size() / 3)
+				+ (getRegionsOwnedByPlayer(player).size() * 2);
+
+		if(reinforcements >= 3){
+			return reinforcements;
+		}
+		else{
+			return Config.MIN_NUMBER_OF_REINFORCEMENTS;
+		}
+	}
+
+	/**
+	 * allows current player to add a number of troops to his/her controlled zones
+
+	 */
+	public void reinforce() {
+
+
+	}
+
 	/**
 	 * This method is responsible for the initial troop setting, which starts at the beginning of the game.
 	 * It sets one troop of the player in the zone, afterwards it has to be called again for the next player.
@@ -134,6 +165,17 @@ public class Game {
 				return null;
 		}
 		return regionOwner;
+	}
+
+	public ArrayList<RegionName> getRegionsOwnedByPlayer(Player player){
+		ArrayList<RegionName> regionsOwnedByPlayer = new ArrayList<RegionName>();
+		for(RegionName region : gameMap.keySet()){
+			if(getRegionOwner(region) == player){
+				regionsOwnedByPlayer.add(region);
+			}
+		}
+
+		return regionsOwnedByPlayer;
 	}
 	
 	/**
@@ -204,7 +246,7 @@ public class Game {
 	}
 	
 	/**
-	 * Searches for all zones which are oned by a specific player
+	 * Searches for all zones which are owned by a specific player
 	 * @param player to search zones for
 	 * @return ArrayList of the zones owned by the player
 	 */

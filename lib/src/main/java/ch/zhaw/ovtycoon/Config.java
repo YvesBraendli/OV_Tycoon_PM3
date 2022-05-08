@@ -12,6 +12,7 @@ public class Config {
 	public static final int NUMBER_OF_REGIONS = 5;
 	public static final int NUMBER_OF_TROOPS_TOTAL_IN_GAME = 80;
 	public static final int MIN_NUMBER_OF_TROOPS_IN_ZONE = 1;
+	public static final int MIN_NUMBER_OF_REINFORCEMENTS = 3;
 	
 	public enum RegionName{
 		Unterland("Unterland"),
