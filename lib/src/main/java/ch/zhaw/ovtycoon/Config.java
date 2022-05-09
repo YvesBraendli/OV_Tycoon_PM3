@@ -1,8 +1,9 @@
 package ch.zhaw.ovtycoon;
 
+import java.io.Serializable;
 import ch.zhaw.ovtycoon.model.Player;
 
-public class Config {
+public class Config  implements Serializable {
 	public static final int MAX_DICE_VALUE = 6;
 	public static final int MAX_THROWABLE_DICE = 3;
 	public static final int MAX_ATTACKERS = 3;

@@ -1,5 +1,6 @@
 package ch.zhaw.ovtycoon.model;
 
+import java.io.Serializable;
 import ch.zhaw.ovtycoon.Config;
 import ch.zhaw.ovtycoon.Config.PlayerColor;
 import ch.zhaw.ovtycoon.Config.RegionName;
@@ -13,8 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
-
-public class Game {
+public class Game implements Serializable {
 	private final Action[] actions = {Action.DEFEND, Action.ATTACK, Action.MOVE};
 	private final SimpleObjectProperty<Player> fightWinner = new SimpleObjectProperty<>(null);
 	private final SimpleBooleanProperty zoneOvertaken = new SimpleBooleanProperty(false);
@@ -31,7 +31,7 @@ public class Game {
 	/**
 	 * TODO REMOVE AFTER PLAYER INIT IMPLEMENTATION
 	 * Helperfunction for testing until player implementation is complete
-	 * @param p
+	 * @param players
 	 */
 	public void setPlayerList(Player[] players) {
 		this.players = players;
@@ -60,8 +60,8 @@ public class Game {
      * 
      * @param attacker - attacking zone
      * @param defender - defending zone
-     * @param numOfAttacker - number of troops, which will attack
-     * @param numOfDefender - number of troops, which will defend
+     * @param numOfAttackers - number of troops, which will attack
+     * @param numOfDefenders - number of troops, which will defend
      * @return a Data Transfer Object (DTO) of the rolls made
      */
 	public DiceRoll runFight(Zone attacker, Zone defender, int numOfAttackers, int numOfDefenders) {
@@ -78,7 +78,7 @@ public class Game {
 			setZoneOwner(attackingPlayer, defender);
 			defender.setTroops(numOfAttackers);
 			zoneOvertaken.set(true);
-			
+
 			if (getRegionOwner(getRegionOfZone(defender)) == attackingPlayer) {
 				setNewRegionOwner(attackingPlayer);
 			}

@@ -1,9 +1,10 @@
 package ch.zhaw.ovtycoon.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import ch.zhaw.ovtycoon.Config.RegionName;
 
-public class Region {
+public class Region implements Serializable {
 	private RegionName name;
 	private ArrayList<Zone> zones = new ArrayList<Zone>();
 	

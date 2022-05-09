@@ -2,7 +2,9 @@ package ch.zhaw.ovtycoon.model;
 
 import ch.zhaw.ovtycoon.Config;
 
-public class Player {
+import java.io.Serializable;
+
+public class Player implements Serializable {
     private String name;
     private Config.PlayerColor color = null;
     private boolean isEliminated = false;
