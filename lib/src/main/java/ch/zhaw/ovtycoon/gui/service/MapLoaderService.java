@@ -13,10 +13,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -26,13 +23,21 @@ public class MapLoaderService {
     private static final Pattern ZONE_SQUARE_DATA_PATTERN = Pattern.compile("sX=([0-9]+), oX=([0-9]+), sY=([0-9]+), oY=([0-9]+), color=([^,]+), name=([^,]+), center=\\(([0-9]+,[0-9]+)\\);");
     private static final int DATA_GROUP_COUNT = 7;
     private static final String ZONES_TXT_PATH_POSTFIX = "/src/main/resources/zones.txt";
-
     private final PixelReader imagePixelReader;
     private final ColorService colorService;
+    private double scale = 1.0d;
 
     public MapLoaderService(Image image) {
         this.imagePixelReader = image.getPixelReader();
         this.colorService = new ColorService(imagePixelReader);
+    }
+
+    public MapLoaderService(Image image, double scale) {
+        System.out.println(image.getWidth());
+        System.out.println(image.getHeight());
+        this.imagePixelReader = image.getPixelReader();
+        this.colorService = new ColorService(imagePixelReader);
+        this.scale = scale;
     }
 
     public List<ZoneSquare> initZoneSquaresFromConfig() {
@@ -59,7 +64,7 @@ public class MapLoaderService {
                         String name = matcher.group(6);
                         String center = matcher.group(7);
                         String[] centerCoordinates = center.split(",");
-                        Pixel zoneCenter = new Pixel(Integer.parseInt(centerCoordinates[0]), Integer.parseInt(centerCoordinates[1]));
+                        Pixel zoneCenter = getCenter(Integer.parseInt(centerCoordinates[0]), Integer.parseInt(centerCoordinates[1]));
 
                         ZoneSquare zoneSquare = new ZoneSquare(name, getXBorderStripes(dto), zoneCenter);
                         setTroopsCountText(zoneSquare); // TODO dont set here
@@ -75,6 +80,7 @@ public class MapLoaderService {
         return zoneSquares;
     }
 
+    // TODO check if slower bc of scaling
     private List<HorizontalStripe> getXBorderStripes(ZoneConfigDTO zoneConfigDTO) {
         ZoneColor zoneColor = zoneConfigDTO.getColor();
         List<HorizontalStripe> stripes = new ArrayList<>();
@@ -88,10 +94,10 @@ public class MapLoaderService {
                 prev = enteredZone;
                 enteredZone = colorService.isZoneColor(j, i, zoneColor);
                 if (enteredZone && !prev) {
-                    currStripe.setStartX(j);
-                    currStripe.setY(i);
+                    currStripe.setStartX((int) (j * scale));
+                    currStripe.setY((int) (i * scale));
                 } else if (!enteredZone && prev) {
-                    currStripe.setEndX(j - 1); // prev was last pixel in zone
+                    currStripe.setEndX((int) ((j - 1) * scale)); // prev was last pixel in zone
                     stripes.add(currStripe);
                     currStripe = new HorizontalStripe(); // if stripe intersected
                 }
@@ -109,6 +115,11 @@ public class MapLoaderService {
         txt.setTranslateY(zoneSquare.getCenter().getY());
         zoneSquare.setTroopsAmountText(txt);
         return txt;
+    }
+
+    // TODO check if slowed down by scaling
+    private Pixel getCenter(int x, int y) {
+        return scale == 1.0d ? new Pixel(x, y) : new Pixel((int) (x * scale), (int) (y * scale));
     }
 
     private class ZoneConfigDTO {

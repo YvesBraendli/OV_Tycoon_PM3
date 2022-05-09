@@ -41,6 +41,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.stage.Screen;
 import javafx.util.Duration;
 
 import java.util.ArrayList;
@@ -96,6 +97,14 @@ public class MapController {
     private Button actionBtn;
     @FXML
     private Button nextMoveBtn;
+    @FXML
+    private VBox mapVBox;
+    @FXML
+    private ImageView imgView;
+    @FXML
+    private HBox buttonHBox;
+    @FXML
+    private HBox upperHBox;
     private Timeline highlightClickableZonesTl = new Timeline();
     private PixelWriter pw;
     private PixelWriter mapPw;
@@ -111,12 +120,19 @@ public class MapController {
     private ColorService colorService = new ColorService();
     private MapLoaderService mapLoaderService;
 
+    private double scale = 1.0d;
+
     @FXML
     public void initialize() {
         // TODO should not be initialized in map controller
         initPlayers();
-
-        mapLoaderService = new MapLoaderService(mapImage);
+        scale = Screen.getPrimary().getBounds().getHeight() < 1000.0d ? 0.7 : 1.0d;
+        System.out.println("Scale " + scale);
+        if (scale != 1) {
+            System.out.println("rescale");
+            rescale();
+        }
+        mapLoaderService = new MapLoaderService(mapImage, scale);
         GraphicsContext gc = mapCanvas.getGraphicsContext2D();
         GraphicsContext overlayGc = mapCanvasOverlay.getGraphicsContext2D();
         pw = overlayGc.getPixelWriter();
@@ -134,6 +150,31 @@ public class MapController {
         addPlayers();
         currPlayer.set(risikoController.getCurrentPlayer());
         showActionChange();
+    }
+
+    private void rescale() {
+        upperHBox.setPrefHeight(upperHBox.getPrefHeight() * scale);
+        upperHBox.setPrefWidth(upperHBox.getPrefWidth() * scale);
+        mapVBox.setPrefHeight(mapVBox.getPrefHeight() * scale);
+        mapVBox.setPrefWidth(mapVBox.getPrefWidth() * scale);
+        imgView.setFitHeight(imgView.getFitHeight() * scale);
+        imgView.setFitWidth(imgView.getFitWidth() * scale);
+        mapCanvas.setHeight(mapCanvas.getHeight() * scale);
+        mapCanvas.setWidth(mapCanvas.getWidth() * scale);
+        overlayStackPane.setMaxHeight(overlayStackPane.getMaxHeight() * scale);
+        overlayStackPane.setMaxWidth(overlayStackPane.getMaxWidth() * scale);
+        overlayStackPane.setMinHeight(overlayStackPane.getMinHeight() * scale);
+        overlayStackPane.setMinWidth(overlayStackPane.getMinWidth() * scale);
+        mapCanvasOverlay.setHeight(mapCanvasOverlay.getHeight() * scale);
+        mapCanvasOverlay.setWidth(mapCanvasOverlay.getWidth() * scale);
+        labelStackPane.setMaxHeight(labelStackPane.getMaxHeight() * scale);
+        labelStackPane.setMaxWidth(labelStackPane.getMaxWidth() * scale);
+        labelStackPane.setMinHeight(labelStackPane.getMinHeight() * scale);
+        labelStackPane.setMinWidth(labelStackPane.getMinWidth() * scale);
+        playersVBox.setPrefHeight(playersVBox.getPrefHeight() * scale);
+        playersVBox.setPrefWidth(playersVBox.getPrefWidth() * scale);
+        buttonHBox.setPrefWidth(buttonHBox.getPrefWidth() * scale);
+        // TODO scale height of buttonhbox and buttons as well
     }
 
     private void initPlayers() {
@@ -210,23 +251,23 @@ public class MapController {
     private void highlightPlayerTile(String id) {
         HBox toBeHighlighted = playersListItems.stream().filter(box -> id.equals(box.getId())).findFirst().orElse(null);
         if (toBeHighlighted == null) return;
-        toBeHighlighted.setPrefWidth(175.0d);
-        toBeHighlighted.setPrefHeight(35.0d);
+        toBeHighlighted.setPrefWidth(175.0d * scale);
+        toBeHighlighted.setPrefHeight(35.0d * scale);
     }
 
     private void highlightCurrPlayerTile(String idOld, String idNew) {
         HBox toBeUnHighlighted = playersListItems.stream().filter(box -> idOld.equals(box.getId())).findFirst().orElse(null);
         highlightPlayerTile(idNew);
         if (toBeUnHighlighted == null) return;
-        toBeUnHighlighted.setPrefWidth(150.0d);
-        toBeUnHighlighted.setPrefHeight(25.0d);
+        toBeUnHighlighted.setPrefWidth(150.0d * scale);
+        toBeUnHighlighted.setPrefHeight(25.0d * scale);
     }
 
     private HBox buildAndGetPlayerHBox(Player player) {
         String playerColor = player.getColor().getHexValue().substring(0, 8).replace("0x", "#");
         HBox playerBox = new HBox();
-        playerBox.setPrefHeight(25.0d);
-        playerBox.setPrefWidth(150.0d);
+        playerBox.setPrefHeight(25.0d * scale);
+        playerBox.setPrefWidth(150.0d * scale);
         playerBox.maxHeightProperty().bind(playerBox.prefHeightProperty());
         playerBox.maxWidthProperty().bind(playerBox.prefWidthProperty());
         playerBox.setAlignment(Pos.TOP_RIGHT);
@@ -252,8 +293,8 @@ public class MapController {
     private HBox buildAndGetPlayerHBoxBig(Player player) {
         String playerColor = player.getColor().getHexValue().substring(0, 8).replace("0x", "#");
         HBox playerBox = new HBox();
-        playerBox.setPrefHeight(100.0d);
-        playerBox.setPrefWidth(500.0d);
+        playerBox.setPrefHeight(100.0d * scale);
+        playerBox.setPrefWidth(500.0d * scale);
         playerBox.maxHeightProperty().bind(playerBox.prefHeightProperty());
         playerBox.maxWidthProperty().bind(playerBox.prefWidthProperty());
         playerBox.setAlignment(Pos.TOP_RIGHT);
@@ -554,7 +595,7 @@ public class MapController {
         }));
 
         DiceRoll fightRes = risikoController.runFight(source.getName(), target.getName(), attackerTroops, defenderTroops);
-        FightResultGrid grid = new FightResultGrid(fightRes.getAttackerRoll(), fightRes.getDefenderRoll());
+        FightResultGrid grid = new FightResultGrid(fightRes.getAttackerRoll(), fightRes.getDefenderRoll(), scale);
         centerJavaFXRegion(labelStackPane, grid);
 
         // TODO user player names instead of color
