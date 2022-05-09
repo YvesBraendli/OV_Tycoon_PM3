@@ -1,18 +1,19 @@
 package ch.zhaw.ovtycoon.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.*;
 
 import ch.zhaw.ovtycoon.Config;
+
 import ch.zhaw.ovtycoon.data.DiceRoll;
 import ch.zhaw.ovtycoon.Config.PlayerColor;
 import ch.zhaw.ovtycoon.Config.RegionName;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.ObjectProperty;
 
-
-public class Game {
+public class Game implements Serializable {
 	private HashMap<Config.RegionName, ArrayList<Zone>> gameMap;
 	private HashMap<Zone,Player> zoneOwner = new HashMap<Zone,Player>();
 	private Player[] players;
@@ -24,7 +25,7 @@ public class Game {
 	/**
 	 * TODO REMOVE AFTER PLAYER INIT IMPLEMENTATION
 	 * Helperfunction for testing until player implementation is complete
-	 * @param p
+	 * @param players
 	 */
 	public void setPlayerList(Player[] players) {
 		this.players = players;
@@ -53,8 +54,8 @@ public class Game {
      * 
      * @param attacker - attacking zone
      * @param defender - defending zone
-     * @param numOfAttacker - number of troops, which will attack
-     * @param numOfDefender - number of troops, which will defend
+     * @param numOfAttackers - number of troops, which will attack
+     * @param numOfDefenders - number of troops, which will defend
      * @return a Data Transfer Object (DTO) of the rolls made
      */
 	public DiceRoll runFight(Zone attacker, Zone defender, int numOfAttackers, int numOfDefenders) {
