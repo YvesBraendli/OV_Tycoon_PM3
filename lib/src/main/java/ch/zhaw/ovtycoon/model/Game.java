@@ -1,26 +1,33 @@
 package ch.zhaw.ovtycoon.model;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map.*;
-
 import ch.zhaw.ovtycoon.Config;
-import ch.zhaw.ovtycoon.data.DiceRoll;
 import ch.zhaw.ovtycoon.Config.PlayerColor;
 import ch.zhaw.ovtycoon.Config.RegionName;
-import javafx.beans.property.SimpleObjectProperty;
+import ch.zhaw.ovtycoon.data.DiceRoll;
+import ch.zhaw.ovtycoon.gui.model.Action;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleObjectProperty;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map.Entry;
 
 
 public class Game {
+	private final Action[] actions = {Action.DEFEND, Action.ATTACK, Action.MOVE};
+	private final SimpleObjectProperty<Player> fightWinner = new SimpleObjectProperty<>(null);
+	private final SimpleBooleanProperty zoneOvertaken = new SimpleBooleanProperty(false);
+	private final SimpleObjectProperty<Player> currentPlayerProperty = new SimpleObjectProperty<>(null);
 	private HashMap<Config.RegionName, ArrayList<Zone>> gameMap;
-	private HashMap<Zone,Player> zoneOwner = new HashMap<Zone,Player>();
+	private HashMap<Zone, Player> zoneOwner = new HashMap<Zone, Player>();
 	private Player[] players;
 	private int currentPlayerIndex;
 	private TroopHandler troopHandler;
 	private ObjectProperty<PlayerColor> eliminatedPlayer;
 	private ObjectProperty<PlayerColor> newRegionOwner;
-	
+	private int currentActionIndex = 0;
+
 	/**
 	 * TODO REMOVE AFTER PLAYER INIT IMPLEMENTATION
 	 * Helperfunction for testing until player implementation is complete
@@ -58,18 +65,25 @@ public class Game {
      * @return a Data Transfer Object (DTO) of the rolls made
      */
 	public DiceRoll runFight(Zone attacker, Zone defender, int numOfAttackers, int numOfDefenders) {
+		fightWinner.set(null); // resetting after each fight
+		zoneOvertaken.setValue(null); // set value called here for being able to set it to null
+		int initialAttackerTroops = attacker.getTroops();
 		Fight fight = new Fight(attacker, defender);
 		DiceRoll diceRoll = fight.fight(numOfAttackers, numOfDefenders);
-		if(defender.getTroops() == 0) {
-			
+		Player winner = attacker.getTroops() < initialAttackerTroops ? getZoneOwner(defender) : getZoneOwner(attacker);
+		fightWinner.set(winner);
+		if (defender.getTroops() == 0) {
 			tryEliminatePlayer(getZoneOwner(defender));
 			Player attackingPlayer = getZoneOwner(attacker);
 			setZoneOwner(attackingPlayer, defender);
 			defender.setTroops(numOfAttackers);
+			zoneOvertaken.set(true);
 			
-			if(getRegionOwner(getRegionOfZone(defender)) == attackingPlayer) {
+			if (getRegionOwner(getRegionOfZone(defender)) == attackingPlayer) {
 				setNewRegionOwner(attackingPlayer);
 			}
+		} else {
+			zoneOvertaken.set(false);
 		}
 		return diceRoll;
 	}
@@ -82,7 +96,7 @@ public class Game {
      * @param numberOfTroops
      */
 	public void moveUnits(Zone from, Zone to, int numberOfTroops) {
-		troopHandler.moveUnits(from, to, currentPlayerIndex);
+		troopHandler.moveUnits(from, to, numberOfTroops);
 	}
 	
 	/**
@@ -172,6 +186,7 @@ public class Game {
 		}
 		currentPlayerIndex = currentPlayerIndex+1 == players.length ? 0 : currentPlayerIndex+1;
 		if(players[currentPlayerIndex].isEliminated()) switched = switchToNextPlayer(rec+1, true);
+		currentPlayerProperty.set(players[currentPlayerIndex]);
 		return switched;
 	}
 
@@ -227,7 +242,7 @@ public class Game {
 	 */
 	public ArrayList<Zone> getAttackableZones(Zone zone){
 		ArrayList<Zone> neighbourZones = new ArrayList<Zone>();
-		if(zone.getTroops()<=1) return neighbourZones;
+		if (zone.getTroops()<=1) return neighbourZones; // TODO can ev be removed
 		Player player = getZoneOwner(zone);
 		ArrayList<Zone> zonesOwnedByPlayer = getZonesOwnedbyPlayer(player);
 		neighbourZones = zone.getNeighbours();
@@ -273,7 +288,7 @@ public class Game {
 		ArrayList<Zone> zonesWithMovableTroops = new ArrayList<Zone>();
 		for(Zone zone: zonesOwnedByPlayer) {
 			if(zone.getTroops() > 1) {
-				if(zone.getNeighbours().removeAll(zonesOwnedByPlayer)) {
+				if(zone.getNeighbours().stream().anyMatch((neighbour -> zonesOwnedByPlayer.contains(neighbour)))) {
 					zonesWithMovableTroops.add(zone);
 				}
 			}
@@ -394,4 +409,40 @@ public class Game {
     public void setNewRegionOwner(Player player) {
     	newRegionOwner.set(player.getColor());
     }
+
+	// TODO doc for new methods -------------------------------------------------------------------------------------
+
+	public Player[] getPlayers() {
+		return players;
+	}
+
+	public void setZoneOwner(Player owner, String zoneName) {
+		zoneOwner.put(getZone(zoneName), owner);
+	}
+
+	public void updateZoneTroops(String zoneName, int troops) {
+		Zone zone = getZone(zoneName);
+		zone.setTroops(zone.getTroops() + troops);
+	}
+
+	public Action getCurrentAction() {
+		return actions[currentActionIndex];
+	}
+
+	public void nextAction() {
+		if (currentActionIndex == actions.length - 1) {
+			switchToNextPlayer();
+			currentActionIndex = 0;
+		} else {
+			currentActionIndex = currentActionIndex + 1;
+		}
+	}
+
+	public SimpleBooleanProperty getZoneOvertaken() {
+		return zoneOvertaken;
+	}
+
+	public SimpleObjectProperty<Player> getFightWinner() {
+		return fightWinner;
+	}
 }

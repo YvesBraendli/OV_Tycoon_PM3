@@ -3,12 +3,16 @@ package ch.zhaw.ovtycoon;
 import ch.zhaw.ovtycoon.Config.PlayerColor;
 import ch.zhaw.ovtycoon.Config.RegionName;
 import ch.zhaw.ovtycoon.data.DiceRoll;
+import ch.zhaw.ovtycoon.gui.model.Action;
 import ch.zhaw.ovtycoon.model.Game;
 import ch.zhaw.ovtycoon.model.Player;
 import ch.zhaw.ovtycoon.model.Zone;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleObjectProperty;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Interface between ÖVTycoon front- and backend
@@ -90,8 +94,9 @@ public class RisikoController{
 	 * Gets current player
 	 * @return the current player by color
 	 */
-    public PlayerColor getCurrentPlayer() {
-    	return game.getCurrentPlayer().getColor();
+	// TODO doc
+    public Player getCurrentPlayer() {
+    	return game.getCurrentPlayer();
     }
     
 	/**
@@ -153,6 +158,7 @@ public class RisikoController{
 	 * @return ArrayList of the zones that can be attacked from the current zone
 	 */
     public ArrayList<String> getAttackableZones(String attackerZoneName){
+		System.out.println(game.getZone(attackerZoneName));
     	return translateZoneListToNameList(game.getAttackableZones(game.getZone(attackerZoneName)));
     }
     
@@ -213,6 +219,51 @@ public class RisikoController{
     public ObjectProperty<PlayerColor> getNewRegionOwnerProperty(){
     	return game.getEliminiatedPlayerProperty();
     }
+
+	// TODO doc for new methods -------------------------------------------------------------------------------------
+
+	public Player[] getPlayers() {
+		return game.getPlayers();
+	}
+
+	public void setZoneOwner(Player owner, String zoneName) {
+		game.setZoneOwner(owner, zoneName);
+	}
+
+	public void updateZoneTroops(String zone, int troops) {
+		game.updateZoneTroops(zone, troops);
+	}
+
+	public void nextAction() {
+		game.nextAction();
+	}
+
+	public Action getAction() {
+		return game.getCurrentAction();
+	}
+
+	public List<String> getValidTargetZoneNames(String sourceZoneName) {
+		// TODO possible bug in getPossibleMovementNeighbours: sometimes not showing all neighbours
+		return getAction() == Action.ATTACK ? getAttackableZones(sourceZoneName) : getPossibleMovementNeighbours(sourceZoneName, getCurrentPlayer().getColor());
+	}
+
+	public List<String> getValidSourceZoneNames() {
+		switch(getAction()) {
+			case ATTACK: return getPossibleAttackerZones(getCurrentPlayer().getColor());
+			case MOVE: return getZonesWithMovableTroops(getCurrentPlayer().getColor());
+			default: return getZonesOwnedbyPlayer(getCurrentPlayer().getColor());
+		}
+	}
+
+	public SimpleObjectProperty<Player> getFightWinner() {
+		return game.getFightWinner();
+	}
+
+	public SimpleBooleanProperty getZoneOvertaken() {
+		return game.getZoneOvertaken();
+	}
+
+	// ---------------------------------------------------------------------------------------------------------
     
     private ArrayList<String> translateZoneListToNameList(ArrayList<Zone> zoneList){
     	ArrayList<String> zoneNameList = new ArrayList<String>();

@@ -1,5 +1,7 @@
 package ch.zhaw.ovtycoon;
 
+import ch.zhaw.ovtycoon.model.Player;
+
 public class Config {
 	public static final int MAX_DICE_VALUE = 6;
 	public static final int MAX_THROWABLE_DICE = 3;
@@ -89,8 +91,18 @@ public class Config {
 	    }
 	}
 
-	public enum PlayerColor{
-		BLACK, BLUE, GREEN, RED, WHITE, YELLOW
+	public enum PlayerColor {
+		BLACK("0x000000ff"), BLUE("0x0000ffff"), GREEN("0x4e944fff"), RED("0xff0000ff"), WHITE("0xffffffff"), YELLOW("0x8b8000ff");
+
+		private final String hexValue;
+
+		private PlayerColor(String hexValue) {
+			this.hexValue = hexValue;
+		}
+
+		public String getHexValue() {
+			return hexValue;
+		}
 	}
 	
 }

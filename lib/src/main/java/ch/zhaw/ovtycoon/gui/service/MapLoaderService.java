@@ -2,7 +2,6 @@ package ch.zhaw.ovtycoon.gui.service;
 
 import ch.zhaw.ovtycoon.gui.model.HorizontalStripe;
 import ch.zhaw.ovtycoon.gui.model.Pixel;
-import ch.zhaw.ovtycoon.gui.model.Square;
 import ch.zhaw.ovtycoon.gui.model.ZoneColor;
 import ch.zhaw.ovtycoon.gui.model.ZoneSquare;
 import javafx.scene.image.Image;
@@ -51,19 +50,19 @@ public class MapLoaderService {
                 while ((line = br.readLine()) != null) {
                     Matcher matcher = ZONE_SQUARE_DATA_PATTERN.matcher(line);
                     if (matcher.find() && matcher.groupCount() == DATA_GROUP_COUNT) {
-                        ZoneSquare zoneSquare = new ZoneSquare();
-                        Square square = new Square();
-                        square.setStartX(Integer.parseInt(matcher.group(1)));
-                        square.setEndX(Integer.parseInt(matcher.group(2)));
-                        square.setStartY(Integer.parseInt(matcher.group(3)));
-                        square.setEndY(Integer.parseInt(matcher.group(4)));
-                        zoneSquare.setSquare(square);
-                        zoneSquare.setColor(colorService.getZoneColorByName(matcher.group(5)));
-                        zoneSquare.setName(matcher.group(6));
+                        ZoneConfigDTO dto = new ZoneConfigDTO();
+                        dto.setStartX(Integer.parseInt(matcher.group(1)));
+                        dto.setOffsetX(Integer.parseInt(matcher.group(2)));
+                        dto.setStartY(Integer.parseInt(matcher.group(3)));
+                        dto.setOffsetY(Integer.parseInt(matcher.group(4)));
+                        dto.setColor(colorService.getZoneColorByName(matcher.group(5)));
+                        String name = matcher.group(6);
                         String center = matcher.group(7);
                         String[] centerCoordinates = center.split(",");
-                        zoneSquare.setCenter(new Pixel(Integer.parseInt(centerCoordinates[0]), Integer.parseInt(centerCoordinates[1])));
-                        setTroopsCountText(zoneSquare);
+                        Pixel zoneCenter = new Pixel(Integer.parseInt(centerCoordinates[0]), Integer.parseInt(centerCoordinates[1]));
+
+                        ZoneSquare zoneSquare = new ZoneSquare(name, getXBorderStripes(dto), zoneCenter);
+                        setTroopsCountText(zoneSquare); // TODO dont set here
                         zoneSquares.add(zoneSquare);
                     }
                 }
@@ -72,23 +71,20 @@ public class MapLoaderService {
         catch (IOException ioException) {
             ioException.printStackTrace();
         }
-        zoneSquares.forEach(zsq -> setXBorderStripes(zsq));
         System.out.println(String.format("Finished stripe init in %d ms", System.currentTimeMillis() - start));
         return zoneSquares;
     }
 
-    private void setXBorderStripes(ZoneSquare zsq) {
-        Square sqr = zsq.getSquare();
-        ZoneColor zoneColor = zsq.getColor();
+    private List<HorizontalStripe> getXBorderStripes(ZoneConfigDTO zoneConfigDTO) {
+        ZoneColor zoneColor = zoneConfigDTO.getColor();
         List<HorizontalStripe> stripes = new ArrayList<>();
-        for (int i = sqr.getStartY(); i <= sqr.getEndY(); i++) {
+        for (int i = zoneConfigDTO.getStartY(); i <= zoneConfigDTO.getEndY(); i++) {
             HorizontalStripe currStripe = new HorizontalStripe();
 
             boolean enteredZone = false;
 
             boolean prev = false;
-
-            for (int j = sqr.getStartX(); j <= sqr.getEndX(); j++) {
+            for (int j = zoneConfigDTO.getStartX(); j <= zoneConfigDTO.getEndX(); j++) {
                 prev = enteredZone;
                 enteredZone = colorService.isZoneColor(j, i, zoneColor);
                 if (enteredZone && !prev) {
@@ -101,13 +97,13 @@ public class MapLoaderService {
                 }
             }
         }
-        zsq.setBorder(stripes);
+        return stripes;
     }
 
     private Text setTroopsCountText(ZoneSquare zoneSquare) {
         Text txt = new Text();
         txt.setStyle("-fx-fill: lightgray;-fx-font-weight: bold;");
-        int randomTroopsAmount = new Random().nextInt(11) + 5; // zwischen 5 und 15 Truppen zum testen
+        int randomTroopsAmount = new Random().nextInt(5) + 1; // zwischen 1 und 6 Truppen zum testen
         txt.setText(Integer.toString(randomTroopsAmount));
         txt.setTranslateX(zoneSquare.getCenter().getX());
         txt.setTranslateY(zoneSquare.getCenter().getY());
@@ -115,34 +111,51 @@ public class MapLoaderService {
         return txt;
     }
 
-    public Map<String, List<String>> getNeighboursMap() {
-        Map<String, List<String>> neighboursMap = new HashMap<>();
-        final Pattern neighboursPattern = Pattern.compile("^zone=([^,]+),neighbours=([a-zA-Z0-9,]+)$");
-        final int neighboursPatternGroupCount = 2;
-        try {
-            String dir = System.getProperty("user.dir");
-            if (!dir.contains("lib")) {
-                dir += "/lib";
-            }
-            String nTxtPath = dir + ZONES_TXT_PATH_POSTFIX;
-            nTxtPath = nTxtPath.replace("zones.txt", "neighbours.txt");
-            File neighbourFile = new File(nTxtPath);
-            try (BufferedReader br = new BufferedReader(new FileReader(neighbourFile))) {
-                String line;
-                while ((line = br.readLine()) != null) {
-                    Matcher matcher = neighboursPattern.matcher(line);
-                    if (matcher.find() && matcher.groupCount() == neighboursPatternGroupCount) {
-                        String centerZone = matcher.group(1);
-                        String neighboursString = matcher.group(2);
-                        List<String> neighbours = Arrays.asList(neighboursString.split(","));
-                        neighboursMap.put(centerZone, neighbours);
-                    }
-                }
-            }
+    private class ZoneConfigDTO {
+        private int startX;
+        private int offsetX;
+        private int startY;
+        private int offsetY;
+        private ZoneColor color;
+
+        public int getStartX() {
+            return startX;
         }
-        catch (IOException ioException) {
-            ioException.printStackTrace();
+
+        public void setStartX(int startX) {
+            this.startX = startX;
         }
-        return neighboursMap;
+
+        public int getStartY() {
+            return startY;
+        }
+
+        public void setStartY(int startY) {
+            this.startY = startY;
+        }
+
+        public ZoneColor getColor() {
+            return color;
+        }
+
+        public void setColor(ZoneColor color) {
+            this.color = color;
+        }
+
+        public int getEndX() {
+            return startX + offsetX;
+        }
+
+        public void setOffsetX(int offsetX) {
+            this.offsetX = offsetX;
+        }
+
+        public int getEndY() {
+            return startY + offsetY;
+        }
+
+        public void setOffsetY(int offsetY) {
+            this.offsetY = offsetY;
+        }
     }
 }
