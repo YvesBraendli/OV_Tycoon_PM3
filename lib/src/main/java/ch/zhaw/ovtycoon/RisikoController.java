@@ -158,7 +158,6 @@ public class RisikoController{
 	 * @return ArrayList of the zones that can be attacked from the current zone
 	 */
     public ArrayList<String> getAttackableZones(String attackerZoneName){
-		System.out.println(game.getZone(attackerZoneName));
     	return translateZoneListToNameList(game.getAttackableZones(game.getZone(attackerZoneName)));
     }
     
@@ -208,7 +207,7 @@ public class RisikoController{
      * Gets the eliminated player property to implement a listener.
      * The property changes if after a fight a player does not own any more zones
      */
-    public ObjectProperty<PlayerColor> getEliminatedPlayerProperty(){
+    public ObjectProperty<Player> getEliminatedPlayerProperty(){
     	return game.getEliminiatedPlayerProperty();
     }
     
@@ -216,7 +215,7 @@ public class RisikoController{
      * Gets the new region owner property to implement a listener.
      * The property changes if after a fight a player owns a new region.
      */
-    public ObjectProperty<PlayerColor> getNewRegionOwnerProperty(){
+    public ObjectProperty<Player> getNewRegionOwnerProperty(){
     	return game.getEliminiatedPlayerProperty();
     }
 

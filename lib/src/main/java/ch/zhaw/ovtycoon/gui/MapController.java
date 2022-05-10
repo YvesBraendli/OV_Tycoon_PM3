@@ -119,7 +119,6 @@ public class MapController {
     private TestBackend testBackend = new TestBackend();
     private ColorService colorService = new ColorService();
     private MapLoaderService mapLoaderService;
-
     private double scale = 1.0d;
 
     @FXML
@@ -127,9 +126,7 @@ public class MapController {
         // TODO should not be initialized in map controller
         initPlayers();
         scale = Screen.getPrimary().getBounds().getHeight() < 1000.0d ? 0.7 : 1.0d;
-        System.out.println("Scale " + scale);
         if (scale != 1) {
-            System.out.println("rescale");
             rescale();
         }
         mapLoaderService = new MapLoaderService(mapImage, scale);
@@ -138,7 +135,7 @@ public class MapController {
         pw = overlayGc.getPixelWriter();
         mapPw = gc.getPixelWriter();
         zoneSquares = mapLoaderService.initZoneSquaresFromConfig();
-        zoneSquares.forEach(zoneSquare -> labelStackPane.getChildren().add(zoneSquare.getTxt()));
+        zoneSquares.forEach(zoneSquare -> labelStackPane.getChildren().add(zoneSquare.getTroopsAmountText()));
         this.addPlayerColorsToZones();
         labelStackPane.setOnMouseMoved(mouseEvent -> handleMapHover(mouseEvent));
         nextMoveBtn.setOnMouseClicked(event -> nextAction());
@@ -150,6 +147,15 @@ public class MapController {
         addPlayers();
         currPlayer.set(risikoController.getCurrentPlayer());
         showActionChange();
+        eliminatePlayer();
+    }
+
+    private void eliminatePlayer() {
+        risikoController.getEliminatedPlayerProperty().addListener(((observable, oldValue, newValue) -> {
+            showNotification(NotificationType.WARNING, String.format("%s wurde eliminiert!", newValue.getName()));
+            HBox toBeEliminated = playersListItems.stream().filter((hBox -> hBox.getId().equals(newValue.getName()))).findAny().orElse(null);
+            if (toBeEliminated != null) toBeEliminated.setStyle("-fx-opacity: 0.25");
+        }));
     }
 
     private void rescale() {
@@ -430,8 +436,8 @@ public class MapController {
             // TODO should be different if attack / move
             risikoController.moveUnits(source.getName(), target.getName(), troopAmountPopup.getTroopAmount());
             int troopAmtNew = risikoController.getZoneTroops(target.getName());
-            target.getTxt().setText(Integer.toString(troopAmtNew));
-            source.getTxt().setText(Integer.toString(risikoController.getZoneTroops(source.getName())));
+            target.updateTroopsAmount(Integer.toString(troopAmtNew));
+            source.updateTroopsAmount(Integer.toString(risikoController.getZoneTroops(source.getName())));
             removePopup(troopAmountPopup);
             mapClickEnabled = true;
             hoverableZones = zoneSquares;
@@ -513,7 +519,7 @@ public class MapController {
         addPopup(troopAmountPopup);
         troopAmountPopup.getConfirmBtn().setOnMouseClicked(click -> {
             risikoController.updateZoneTroops(sqr.getName(), troopAmountPopup.getTroopAmount());
-            sqr.getTxt().setText(Integer.toString(risikoController.getZoneTroops(sqr.getName())));
+            sqr.updateTroopsAmount(Integer.toString(risikoController.getZoneTroops(sqr.getName())));
             testBackend.placeTroops(troopAmountPopup.getTroopAmount());
             removePopup(troopAmountPopup);
             if (testBackend.finishedPlacingTroops().get()) {
@@ -548,14 +554,14 @@ public class MapController {
                     promptingDefender.set(true);
                     attackerTroops.set(popup.getTroopAmount());
                     popup.reconfigure(maxDefenderTroops, defenderText);
-                    highlightCurrPlayerLarge(zoneColorToPlayer(target.getColor()));
+                    highlightCurrPlayerLarge(playerColorToPlayer(target.getColor()));
 
                 }
             }
         });
     }
 
-    private Player zoneColorToPlayer(Config.PlayerColor playerColor) {
+    private Player playerColorToPlayer(Config.PlayerColor playerColor) {
         for (Player player : risikoController.getPlayers()) {
             if (player.getColor() == playerColor) {
                 return player;
@@ -570,6 +576,8 @@ public class MapController {
         label.setPrefHeight(200.0d);
         label.getStyleClass().add("action-label");
         centerJavaFXRegion(labelStackPane, label);
+        Player attacker = playerColorToPlayer(source.getColor());
+        Player defender = playerColorToPlayer(target.getColor());
 
         final AtomicReference<Player> fightWinner= new AtomicReference<>(null);
         final AtomicBoolean zoneOvertaken = new AtomicBoolean(false);
@@ -598,9 +606,8 @@ public class MapController {
         FightResultGrid grid = new FightResultGrid(fightRes.getAttackerRoll(), fightRes.getDefenderRoll(), scale);
         centerJavaFXRegion(labelStackPane, grid);
 
-        // TODO user player names instead of color
-        String winner = fightWinner.get().equals(risikoController.getCurrentPlayer()) ? source.getColor().name() : target.getColor().name();
-        String loser = fightWinner.get().equals(risikoController.getCurrentPlayer()) ? target.getColor().name() : source.getColor().name();
+        String winner = fightWinner.get().equals(attacker) ?  attacker.getName() : defender.getName();
+        String loser = fightWinner.get().equals(attacker) ? defender.getName() : attacker.getName();
 
         String fightResult = fightWinner.get().equals(risikoController.getCurrentPlayer()) ? "%s hat den Kampf gegen %s gewonnen" : "%s hat den Angriff von %s erfolgreich abgewehrt";
 
@@ -622,8 +629,8 @@ public class MapController {
                 moveTroops(attackerTroops);
             } else {
                 // update troops on zones after attack
-                source.getTxt().setText(Integer.toString(risikoController.getZoneTroops(source.getName())));
-                target.getTxt().setText(Integer.toString(risikoController.getZoneTroops(target.getName())));
+                source.updateTroopsAmount(Integer.toString(risikoController.getZoneTroops(source.getName())));
+                target.updateTroopsAmount(Integer.toString(risikoController.getZoneTroops(target.getName())));
 
                 // ending attack
                 mapClickEnabled = true;
@@ -644,11 +651,11 @@ public class MapController {
         Random random = new Random();
         Player[] players = risikoController.getPlayers();
 
-        for (int i = 0; i < zoneSquares.size(); i++) {
+        for (int i = 0; i < zoneSquares.size() - 1; i++) {
             String name = zoneSquares.get(i).getName();
-            int troops = Integer.parseInt(zoneSquares.get(i).getTxt().getText());
+            int troops = Integer.parseInt(zoneSquares.get(i).getTroopsAmountText().getText());
 
-            int randomInt = random.nextInt(3);
+            int randomInt = random.nextInt(2);
             risikoController.setZoneOwner(players[randomInt], zoneSquares.get(i).getName());
             Color zoneColor = colorService.getColor(players[randomInt].getColor().getHexValue());
             this.drawZone(zoneSquares.get(i), zoneColor);
@@ -656,6 +663,13 @@ public class MapController {
             // TODO move, currently setting troops here
             risikoController.updateZoneTroops(name, troops);
         }
+        // for testing elimination of player green
+        String name = zoneSquares.get(42).getName();
+        int troops = Integer.parseInt(zoneSquares.get(42).getTroopsAmountText().getText());
+        risikoController.setZoneOwner(players[2], zoneSquares.get(42).getName());
+        Color zoneColor = colorService.getColor(players[2].getColor().getHexValue());
+        this.drawZone(zoneSquares.get(42), zoneColor);
+        risikoController.updateZoneTroops(name, troops);
     }
 
     private void onMapClick(MouseEvent mouseEvent) {

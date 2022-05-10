@@ -8,7 +8,7 @@ public class Notification extends Label {
     public Notification(NotificationType type, String text, double width) {
         String backgroundColor;
         switch (type) {
-            case WARNING: backgroundColor = "yellow"; break;
+            case WARNING: backgroundColor = "darkorange"; break;
             case ERROR: backgroundColor = "indianred"; break;
             default: backgroundColor = "lightblue";
         }

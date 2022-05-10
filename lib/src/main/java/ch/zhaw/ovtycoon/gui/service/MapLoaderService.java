@@ -67,7 +67,7 @@ public class MapLoaderService {
                         Pixel zoneCenter = getCenter(Integer.parseInt(centerCoordinates[0]), Integer.parseInt(centerCoordinates[1]));
 
                         ZoneSquare zoneSquare = new ZoneSquare(name, getXBorderStripes(dto), zoneCenter);
-                        setTroopsCountText(zoneSquare); // TODO dont set here
+                        setInitialTroopCount(zoneSquare); // TODO dont set here
                         zoneSquares.add(zoneSquare);
                     }
                 }
@@ -106,18 +106,11 @@ public class MapLoaderService {
         return stripes;
     }
 
-    private Text setTroopsCountText(ZoneSquare zoneSquare) {
-        Text txt = new Text();
-        txt.setStyle("-fx-fill: lightgray;-fx-font-weight: bold;");
-        int randomTroopsAmount = new Random().nextInt(5) + 1; // zwischen 1 und 6 Truppen zum testen
-        txt.setText(Integer.toString(randomTroopsAmount));
-        txt.setTranslateX(zoneSquare.getCenter().getX());
-        txt.setTranslateY(zoneSquare.getCenter().getY());
-        zoneSquare.setTroopsAmountText(txt);
-        return txt;
+    private void setInitialTroopCount(ZoneSquare zoneSquare) {
+        int randomTroopsAmount = new Random().nextInt(3) + 1; // zwischen 1 und 3 Truppen zum testen
+        zoneSquare.updateTroopsAmount(Integer.toString(randomTroopsAmount));
     }
 
-    // TODO check if slowed down by scaling
     private Pixel getCenter(int x, int y) {
         return scale == 1.0d ? new Pixel(x, y) : new Pixel((int) (x * scale), (int) (y * scale));
     }

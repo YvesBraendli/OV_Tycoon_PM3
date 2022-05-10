@@ -24,7 +24,7 @@ public class Game implements Serializable {
 	private Player[] players;
 	private int currentPlayerIndex;
 	private TroopHandler troopHandler;
-	private ObjectProperty<PlayerColor> eliminatedPlayer;
+	private ObjectProperty<Player> eliminatedPlayer;
 	private ObjectProperty<PlayerColor> newRegionOwner;
 	private int currentActionIndex = 0;
 
@@ -47,7 +47,7 @@ public class Game implements Serializable {
 		zoneOwner = mapInit.getOwnerList();
 		players = new Player[playerAmount];
 		troopHandler = new TroopHandler(playerAmount);
-		eliminatedPlayer = new SimpleObjectProperty<PlayerColor>(null);
+		eliminatedPlayer = new SimpleObjectProperty<>(null);
 		newRegionOwner = new SimpleObjectProperty<PlayerColor>(null);
 		//TODO get player color
 	}
@@ -67,18 +67,17 @@ public class Game implements Serializable {
 	public DiceRoll runFight(Zone attacker, Zone defender, int numOfAttackers, int numOfDefenders) {
 		fightWinner.set(null); // resetting after each fight
 		zoneOvertaken.setValue(null); // set value called here for being able to set it to null
+		Player defendingPlayer = getZoneOwner(defender);
 		int initialAttackerTroops = attacker.getTroops();
 		Fight fight = new Fight(attacker, defender);
 		DiceRoll diceRoll = fight.fight(numOfAttackers, numOfDefenders);
 		Player winner = attacker.getTroops() < initialAttackerTroops ? getZoneOwner(defender) : getZoneOwner(attacker);
 		fightWinner.set(winner);
 		if (defender.getTroops() == 0) {
-			tryEliminatePlayer(getZoneOwner(defender));
 			Player attackingPlayer = getZoneOwner(attacker);
 			setZoneOwner(attackingPlayer, defender);
-			defender.setTroops(numOfAttackers);
+			tryEliminatePlayer(defendingPlayer);
 			zoneOvertaken.set(true);
-
 			if (getRegionOwner(getRegionOfZone(defender)) == attackingPlayer) {
 				setNewRegionOwner(attackingPlayer);
 			}
@@ -343,7 +342,7 @@ public class Game implements Serializable {
 	public void tryEliminatePlayer(Player player) {
 		if(getZonesOwnedbyPlayer(player).isEmpty()) {
 			player.setEliminated();
-			setEliminiatedPlayer(player);	
+			setEliminiatedPlayer(player);
 		}
 	}
 
@@ -390,14 +389,14 @@ public class Game implements Serializable {
         return alreadyAdded;
     }
     
-    public PlayerColor getEliminatedPlayer() {
+    public Player getEliminatedPlayer() {
     	return eliminatedPlayer.get();
     }   
-    public ObjectProperty<PlayerColor> getEliminiatedPlayerProperty() {
+    public ObjectProperty<Player> getEliminiatedPlayerProperty() {
     	return eliminatedPlayer;
     }   
     public void setEliminiatedPlayer(Player player) {
-    	eliminatedPlayer.set(player.getColor());
+    	eliminatedPlayer.set(player);
     }
 
     public PlayerColor getNewRegionOwner() {

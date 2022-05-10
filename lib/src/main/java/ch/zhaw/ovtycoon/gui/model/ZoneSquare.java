@@ -9,13 +9,14 @@ public class ZoneSquare {
     private final String name;
     private final List<HorizontalStripe> border;
     private final Pixel center;
+    private final Text troopsAmountText = new Text(); // TODO ev use in equals & hashCode as well
     private Config.PlayerColor color;
-    private Text txt;
 
     public ZoneSquare(String name, List<HorizontalStripe> border, Pixel center) {
         this.name = name;
         this.border = border;
         this.center = center;
+        initializeTroopsAmountText();
     }
 
     public void setColor(Config.PlayerColor color) {
@@ -38,12 +39,12 @@ public class ZoneSquare {
         return center;
     }
 
-    public Text getTxt() {
-        return txt;
+    public Text getTroopsAmountText() {
+        return troopsAmountText;
     }
 
-    public void setTroopsAmountText(Text txt) {
-        this.txt = txt;
+    public void updateTroopsAmount(String amountNew) {
+        this.troopsAmountText.setText(amountNew);
     }
 
     @Override
@@ -64,5 +65,11 @@ public class ZoneSquare {
         result = 31 * result + (border != null ? border.hashCode() : 0);
         result = 31 * result + (center != null ? center.hashCode() : 0);
         return result;
+    }
+
+    private void initializeTroopsAmountText() {
+        troopsAmountText.setStyle("-fx-fill: lightgray;-fx-font-weight: bold;");
+        troopsAmountText.setTranslateX(center.getX());
+        troopsAmountText.setTranslateY(center.getY());
     }
 }
