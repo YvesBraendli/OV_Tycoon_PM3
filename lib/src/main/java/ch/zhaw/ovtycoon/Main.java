@@ -13,7 +13,7 @@ public class Main {
         Application.launch(App.class, args);
     }
     
-    public static class App extends Application{
+    public static class App extends Application {
         @Override
         public void start(Stage stage) throws Exception {
             FXMLLoader fxmlLoader = new FXMLLoader(MapController.class.getClassLoader().getResource("zones-map-view.fxml"));

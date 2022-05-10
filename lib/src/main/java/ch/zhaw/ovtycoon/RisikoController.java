@@ -221,6 +221,18 @@ public class RisikoController{
 
 	// TODO doc for new methods -------------------------------------------------------------------------------------
 
+	public int getMaxTroopsForAttack(String zoneName) {
+		return game.getMaxTroopsForAttack(zoneName);
+	}
+
+	public int getMaxTroopsForDefending(String zoneName) {
+		return game.getMaxTroopsForDefending(zoneName);
+	}
+
+	public int getMaxMovableTroops(String zoneName) {
+		return game.getMaxMovableTroops(zoneName);
+	}
+
 	public Player[] getPlayers() {
 		return game.getPlayers();
 	}

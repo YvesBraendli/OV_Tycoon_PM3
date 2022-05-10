@@ -7,7 +7,6 @@ import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 
-import javax.swing.*;
 
 public class FightResultGrid extends GridPane {
     private double width = 500.0d;

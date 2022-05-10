@@ -10,7 +10,7 @@ public class Notification extends Label {
         switch (type) {
             case WARNING: backgroundColor = "darkorange"; break;
             case ERROR: backgroundColor = "indianred"; break;
-            default: backgroundColor = "lightblue";
+            default: backgroundColor = "midnightblue";
         }
         setPrefWidth(width);
         setPrefHeight(NOTIFICATION_HEIGHT);

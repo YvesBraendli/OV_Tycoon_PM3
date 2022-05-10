@@ -27,14 +27,7 @@ public class MapLoaderService {
     private final ColorService colorService;
     private double scale = 1.0d;
 
-    public MapLoaderService(Image image) {
-        this.imagePixelReader = image.getPixelReader();
-        this.colorService = new ColorService(imagePixelReader);
-    }
-
     public MapLoaderService(Image image, double scale) {
-        System.out.println(image.getWidth());
-        System.out.println(image.getHeight());
         this.imagePixelReader = image.getPixelReader();
         this.colorService = new ColorService(imagePixelReader);
         this.scale = scale;

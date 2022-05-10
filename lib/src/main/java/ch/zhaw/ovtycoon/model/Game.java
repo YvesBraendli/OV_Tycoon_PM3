@@ -411,23 +411,45 @@ public class Game implements Serializable {
 
 	// TODO doc for new methods -------------------------------------------------------------------------------------
 
+	/**
+	 * Gets the players array
+	 * @return array of all players
+	 */
 	public Player[] getPlayers() {
 		return players;
 	}
 
+	/**
+	 * Sets the owner of a zone
+	 * @param owner Player which should become the owner of the zone
+	 * @param zoneName name of the player which should be the owner of the passed zone
+	 */
 	public void setZoneOwner(Player owner, String zoneName) {
 		zoneOwner.put(getZone(zoneName), owner);
 	}
 
+	/**
+	 * Updates the amount of troops of a zone
+	 * @param zoneName name of the zone of which the troops should be updated
+	 * @param troops amount of troops which should be added to the current troop amount
+	 */
 	public void updateZoneTroops(String zoneName, int troops) {
 		Zone zone = getZone(zoneName);
 		zone.setTroops(zone.getTroops() + troops);
 	}
 
+	/**
+	 * Gets the current action
+	 * @return current action
+	 */
 	public Action getCurrentAction() {
 		return actions[currentActionIndex];
 	}
 
+	/**
+	 * Switches to the next action in the actions array. If the current action is
+	 * equal to the last action in the array, the player gets switched as well.
+	 */
 	public void nextAction() {
 		if (currentActionIndex == actions.length - 1) {
 			switchToNextPlayer();
@@ -437,11 +459,31 @@ public class Game implements Serializable {
 		}
 	}
 
+	/**
+	 * Property indicating if a zone has been overtaken during an attack
+	 * @return whether the zone has been overtaken or not
+	 */
 	public SimpleBooleanProperty getZoneOvertaken() {
 		return zoneOvertaken;
 	}
 
+	/**
+	 * Gets the winner of a fight
+	 * @return Player which won the fight
+	 */
 	public SimpleObjectProperty<Player> getFightWinner() {
 		return fightWinner;
+	}
+
+	public int getMaxTroopsForAttack(String zoneName) {
+		return Math.min(getMaxMovableTroops(zoneName), 3);
+	}
+
+	public int getMaxTroopsForDefending(String zoneName) {
+		return Math.min(getZone(zoneName).getTroops(), 2);
+	}
+
+	public int getMaxMovableTroops(String zoneName) {
+		return getZone(zoneName).getTroops() - 1;
 	}
 }
