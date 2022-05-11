@@ -42,6 +42,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Text;
 import javafx.stage.Screen;
 import javafx.util.Duration;
 
@@ -126,6 +127,7 @@ public class MapController {
     private TestBackend testBackend = new TestBackend();
     private ColorService colorService = new ColorService();
     private MapLoaderService mapLoaderService;
+    private final Map<String, Text> zoneTroopsTexts = new HashMap<>();
     private double scale = 1.0d;
     // TODO only for testing scenarios, e.g. game won
     private final Scenario scenarioToBeTested = Scenario.WIN_GAME;
@@ -610,6 +612,18 @@ public class MapController {
                 }
             }
         }));
+        // TODO check if listener removed
+        AtomicBoolean overtookRegion = new AtomicBoolean(false);
+        risikoController.getNewRegionOwnerProperty().addListener((new ChangeListener<Config.PlayerColor>() {
+            @Override
+            public void changed(ObservableValue<? extends Config.PlayerColor> observable, Config.PlayerColor oldValue, Config.PlayerColor newValue) {
+                if (newValue != null) {
+                    overtookRegion.set(true);
+                    System.out.println(newValue);
+                    risikoController.getNewRegionOwnerProperty().removeListener(this);
+                }
+            }
+        }));
 
         DiceRoll fightRes = risikoController.runFight(source.getName(), target.getName(), attackerTroops, defenderTroops);
         FightResultGrid grid = new FightResultGrid(fightRes.getAttackerRoll(), fightRes.getDefenderRoll(), scale);
@@ -629,7 +643,11 @@ public class MapController {
             label.setText(String.format(fightResultText, winner, loser));
             this.labelStackPane.getChildren().add(label);
         }));
-        KeyFrame finishFightKf = new KeyFrame(Duration.seconds(8), event -> {
+        int regionOwnerSeconds = overtookRegion.get() ? 7 : 5;
+        KeyFrame overTookRegionKf = new KeyFrame(Duration.seconds(regionOwnerSeconds), event -> {
+            label.setText(String.format("%s hat die Region %s uebernommen!", winner, risikoController.getRegionByOwner(target.getName()).toString()));
+        });
+        KeyFrame finishFightKf = new KeyFrame(Duration.seconds(regionOwnerSeconds + 3), event -> {
             this.labelStackPane.getChildren().remove(label);
             // attacker wins
             if (zoneOvertaken.get()) {
@@ -656,7 +674,14 @@ public class MapController {
                 sourceOrTargetNull.set(source == null || target == null);
             }
         });
-        Timeline fightTl = new Timeline(diceThrowKf, winnerKf, finishFightKf);
+
+        Timeline fightTl = new Timeline();
+        fightTl.getKeyFrames().add(diceThrowKf);
+        fightTl.getKeyFrames().add(winnerKf);
+        if (overtookRegion.get()) {
+            fightTl.getKeyFrames().add(overTookRegionKf);
+        }
+        fightTl.getKeyFrames().add(finishFightKf);
         playAnimation(fightTl, true);
     }
 

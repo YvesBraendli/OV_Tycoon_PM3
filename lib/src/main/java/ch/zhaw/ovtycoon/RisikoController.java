@@ -215,8 +215,8 @@ public class RisikoController{
      * Gets the new region owner property to implement a listener.
      * The property changes if after a fight a player owns a new region.
      */
-    public ObjectProperty<Player> getNewRegionOwnerProperty(){
-    	return game.getEliminiatedPlayerProperty();
+    public ObjectProperty<PlayerColor> getNewRegionOwnerProperty(){
+    	return game.getNewRegionOwnerProperty(); // TODO doc
     }
 
 	// TODO doc for new methods -------------------------------------------------------------------------------------
@@ -272,6 +272,10 @@ public class RisikoController{
 
 	public SimpleBooleanProperty getZoneOvertaken() {
 		return game.getZoneOvertaken();
+	}
+
+	public RegionName getRegionByOwner(String zoneName) {
+		return game.getRegionOfZone(game.getZone(zoneName));
 	}
 
 	// ---------------------------------------------------------------------------------------------------------

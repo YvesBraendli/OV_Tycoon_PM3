@@ -19,13 +19,14 @@ public class Game implements Serializable {
 	private final SimpleObjectProperty<Player> fightWinner = new SimpleObjectProperty<>(null);
 	private final SimpleBooleanProperty zoneOvertaken = new SimpleBooleanProperty(false);
 	private final SimpleObjectProperty<Player> currentPlayerProperty = new SimpleObjectProperty<>(null);
+	private final SimpleObjectProperty<Region> regionOwnerChange = new SimpleObjectProperty<>(null);
 	private HashMap<Config.RegionName, ArrayList<Zone>> gameMap;
 	private HashMap<Zone, Player> zoneOwner = new HashMap<Zone, Player>();
 	private Player[] players;
 	private int currentPlayerIndex;
 	private TroopHandler troopHandler;
 	private ObjectProperty<Player> eliminatedPlayer;
-	private ObjectProperty<PlayerColor> newRegionOwner;
+	private SimpleObjectProperty<PlayerColor> newRegionOwner = new SimpleObjectProperty<>(null);
 	private int currentActionIndex = 0;
 
 	/**
@@ -78,8 +79,10 @@ public class Game implements Serializable {
 			setZoneOwner(attackingPlayer, defender);
 			tryEliminatePlayer(defendingPlayer);
 			zoneOvertaken.set(true);
+
 			if (getRegionOwner(getRegionOfZone(defender)) == attackingPlayer) {
-				setNewRegionOwner(attackingPlayer);
+				setNewRegionOwner(attackingPlayer.getColor());
+				setNewRegionOwner(null); // reset
 			}
 		} else {
 			zoneOvertaken.set(false);
@@ -405,8 +408,8 @@ public class Game implements Serializable {
     public ObjectProperty<PlayerColor> getNewRegionOwnerProperty(){
     	return newRegionOwner;
     }
-    public void setNewRegionOwner(Player player) {
-    	newRegionOwner.set(player.getColor());
+    public void setNewRegionOwner(PlayerColor playerColor) {
+    	newRegionOwner.set(playerColor);
     }
 
 	// TODO doc for new methods -------------------------------------------------------------------------------------
