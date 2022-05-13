@@ -1,13 +1,13 @@
 package ch.zhaw.ovtycoon.gui;
 
 import ch.zhaw.ovtycoon.Config;
-import ch.zhaw.ovtycoon.RisikoController;
 import ch.zhaw.ovtycoon.TestBackend;
 import ch.zhaw.ovtycoon.data.DiceRoll;
 import ch.zhaw.ovtycoon.gui.model.Action;
 import ch.zhaw.ovtycoon.gui.model.CustomTimeline;
 import ch.zhaw.ovtycoon.gui.model.FightResultGrid;
 import ch.zhaw.ovtycoon.gui.model.HorizontalStripe;
+import ch.zhaw.ovtycoon.gui.model.MapModel;
 import ch.zhaw.ovtycoon.gui.model.Notification;
 import ch.zhaw.ovtycoon.gui.model.NotificationType;
 import ch.zhaw.ovtycoon.gui.model.Pixel;
@@ -16,12 +16,10 @@ import ch.zhaw.ovtycoon.gui.model.TroopAmountPopup;
 import ch.zhaw.ovtycoon.gui.model.ZoneSquare;
 import ch.zhaw.ovtycoon.gui.model.ZoneTooltip;
 import ch.zhaw.ovtycoon.gui.service.ColorService;
-import ch.zhaw.ovtycoon.gui.service.MapLoaderService;
 import ch.zhaw.ovtycoon.model.Player;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -58,10 +56,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
-import static ch.zhaw.ovtycoon.Config.PlayerColor.BLUE;
-import static ch.zhaw.ovtycoon.Config.PlayerColor.GREEN;
-import static ch.zhaw.ovtycoon.Config.PlayerColor.RED;
-
 public class MapController {
     private static final String PLAYER_ELIMINATED = "%s wurde eliminiert!";
     private static final String PLAYER_IMAGE_PREFIX = "player_";
@@ -81,12 +75,9 @@ public class MapController {
     private final List<HBox> playersListItems = new ArrayList<>();
     private final SimpleBooleanProperty sourceOrTargetNull = new SimpleBooleanProperty(true);
     private final SimpleBooleanProperty showingAnimation = new SimpleBooleanProperty(false);
-    private final SimpleBooleanProperty actionButtonVisible = new SimpleBooleanProperty(false);
     private final SimpleBooleanProperty showingPopup = new SimpleBooleanProperty(false);
     private final SimpleBooleanProperty gameWon = new SimpleBooleanProperty(false);
-    private final SimpleObjectProperty<Player> currPlayer = new SimpleObjectProperty<>(new Player(""));
     private final Queue<CustomTimeline> waitingTls = new LinkedList<>();
-    private final RisikoController risikoController = new RisikoController(3);
     @FXML
     private StackPane stackPane;
     @FXML
@@ -116,7 +107,6 @@ public class MapController {
     private Timeline highlightClickableZonesTl = new Timeline();
     private PixelWriter pw;
     private PixelWriter mapPw;
-    private List<ZoneSquare> zoneSquares;
     private Map<String, List<Pixel>> overlaidZones = new HashMap<>();
     private List<ZoneSquare> clickableZones = new ArrayList<>();
     private List<ZoneSquare> hoverableZones = new ArrayList<>();
@@ -126,12 +116,15 @@ public class MapController {
     private ZoneSquare currHovered;
     private TestBackend testBackend = new TestBackend();
     private ColorService colorService = new ColorService();
-    private MapLoaderService mapLoaderService;
+    // private MapLoaderService mapLoaderService;
     private final Map<String, Text> zoneTroopsTexts = new HashMap<>();
     private double scale = 1.0d;
     // TODO only for testing scenarios, e.g. game won
-    private final Scenario scenarioToBeTested = Scenario.WIN_GAME;
+    private final Scenario scenarioToBeTested = Scenario.NONE;
 
+    private final SimpleBooleanProperty clickedActionButton = new SimpleBooleanProperty();
+
+    private MapModel mapModel;
     @FXML
     public void initialize() {
         scale = Screen.getPrimary().getBounds().getHeight() < 1000.0d ? 0.7d : 1.0d;
@@ -139,36 +132,65 @@ public class MapController {
             rescale();
         }
         // TODO should not be initialized in map controller
-        initPlayers();
-        mapLoaderService = new MapLoaderService(mapImage, scale);
+        mapModel = new MapModel(mapImage, scale, this);
+        // mapLoaderService = new MapLoaderService(mapImage, scale);
         GraphicsContext gc = mapCanvas.getGraphicsContext2D();
         GraphicsContext overlayGc = mapCanvasOverlay.getGraphicsContext2D();
         pw = overlayGc.getPixelWriter();
         mapPw = gc.getPixelWriter();
-        zoneSquares = mapLoaderService.initZoneSquaresFromConfig();
-        zoneSquares.forEach(zoneSquare -> labelStackPane.getChildren().add(zoneSquare.getTroopsAmountText()));
+        // this.mapModel.getZoneSquares() = mapLoaderService.initZoneSquaresFromConfig();
+        mapModel.getZoneSquares().forEach(zoneSquare -> labelStackPane.getChildren().add(zoneSquare.getTroopsAmountText()));
         this.addPlayerColorsToZones();
         labelStackPane.setOnMouseMoved(mouseEvent -> handleMapHover(mouseEvent));
-        nextMoveBtn.setOnMouseClicked(event -> nextAction());
+        nextMoveBtn.setOnMouseClicked(event -> {
+            clickedActionButton.set(false); // TODO cleanup
+            mapModel.nextAction();
+        });
         actionBtn.setOnMouseClicked(event -> onActionButtonClick());
         nextMoveBtn.disableProperty().bind(showingAnimation.or(showingPopup).or(gameWon));
-        actionBtn.visibleProperty().bind(actionButtonVisible.or(gameWon));
-        actionBtn.disableProperty().bindBidirectional(sourceOrTargetNull);
-        hoverableZones = zoneSquares;
+        actionBtn.visibleProperty().bind(mapModel.actionButtonVisibleProperty().or(gameWon));
+
+        // todo sourceOrTargetNull.or still needed?
+        actionBtn.disableProperty().bind(mapModel.actionButtonDisabledProperty().or(mapModel.sourceOrTargetNullProperty()).or(clickedActionButton));
+        hoverableZones = mapModel.getZoneSquares();
         addPlayers();
-        currPlayer.set(risikoController.getCurrentPlayer());
-        showActionChange();
+        mapModel.showActionChangeProperty().addListener(((observable, oldValue, newValue) -> showActionChange(newValue)));
         eliminatePlayer();
+        mapModel.emitInitialVals(); // TODO not clean like this
+        initMapListeners();
+    }
+
+    private void initMapListeners() {
+        mapModel.darkenBackgroundProperty().addListener(((observable, oldValue, newValue) -> {
+            String style = newValue ? "-fx-background-color: black; -fx-opacity: 0.5;" : "-fx-background-color: transparent";
+            overlayStackPane.setStyle(style);
+        }));
+        mapModel.setZoneActiveProperty().addListener(((observable, oldValue, newValue) -> this.setZoneActive(newValue.getZoneSquare(), newValue.getOverlayColor(), newValue.isShift())));
+        mapModel.zonesToInactivateProperty().addListener(((observable, oldValue, newValue) -> this.inactivateZone(newValue)));
+        mapModel.removeOverlaidPixelsProperty().addListener(((observable, oldValue, newValue) -> {
+            if (newValue) removeAllOverlaidPixels();
+        }));
+        mapModel.stopAnimationProperty().addListener(((observable, oldValue, newValue) -> {
+            if (newValue) {
+                stopAnimation();
+            }
+        }));
+        mapModel.highlightNeighboursProperty().addListener(((observable, oldValue, newValue) -> markNeighbours(newValue)));
+        mapModel.removeUnnecessaryTooltipsProperty().addListener(((observable, oldValue, newValue) -> {
+            if (newValue && labelStackPane.getChildren().size() > this.mapModel.getZoneSquares().size())
+                labelStackPane.getChildren().remove(labelStackPane.getChildren().size() - 1);
+        }));
     }
 
     private void eliminatePlayer() {
-        risikoController.getEliminatedPlayerProperty().addListener(((observable, oldValue, newValue) -> {
+        mapModel.getRisikoController().getEliminatedPlayerProperty().addListener(((observable, oldValue, newValue) -> {
             showNotification(NotificationType.WARNING, String.format(PLAYER_ELIMINATED, newValue.getName()));
             HBox toBeEliminated = playersListItems.stream().filter((hBox -> hBox.getId().equals(newValue.getName()))).findAny().orElse(null);
             if (toBeEliminated != null) toBeEliminated.setStyle("-fx-opacity: 0.25;");
         }));
     }
 
+    // todo keep here
     private void rescale() {
         upperHBox.setPrefHeight(upperHBox.getPrefHeight() * scale);
         upperHBox.setPrefWidth(upperHBox.getPrefWidth() * scale);
@@ -193,15 +215,6 @@ public class MapController {
         buttonHBox.setPrefWidth(buttonHBox.getPrefWidth() * scale);
     }
 
-    private void initPlayers() {
-        risikoController.getPlayers()[0] = new Player("Player a");
-        risikoController.getPlayers()[0].setColor(RED);
-        risikoController.getPlayers()[1] = new Player("Player b");
-        risikoController.getPlayers()[1].setColor(BLUE);
-        risikoController.getPlayers()[2] = new Player("Player c");
-        risikoController.getPlayers()[2].setColor(GREEN);
-    }
-
     private void highlightCurrPlayerLarge(Player currPlayer) {
         HBox playerBoxLarge = buildAndGetPlayerHBoxBig(currPlayer);
         centerJavaFXRegion(labelStackPane, playerBoxLarge);
@@ -211,8 +224,8 @@ public class MapController {
         playAnimation(highlightPlayerTl, true);
     }
 
-    private void stopAnimation(Timeline tlPlaying) {
-        tlPlaying.stop();
+    private void stopAnimation() {
+        highlightClickableZonesTl.stop();
     }
 
     private void playAnimation(Timeline tlToPlay, boolean isBlocking) {
@@ -252,13 +265,13 @@ public class MapController {
     }
 
     private void addPlayers() {
-        for (Player player : risikoController.getPlayers()) {
+        for (Player player : mapModel.getRisikoController().getPlayers()) {
             HBox playerHBox = buildAndGetPlayerHBox(player);
             playersListItems.add(playerHBox);
             playersVBox.getChildren().add(playerHBox);
         }
 
-        currPlayer.addListener((obs, oldVal, newVal) -> {
+        mapModel.currPlayerProperty().addListener((obs, oldVal, newVal) -> {
             highlightCurrPlayerTile(oldVal.getName(), newVal.getName());
             highlightCurrPlayerLarge(newVal);
         });
@@ -279,6 +292,7 @@ public class MapController {
         toBeUnHighlighted.setPrefHeight(25.0d * scale);
     }
 
+    // TODO use player color instead
     private HBox buildAndGetPlayerHBox(Player player) {
         String playerColor = player.getColor().getHexValue().substring(0, 8).replace("0x", "#");
         HBox playerBox = new HBox();
@@ -296,7 +310,8 @@ public class MapController {
         plyrIV.setImage(plrImg);
         playerBox.getChildren().add(plyrIV);
 
-        Label plrLabel = new Label(player.getName());
+        // Label plrLabel = new Label(player.getName());
+        Label plrLabel = new Label();
         plrLabel.prefHeightProperty().bind(playerBox.prefHeightProperty());
         plrLabel.prefWidthProperty().bind(playerBox.prefWidthProperty().subtract(playerBox.prefHeightProperty()));
         plrLabel.setStyle(String.format("-fx-background-color: %s; -fx-text-fill: white; -fx-padding: 0 0 0 5px;", playerColor));
@@ -324,7 +339,8 @@ public class MapController {
         plyrIV.setImage(plrImg);
         playerBox.getChildren().add(plyrIV);
 
-        Label plrLabel = new Label(player.getName());
+        // Label plrLabel = new Label(player.getName());
+        Label plrLabel = new Label();
         plrLabel.prefHeightProperty().bind(playerBox.prefHeightProperty());
         plrLabel.prefWidthProperty().bind(playerBox.prefWidthProperty().subtract(playerBox.prefHeightProperty()));
         plrLabel.setAlignment(Pos.CENTER);
@@ -335,27 +351,13 @@ public class MapController {
         return playerBox;
     }
 
-    private void nextAction() {
-        source = null;
-        target = null;
-        sourceOrTargetNull.set(true);
-        Player currentPlayerBeforeActionSwitch = risikoController.getCurrentPlayer();
-        risikoController.nextAction();
-        Player playerAfterActionSwitch = risikoController.getCurrentPlayer();
-        if (currentPlayerBeforeActionSwitch != playerAfterActionSwitch) {
-            currPlayer.set(risikoController.getCurrentPlayer()); // TODO ev bind to property in RisikoController
-        }
-        Action next = risikoController.getAction();
-        actionButtonVisible.set(next != Action.DEFEND);
-        actionBtn.setText(risikoController.getAction().getActionName());
-        showActionChange();
-    }
+    // TODO curr player from model
+    // TODO get action button visible and action button text
 
-    private void showActionChange() {
+    private void showActionChange(String text) {
         Label label = new Label();
         mapClickEnabled = false;
         hoverableZones = new ArrayList<>();
-        String text = risikoController.getAction().getActionName();
         label.setText(text);
         label.setPrefWidth(400.0d);
         label.setPrefHeight(100.0d);
@@ -363,20 +365,20 @@ public class MapController {
         centerJavaFXRegion(labelStackPane, label);
         overlayStackPane.setStyle("-fx-background-color: black; -fx-opacity: 0.5;");
 
-        stopAnimation(highlightClickableZonesTl);
+        stopAnimation();
         removeAllOverlaidPixels();
         int showActionChangeDurationSeconds = 0;
         int removeActionChangeLabelDurationSeconds = showActionChangeDurationSeconds + 3;
         KeyFrame showActionChangeLabelKf = new KeyFrame(Duration.seconds(showActionChangeDurationSeconds), event -> this.labelStackPane.getChildren().add(label));
         KeyFrame removeActionChangeLabelKf = new KeyFrame(Duration.seconds(removeActionChangeLabelDurationSeconds), event -> {
             this.labelStackPane.getChildren().remove(label);
-            if (risikoController.getAction() == Action.DEFEND) {
+            if (mapModel.getRisikoController().getAction() == Action.DEFEND) {
                 reinforcement();
                 labelStackPane.setOnMouseClicked(mouseEvent -> reinforcementClickHandler(mouseEvent));
             } else {
                 overlayStackPane.setStyle("-fx-background-color: transparent;");
                 labelStackPane.setOnMouseClicked(mouseEvent -> onMapClick(mouseEvent));
-                hoverableZones = zoneSquares;
+                hoverableZones = mapModel.getZoneSquares();
                 mapClickEnabled = true;
                 highLightClickableZones();
             }
@@ -385,14 +387,18 @@ public class MapController {
         playAnimation(actionChangeTl, true);
     }
 
+    public Map<String, List<Pixel>> getOverlaidZones() {
+        return overlaidZones;
+    }
+
     private void handleMapHover(MouseEvent mouseEvent) {
         if (hoverableZones.isEmpty()) return;
         int x = (int) mouseEvent.getX();
         int y = (int) mouseEvent.getY();
-        ZoneSquare hoveredZone = getZoneAtCoordinates(x, y);
+        ZoneSquare hoveredZone = mapModel.getZoneAtCoordinates(x, y);
         if (hoveredZone == null || !hoverableZones.contains(hoveredZone)) {
-            if (this.labelStackPane.getChildren().size() > this.zoneSquares.size()) {
-                for (int i = this.zoneSquares.size(); i < this.labelStackPane.getChildren().size(); i++) {
+            if (this.labelStackPane.getChildren().size() > this.mapModel.getZoneSquares().size()) {
+                for (int i = this.mapModel.getZoneSquares().size(); i < this.labelStackPane.getChildren().size(); i++) {
                     if (this.labelStackPane.getChildren().get(i) instanceof ZoneTooltip) { // to prevent removing labels showing the current move
                         this.labelStackPane.getChildren().remove(i);
                         break;
@@ -404,8 +410,8 @@ public class MapController {
         } else if (hoveredZone.equals(currHovered)) {
             return;
         }
-        if (currHovered != null && this.labelStackPane.getChildren().size() > this.zoneSquares.size()) {
-            for (int i = this.zoneSquares.size(); i < this.labelStackPane.getChildren().size(); i++) {
+        if (currHovered != null && this.labelStackPane.getChildren().size() > this.mapModel.getZoneSquares().size()) {
+            for (int i = this.mapModel.getZoneSquares().size(); i < this.labelStackPane.getChildren().size(); i++) {
                 if (this.labelStackPane.getChildren().get(i) instanceof ZoneTooltip) {
                     this.labelStackPane.getChildren().remove(i);
                     break;
@@ -421,9 +427,9 @@ public class MapController {
     }
 
     private void onActionButtonClick() {
-        actionBtn.setDisable(true);
+        clickedActionButton.set(true);
         mapClickEnabled = false;
-        switch (risikoController.getAction()) {
+        switch (mapModel.getRisikoController().getAction()) {
             case ATTACK:
                 initAttack();
                 break;
@@ -438,19 +444,19 @@ public class MapController {
 
     private void moveTroops(int minAmount) {
         if (source == null || target == null) return;
-        int maxMovableTroops = risikoController.getMaxMovableTroops(source.getName());
+        int maxMovableTroops = mapModel.getRisikoController().getMaxMovableTroops(source.getName());
         TroopAmountPopup troopAmountPopup = new TroopAmountPopup(minAmount, maxMovableTroops, MOVE_TROOPS_TEXT);
         centerJavaFXRegion(labelStackPane, troopAmountPopup);
         addPopup(troopAmountPopup);
         troopAmountPopup.getConfirmBtn().setOnMouseClicked(click -> {
             // TODO should be different if attack / move
-            risikoController.moveUnits(source.getName(), target.getName(), troopAmountPopup.getTroopAmount());
-            int troopAmtNew = risikoController.getZoneTroops(target.getName());
+            mapModel.getRisikoController().moveUnits(source.getName(), target.getName(), troopAmountPopup.getTroopAmount());
+            int troopAmtNew = mapModel.getRisikoController().getZoneTroops(target.getName());
             target.updateTroopsAmount(Integer.toString(troopAmtNew));
-            source.updateTroopsAmount(Integer.toString(risikoController.getZoneTroops(source.getName())));
+            source.updateTroopsAmount(Integer.toString(mapModel.getRisikoController().getZoneTroops(source.getName())));
             removePopup(troopAmountPopup);
             mapClickEnabled = true;
-            hoverableZones = zoneSquares;
+            hoverableZones = this.mapModel.getZoneSquares();
             source = null;
             target = null;
             removeAllOverlaidPixels();
@@ -459,8 +465,8 @@ public class MapController {
     }
 
     private void highLightClickableZones() {
-        stopAnimation(highlightClickableZonesTl);
-        Config.PlayerColor currPlayerColor = risikoController.getCurrentPlayer().getColor();
+        stopAnimation();
+        Config.PlayerColor currPlayerColor = mapModel.getRisikoController().getCurrentPlayer().getColor();
         Color mix = colorService.mixColors(neighbourOverlayColor, colorService.getColor(currPlayerColor.getHexValue()));
         updateClickableZones();
         KeyFrame highlightZonesKf = new KeyFrame(Duration.seconds(1), event -> clickableZones.forEach(zone -> setZoneActive(zone, mix, false)));
@@ -470,8 +476,8 @@ public class MapController {
         playAnimation(highlightClickableZonesTl, false);
     }
 
-    private void updateClickableZones() {
-        clickableZones = risikoController.getValidSourceZoneNames().stream()
+    public void updateClickableZones() {
+        clickableZones = mapModel.getRisikoController().getValidSourceZoneNames().stream()
                 .map(zoneName -> getZsqByName(zoneName)).collect(Collectors.toList());
     }
 
@@ -493,7 +499,7 @@ public class MapController {
         KeyFrame removeLabelKf = new KeyFrame(Duration.seconds(4), event -> {
             labelStackPane.getChildren().remove(label);
             overlayStackPane.setStyle("-fx-background-color: transparent;");
-            hoverableZones = zoneSquares;
+            hoverableZones = this.mapModel.getZoneSquares();
             mapClickEnabled = true;
             highLightClickableZones();
         });
@@ -506,9 +512,9 @@ public class MapController {
         if (!mapClickEnabled) return;
         int x = (int) mouseEvent.getX();
         int y = (int) mouseEvent.getY();
-        ZoneSquare sqr = getZoneAtCoordinates(x, y);
+        ZoneSquare sqr = mapModel.getZoneAtCoordinates(x, y);
         if (sqr == null || !clickableZones.contains(sqr)) return;
-        stopAnimation(highlightClickableZonesTl);
+        stopAnimation();
         removeAllOverlaidPixels();
         mapClickEnabled = false;
 
@@ -521,23 +527,23 @@ public class MapController {
         centerJavaFXRegion(labelStackPane, troopAmountPopup);
 
         // remove label of last hovered zone
-        if (labelStackPane.getChildren().size() > zoneSquares.size()) {
+        if (labelStackPane.getChildren().size() > this.mapModel.getZoneSquares().size()) {
             labelStackPane.getChildren().remove(labelStackPane.getChildren().size() - 1);
         }
 
         addPopup(troopAmountPopup);
         troopAmountPopup.getConfirmBtn().setOnMouseClicked(click -> {
-            risikoController.updateZoneTroops(sqr.getName(), troopAmountPopup.getTroopAmount());
-            sqr.updateTroopsAmount(Integer.toString(risikoController.getZoneTroops(sqr.getName())));
+            mapModel.getRisikoController().updateZoneTroops(sqr.getName(), troopAmountPopup.getTroopAmount());
+            sqr.updateTroopsAmount(Integer.toString(mapModel.getRisikoController().getZoneTroops(sqr.getName())));
             testBackend.placeTroops(troopAmountPopup.getTroopAmount());
             removePopup(troopAmountPopup);
             if (testBackend.finishedPlacingTroops().get()) {
                 mapClickEnabled = false;
                 hoverableZones = new ArrayList<>();
-                nextAction();
+                mapModel.nextAction();
             } else {
                 mapClickEnabled = true;
-                hoverableZones = zoneSquares;
+                hoverableZones = this.mapModel.getZoneSquares();
                 removeAllOverlaidPixels();
                 overlayStackPane.setStyle("-fx-background-color: transparent;");
                 updateClickableZones();
@@ -546,9 +552,11 @@ public class MapController {
     }
 
     private void initAttack() {
+        source = mapModel.getSource();
+        target = mapModel.getTarget();
         if (source == null || target == null) return;
-        int maxAttackerTroops = risikoController.getMaxTroopsForAttack(source.getName());
-        int maxDefenderTroops = risikoController.getMaxTroopsForDefending(target.getName());
+        int maxAttackerTroops = mapModel.getRisikoController().getMaxTroopsForAttack(source.getName());
+        int maxDefenderTroops = mapModel.getRisikoController().getMaxTroopsForDefending(target.getName());
         TroopAmountPopup popup = promptUserForTroopAmount(maxAttackerTroops, ATTACKER_TEXT);
         popup.visibleProperty().bind(showingAnimation.not());
         AtomicBoolean promptingDefender = new AtomicBoolean(false);
@@ -572,7 +580,7 @@ public class MapController {
     }
 
     private Player playerColorToPlayer(Config.PlayerColor playerColor) {
-        for (Player player : risikoController.getPlayers()) {
+        for (Player player : mapModel.getRisikoController().getPlayers()) {
             if (player.getColor() == playerColor) {
                 return player;
             }
@@ -593,46 +601,46 @@ public class MapController {
         final AtomicReference<Player> fightWinner= new AtomicReference<>(null);
         final AtomicBoolean zoneOvertaken = new AtomicBoolean(false);
 
-        risikoController.getFightWinner().addListener((new ChangeListener<Player>() {
+        mapModel.getRisikoController().getFightWinner().addListener((new ChangeListener<Player>() {
             @Override
             public void changed(ObservableValue<? extends Player> observable, Player oldValue, Player newValue) {
                 if (newValue != null) {
                     fightWinner.set(newValue);
-                    risikoController.getFightWinner().removeListener(this);
+                    mapModel.getRisikoController().getFightWinner().removeListener(this);
                 }
             }
         }));
 
-        risikoController.getZoneOvertaken().addListener((new ChangeListener<Boolean>() {
+        mapModel.getRisikoController().getZoneOvertaken().addListener((new ChangeListener<Boolean>() {
             @Override
             public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
                 if (newValue != null) {
                     zoneOvertaken.set(newValue);
-                    risikoController.getZoneOvertaken().removeListener(this);
+                    mapModel.getRisikoController().getZoneOvertaken().removeListener(this);
                 }
             }
         }));
         // TODO check if listener removed
         AtomicBoolean overtookRegion = new AtomicBoolean(false);
-        risikoController.getNewRegionOwnerProperty().addListener((new ChangeListener<Config.PlayerColor>() {
+        mapModel.getRisikoController().getNewRegionOwnerProperty().addListener((new ChangeListener<Config.PlayerColor>() {
             @Override
             public void changed(ObservableValue<? extends Config.PlayerColor> observable, Config.PlayerColor oldValue, Config.PlayerColor newValue) {
                 if (newValue != null) {
                     overtookRegion.set(true);
                     System.out.println(newValue);
-                    risikoController.getNewRegionOwnerProperty().removeListener(this);
+                    mapModel.getRisikoController().getNewRegionOwnerProperty().removeListener(this);
                 }
             }
         }));
 
-        DiceRoll fightRes = risikoController.runFight(source.getName(), target.getName(), attackerTroops, defenderTroops);
+        DiceRoll fightRes = mapModel.getRisikoController().runFight(source.getName(), target.getName(), attackerTroops, defenderTroops);
         FightResultGrid grid = new FightResultGrid(fightRes.getAttackerRoll(), fightRes.getDefenderRoll(), scale);
         centerJavaFXRegion(labelStackPane, grid);
 
         String winner = fightWinner.get().equals(attacker) ?  attacker.getName() : defender.getName();
         String loser = fightWinner.get().equals(attacker) ? defender.getName() : attacker.getName();
 
-        String fightResultText = fightWinner.get().equals(risikoController.getCurrentPlayer()) ? ATTACKER_WON : DEFENDER_WON;
+        String fightResultText = fightWinner.get().equals(mapModel.getRisikoController().getCurrentPlayer()) ? ATTACKER_WON : DEFENDER_WON;
 
         KeyFrame diceThrowKf = new KeyFrame(Duration.seconds(0), event -> {
             overlayStackPane.setStyle("-fx-background-color: black; -fx-opacity: 0.5;");
@@ -645,27 +653,28 @@ public class MapController {
         }));
         int regionOwnerSeconds = overtookRegion.get() ? 7 : 5;
         KeyFrame overTookRegionKf = new KeyFrame(Duration.seconds(regionOwnerSeconds), event -> {
-            label.setText(String.format("%s hat die Region %s uebernommen!", winner, risikoController.getRegionByOwner(target.getName()).toString()));
+            label.setText(String.format("%s hat die Region %s uebernommen!", winner, mapModel.getRisikoController().getRegionByOwner(target.getName()).toString()));
         });
         KeyFrame finishFightKf = new KeyFrame(Duration.seconds(regionOwnerSeconds + 3), event -> {
+            clickedActionButton.set(false);
             this.labelStackPane.getChildren().remove(label);
             // attacker wins
             if (zoneOvertaken.get()) {
                 Color attackerColor = colorService.getColor(source.getColor().getHexValue());
                 drawZone(target, attackerColor);
-                if (risikoController.getWinner() == null) {
+                if (mapModel.getRisikoController().getWinner() == null) {
                     moveTroops(attackerTroops);
                 } else {
                     gameWon(attacker.getName());
                 }
             } else {
                 // update troops on zones after attack
-                source.updateTroopsAmount(Integer.toString(risikoController.getZoneTroops(source.getName())));
-                target.updateTroopsAmount(Integer.toString(risikoController.getZoneTroops(target.getName())));
+                source.updateTroopsAmount(Integer.toString(mapModel.getRisikoController().getZoneTroops(source.getName())));
+                target.updateTroopsAmount(Integer.toString(mapModel.getRisikoController().getZoneTroops(target.getName())));
 
                 // ending attack
                 mapClickEnabled = true;
-                hoverableZones = zoneSquares;
+                hoverableZones = this.mapModel.getZoneSquares();
                 source = null;
                 target = null;
                 removeAllOverlaidPixels();
@@ -687,57 +696,60 @@ public class MapController {
 
     private void addPlayerColorsToZones() {
         Random random = new Random();
-        Player[] players = risikoController.getPlayers();
+        Player[] players = mapModel.getRisikoController().getPlayers();
         if (scenarioToBeTested == Scenario.PLAYER_ELIMINATED) {
-            for (int i = 0; i < zoneSquares.size() - 1; i++) {
-                String name = zoneSquares.get(i).getName();
-                int troops = Integer.parseInt(zoneSquares.get(i).getTroopsAmountText().getText());
+            for (int i = 0; i < this.mapModel.getZoneSquares().size() - 1; i++) {
+                String name = this.mapModel.getZoneSquares().get(i).getName();
+                int troops = Integer.parseInt(this.mapModel.getZoneSquares().get(i).getTroopsAmountText().getText());
 
                 int randomInt = random.nextInt(2);
-                risikoController.setZoneOwner(players[randomInt], zoneSquares.get(i).getName());
+                mapModel.getRisikoController().setZoneOwner(players[randomInt], this.mapModel.getZoneSquares().get(i).getName());
                 Color zoneColor = colorService.getColor(players[randomInt].getColor().getHexValue());
-                this.drawZone(zoneSquares.get(i), zoneColor);
-                risikoController.updateZoneTroops(name, troops);
+                this.drawZone(this.mapModel.getZoneSquares().get(i), zoneColor);
+                mapModel.getRisikoController().updateZoneTroops(name, troops);
             }
             // for testing elimination of player green
-            String name = zoneSquares.get(42).getName();
-            int troops = Integer.parseInt(zoneSquares.get(42).getTroopsAmountText().getText());
-            risikoController.setZoneOwner(players[2], zoneSquares.get(42).getName());
+            String name = this.mapModel.getZoneSquares().get(42).getName();
+            int troops = Integer.parseInt(this.mapModel.getZoneSquares().get(42).getTroopsAmountText().getText());
+            mapModel.getRisikoController().setZoneOwner(players[2], this.mapModel.getZoneSquares().get(42).getName());
             Color zoneColor = colorService.getColor(players[2].getColor().getHexValue());
-            this.drawZone(zoneSquares.get(42), zoneColor);
-            risikoController.updateZoneTroops(name, troops);
+            this.drawZone(this.mapModel.getZoneSquares().get(42), zoneColor);
+            mapModel.getRisikoController().updateZoneTroops(name, troops);
         } else if (scenarioToBeTested == Scenario.WIN_GAME) {
-            for (int i = 0; i < zoneSquares.size() - 1; i++) {
-                String name = zoneSquares.get(i).getName();
-                int troops = Integer.parseInt(zoneSquares.get(i).getTroopsAmountText().getText());
-                risikoController.setZoneOwner(players[0], zoneSquares.get(i).getName());
+            for (int i = 0; i < this.mapModel.getZoneSquares().size() - 1; i++) {
+                String name = this.mapModel.getZoneSquares().get(i).getName();
+                int troops = Integer.parseInt(this.mapModel.getZoneSquares().get(i).getTroopsAmountText().getText());
+                mapModel.getRisikoController().setZoneOwner(players[0], this.mapModel.getZoneSquares().get(i).getName());
                 Color zoneColor = colorService.getColor(players[0].getColor().getHexValue());
-                this.drawZone(zoneSquares.get(i), zoneColor);
-                risikoController.updateZoneTroops(name, troops);
+                this.drawZone(this.mapModel.getZoneSquares().get(i), zoneColor);
+                mapModel.getRisikoController().updateZoneTroops(name, troops);
             }
-            String name = zoneSquares.get(42).getName();
-            int troops = Integer.parseInt(zoneSquares.get(42).getTroopsAmountText().getText());
-            risikoController.setZoneOwner(players[1], zoneSquares.get(42).getName());
+            String name = this.mapModel.getZoneSquares().get(42).getName();
+            int troops = Integer.parseInt(this.mapModel.getZoneSquares().get(42).getTroopsAmountText().getText());
+            mapModel.getRisikoController().setZoneOwner(players[1], this.mapModel.getZoneSquares().get(42).getName());
             Color zoneColor = colorService.getColor(players[1].getColor().getHexValue());
-            this.drawZone(zoneSquares.get(42), zoneColor);
-            risikoController.updateZoneTroops(name, troops);
+            this.drawZone(this.mapModel.getZoneSquares().get(42), zoneColor);
+            mapModel.getRisikoController().updateZoneTroops(name, troops);
         } else {
-            for (int i = 0; i < zoneSquares.size(); i++) {
+            for (int i = 0; i < this.mapModel.getZoneSquares().size(); i++) {
                 int randomInt = random.nextInt(3);
-                String name = zoneSquares.get(i).getName();
-                int troops = Integer.parseInt(zoneSquares.get(i).getTroopsAmountText().getText());
-                risikoController.setZoneOwner(players[randomInt], zoneSquares.get(i).getName());
+                String name = this.mapModel.getZoneSquares().get(i).getName();
+                int troops = Integer.parseInt(this.mapModel.getZoneSquares().get(i).getTroopsAmountText().getText());
+                mapModel.getRisikoController().setZoneOwner(players[randomInt], this.mapModel.getZoneSquares().get(i).getName());
                 Color zoneColor = colorService.getColor(players[randomInt].getColor().getHexValue());
-                this.drawZone(zoneSquares.get(i), zoneColor);
+                this.drawZone(this.mapModel.getZoneSquares().get(i), zoneColor);
                 // TODO move, currently setting troops here
-                risikoController.updateZoneTroops(name, troops);
+                mapModel.getRisikoController().updateZoneTroops(name, troops);
             }
         }
     }
 
     private void onMapClick(MouseEvent mouseEvent) {
         if (!mapClickEnabled) return;
-        if (source == null || (source != null && target != null)) {
+        int x = (int) mouseEvent.getX();
+        int y = (int) mouseEvent.getY();
+        mapModel.handleMapClick(x, y);
+        /*if (source == null || (source != null && target != null)) {
             overlayStackPane.setStyle("-fx-background-color: transparent;");
             this.removeAllOverlaidPixels();
             updateClickableZones();
@@ -747,12 +759,10 @@ public class MapController {
         }
         // uncomment for testing
         // long startTime = System.currentTimeMillis();
-        int x = (int) mouseEvent.getX();
-        int y = (int) mouseEvent.getY();
 
-        ZoneSquare sqr = getZoneAtCoordinates(x, y);
+        ZoneSquare sqr = mapModel.getZoneAtCoordinates(x, y);
         if (sqr != null && sqr.getBorder() != null && clickableZones.contains(sqr)) {
-            stopAnimation(highlightClickableZonesTl);
+            stopAnimation();
             removeAllOverlaidPixels();
             if (source == null || sqr == source) {
                 source = sqr;
@@ -774,7 +784,7 @@ public class MapController {
                 }
                 target = sqr;
                 this.overlaidZones.keySet().stream().filter((zone) -> !(zone.equals(source.getName()) || zone.equals(target.getName()))).collect(Collectors.toList()).forEach(zoneToInactivate -> inactivateZone(zoneToInactivate));
-                if (labelStackPane.getChildren().size() > zoneSquares.size())
+                if (labelStackPane.getChildren().size() > this.mapModel.getZoneSquares().size())
                     labelStackPane.getChildren().remove(labelStackPane.getChildren().size() - 1);
                 actionBtn.setDisable(false);
                 this.setZoneActive(sqr, colorService.getColor(sqr.getColor().getHexValue()), false);
@@ -790,40 +800,30 @@ public class MapController {
             target = null;
             this.removeAllOverlaidPixels();
             overlayStackPane.setStyle("-fx-background-color: transparent;");
-            hoverableZones = zoneSquares;
+            hoverableZones = this.mapModel.getZoneSquares();
             updateClickableZones();
 
             sourceOrTargetNull.set(source == null || target == null);
-        }
+        }*/
         // uncomment for testing
         // System.out.println(String.format("Click handling took %d ms", System.currentTimeMillis() - startTime));
     }
 
     private List<ZoneSquare> getTargets(ZoneSquare sqr) {
-        return risikoController.getValidTargetZoneNames(sqr.getName()).stream()
+        return mapModel.getRisikoController().getValidTargetZoneNames(sqr.getName()).stream()
                 .map(zoneName -> getZsqByName(zoneName)).collect(Collectors.toList());
     }
 
     private ZoneSquare getZsqByName(String name) {
-        return this.zoneSquares.stream().filter((zsq) -> name.equals(zsq.getName())).findFirst().orElse(null);
+        return this.mapModel.getZoneSquares().stream().filter((zsq) -> name.equals(zsq.getName())).findFirst().orElse(null);
     }
 
     private void markNeighbours(List<ZoneSquare> neighbours) {
         neighbours.forEach(n -> {
+            System.out.println(n);
             Color nOverLay = colorService.mixColors(neighbourOverlayColor, colorService.getColor(n.getColor().getHexValue()));
             setZoneActive(n, nOverLay, false);
         });
-    }
-
-    private ZoneSquare getZoneAtCoordinates(int x, int y) {
-        List<ZoneSquare> containsY = this.zoneSquares.stream()
-                .filter(zone ->
-                        zone.getBorder().stream().map(str -> str.getY()).collect(Collectors.toList()).contains(y)
-                ).collect(Collectors.toList());
-        return containsY.stream()
-                .filter(zone -> zone.getBorder().stream()
-                        .anyMatch(st -> st.getY() == y && st.getStartX() <= x && st.getEndX() >= x))
-                .findFirst().orElse(null);
     }
 
     private void removeAllOverlaidPixels() {
@@ -906,7 +906,7 @@ public class MapController {
     private void gameWon(String winnerName) {
         gameWon.set(true);
         mapClickEnabled = false;
-        hoverableZones = zoneSquares;
+        hoverableZones = this.mapModel.getZoneSquares();
         source = null;
         target = null;
         removeAllOverlaidPixels();
@@ -914,6 +914,22 @@ public class MapController {
         updateClickableZones();
         sourceOrTargetNull.set(source == null || target == null);
         showNotification(NotificationType.INFO, String.format(GAME_WINNER, winnerName));
+    }
+
+    public List<ZoneSquare> getClickableZones() {
+        return clickableZones;
+    }
+
+    public List<ZoneSquare> getHoverableZones() {
+        return hoverableZones;
+    }
+
+    public void setHoverableZones(List<ZoneSquare> hoverableZones) {
+        this.hoverableZones = hoverableZones;
+    }
+
+    public void setClickableZones(List<ZoneSquare> clickableZones) {
+        this.clickableZones = clickableZones;
     }
 }
 
