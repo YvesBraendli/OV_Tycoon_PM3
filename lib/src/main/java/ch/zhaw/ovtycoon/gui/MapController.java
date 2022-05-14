@@ -67,7 +67,8 @@ public class MapController {
     private static final String DEFENDER_TEXT = "Du kannst dich mit %d - %d Truppen verteidigen";
     private static final String GAME_WINNER = "%s hat das Spiel gewonnen!";
     private static final String REGION_OVERTAKEN = "%s hat die Region %s uebernommen!";
-    private static final int OVERLAY_EFFECT_SHIFT = 5;
+    private static final double DEFAULT_STACK_PANE_WIDTH = 688.0d;
+    private static final int OVERLAY_EFFECT_SHIFT_PIXELS = 5;
     private final Color transparentColor = Color.TRANSPARENT;
     private final Color neighbourOverlayColor = new Color(1, 1, 1, 0.25d);
     private final List<HBox> playersListItems = new ArrayList<>();
@@ -616,12 +617,12 @@ public class MapController {
                 overlaidPixels.add(new Pixel(x, y));
                 pw.setColor(x, y, overlayColor);
                 if (shift) {
-                    for (int k = 1; k < OVERLAY_EFFECT_SHIFT; k++) {
+                    for (int k = 1; k < OVERLAY_EFFECT_SHIFT_PIXELS; k++) {
                         pw.setColor(x - k, y - k, mix);
                         overlaidPixels.add(new Pixel(x - k, y - k));
                     }
-                    pw.setColor(x - OVERLAY_EFFECT_SHIFT, y - OVERLAY_EFFECT_SHIFT, currColor);
-                    overlaidPixels.add(new Pixel(x - OVERLAY_EFFECT_SHIFT, y - OVERLAY_EFFECT_SHIFT));
+                    pw.setColor(x - OVERLAY_EFFECT_SHIFT_PIXELS, y - OVERLAY_EFFECT_SHIFT_PIXELS, currColor);
+                    overlaidPixels.add(new Pixel(x - OVERLAY_EFFECT_SHIFT_PIXELS, y - OVERLAY_EFFECT_SHIFT_PIXELS));
                 }
 
             }
@@ -662,7 +663,7 @@ public class MapController {
     }
 
     private void showNotification(NotificationType type, String text) {
-        final double stackPaneWidth = scale * 688.0d;
+        final double stackPaneWidth = scale * DEFAULT_STACK_PANE_WIDTH;
         Notification notification = new Notification(type, text, stackPaneWidth);
         KeyFrame showNotificationKf = new KeyFrame(Duration.ZERO, event -> stackPane.getChildren().add(notification));
         KeyFrame removeNotificationKf = new KeyFrame(Duration.seconds(2), event -> stackPane.getChildren().remove(notification));
