@@ -13,6 +13,7 @@ import javafx.beans.property.SimpleObjectProperty;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Interface between ÖVTycoon front- and backend
@@ -94,9 +95,8 @@ public class RisikoController{
 	 * Gets current player
 	 * @return the current player by color
 	 */
-	// TODO doc
-    public Player getCurrentPlayer() {
-    	return game.getCurrentPlayer();
+    public PlayerColor getCurrentPlayer() {
+    	return game.getCurrentPlayer().getColor();
     }
     
 	/**
@@ -233,8 +233,17 @@ public class RisikoController{
 		return game.getMaxMovableTroops(zoneName);
 	}
 
+	// TODO remove as soon as player initialization implemented
 	public Player[] getPlayers() {
 		return game.getPlayers();
+	}
+
+	public PlayerColor[] getPlayerColors() {
+		PlayerColor[] playerColors = new PlayerColor[game.getPlayers().length];
+		for (int i = 0; i < game.getPlayers().length; i++) {
+			playerColors[i] = game.getPlayers()[i].getColor();
+		}
+		return playerColors;
 	}
 
 	public void setZoneOwner(Player owner, String zoneName) {
@@ -254,15 +263,14 @@ public class RisikoController{
 	}
 
 	public List<String> getValidTargetZoneNames(String sourceZoneName) {
-		// TODO possible bug in getPossibleMovementNeighbours: sometimes not showing all neighbours
-		return getAction() == Action.ATTACK ? getAttackableZones(sourceZoneName) : getPossibleMovementNeighbours(sourceZoneName, getCurrentPlayer().getColor());
+		return getAction() == Action.ATTACK ? getAttackableZones(sourceZoneName) : getPossibleMovementNeighbours(sourceZoneName, getCurrentPlayer());
 	}
 
 	public List<String> getValidSourceZoneNames() {
 		switch(getAction()) {
-			case ATTACK: return getPossibleAttackerZones(getCurrentPlayer().getColor());
-			case MOVE: return getZonesWithMovableTroops(getCurrentPlayer().getColor());
-			default: return getZonesOwnedbyPlayer(getCurrentPlayer().getColor());
+			case ATTACK: return getPossibleAttackerZones(getCurrentPlayer());
+			case MOVE: return getZonesWithMovableTroops(getCurrentPlayer());
+			default: return getZonesOwnedbyPlayer(getCurrentPlayer());
 		}
 	}
 

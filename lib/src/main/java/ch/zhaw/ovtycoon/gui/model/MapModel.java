@@ -39,7 +39,7 @@ public class MapModel {
     private final SimpleBooleanProperty actionButtonVisible = new SimpleBooleanProperty(false);
     private final SimpleBooleanProperty showingPopup = new SimpleBooleanProperty(false);
     private final SimpleBooleanProperty gameWon = new SimpleBooleanProperty(false);
-    private final SimpleObjectProperty<Player> currPlayer = new SimpleObjectProperty<>(new Player(""));
+    private final SimpleObjectProperty<Config.PlayerColor> currPlayer = new SimpleObjectProperty<>();
     private final SimpleStringProperty actionButtonText = new SimpleStringProperty();
     private final SimpleStringProperty showActionChange = new SimpleStringProperty();
     private final SimpleBooleanProperty darkenBackground = new SimpleBooleanProperty();
@@ -57,7 +57,7 @@ public class MapModel {
     private final SimpleObjectProperty<TooltipDTO> showTooltip = new SimpleObjectProperty<>();
     private final SimpleObjectProperty<TooltipDTO> removeTooltip = new SimpleObjectProperty<>();
 
-    private final SimpleObjectProperty<Player> highlightPlayer = new SimpleObjectProperty<>();
+    private final SimpleObjectProperty<Config.PlayerColor> highlightPlayer = new SimpleObjectProperty<>();
     private final SimpleObjectProperty<ZoneTroopAmountInitDTO> initializeZoneTroopsText = new SimpleObjectProperty<>();
     private final SimpleObjectProperty<ZoneTroopAmountDTO> updateZoneTroopsText = new SimpleObjectProperty<>();
 
@@ -81,8 +81,7 @@ public class MapModel {
     }
 
     public void notifyDefender() {
-        Config.PlayerColor defenderClr = risikoController.getZoneOwner(target.getName());
-        Player defender = playerColorToPlayer(defenderClr);
+        Config.PlayerColor defender = risikoController.getZoneOwner(target.getName());
         highlightPlayer.set(defender);
         highlightPlayer.set(null);
     }
@@ -384,7 +383,7 @@ public class MapModel {
         return showTooltip;
     }
 
-    public SimpleObjectProperty<Player> highlightPlayerProperty() {
+    public SimpleObjectProperty<Config.PlayerColor> highlightPlayerProperty() {
         return highlightPlayer;
     }
 
@@ -421,9 +420,9 @@ public class MapModel {
         source = null;
         target = null;
         sourceOrTargetNull.set(true);
-        Player currentPlayerBeforeActionSwitch = risikoController.getCurrentPlayer();
+        Config.PlayerColor currentPlayerBeforeActionSwitch = risikoController.getCurrentPlayer();
         risikoController.nextAction();
-        Player playerAfterActionSwitch = risikoController.getCurrentPlayer();
+        Config.PlayerColor playerAfterActionSwitch = risikoController.getCurrentPlayer();
         if (currentPlayerBeforeActionSwitch != playerAfterActionSwitch) {
             currPlayer.set(risikoController.getCurrentPlayer()); // TODO ev bind to property in mapModel.getRisikoController()
         }
@@ -494,11 +493,11 @@ public class MapModel {
         return gameWon;
     }
 
-    public Player getCurrPlayer() {
+    public Config.PlayerColor getCurrPlayer() {
         return currPlayer.get();
     }
 
-    public SimpleObjectProperty<Player> currPlayerProperty() {
+    public SimpleObjectProperty<Config.PlayerColor> currPlayerProperty() {
         return currPlayer;
     }
 

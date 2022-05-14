@@ -19,7 +19,6 @@ import ch.zhaw.ovtycoon.gui.model.ZoneTooltip;
 import ch.zhaw.ovtycoon.gui.model.ZoneTroopAmountDTO;
 import ch.zhaw.ovtycoon.gui.model.ZoneTroopAmountInitDTO;
 import ch.zhaw.ovtycoon.gui.service.ColorService;
-import ch.zhaw.ovtycoon.model.Player;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -254,7 +253,7 @@ public class MapController {
         buttonHBox.setPrefWidth(buttonHBox.getPrefWidth() * scale);
     }
 
-    private void highlightCurrPlayerLarge(Player currPlayer) {
+    private void highlightCurrPlayerLarge(Config.PlayerColor currPlayer) {
         HBox playerBoxLarge = buildAndGetPlayerHBoxBig(currPlayer);
         centerJavaFXRegion(labelStackPane, playerBoxLarge);
         KeyFrame showPlayerKf = new KeyFrame(Duration.seconds(0), event -> labelStackPane.getChildren().add(playerBoxLarge));
@@ -304,14 +303,14 @@ public class MapController {
     }
 
     private void addPlayers() {
-        for (Player player : mapModel.getRisikoController().getPlayers()) {
-            HBox playerHBox = buildAndGetPlayerHBox(player);
+        for (Config.PlayerColor playerColor : mapModel.getRisikoController().getPlayerColors()) {
+            HBox playerHBox = buildAndGetPlayerHBox(playerColor);
             playersListItems.add(playerHBox);
             playersVBox.getChildren().add(playerHBox);
         }
 
         mapModel.currPlayerProperty().addListener((obs, oldVal, newVal) -> {
-            highlightCurrPlayerTile(oldVal.getName(), newVal.getName());
+            highlightCurrPlayerTile(oldVal.name().toLowerCase(), newVal.name().toLowerCase());
             highlightCurrPlayerLarge(newVal);
         });
     }
@@ -332,8 +331,8 @@ public class MapController {
     }
 
     // TODO use player color instead
-    private HBox buildAndGetPlayerHBox(Player player) {
-        String playerColor = player.getColor().getHexValue().substring(0, 8).replace("0x", "#");
+    private HBox buildAndGetPlayerHBox(Config.PlayerColor player) {
+        String playerColor = player.getHexValue().substring(0, 8).replace("0x", "#");
         HBox playerBox = new HBox();
         playerBox.setPrefHeight(25.0d * scale);
         playerBox.setPrefWidth(150.0d * scale);
@@ -341,7 +340,7 @@ public class MapController {
         playerBox.maxWidthProperty().bind(playerBox.prefWidthProperty());
         playerBox.setAlignment(Pos.TOP_RIGHT);
         playerBox.setStyle("-fx-border-width: 0.5px; -fx-border-color: black;");
-        String colorName = player.getColor().name().toLowerCase();
+        String colorName = player.name().toLowerCase();
         Image plrImg = new Image(getClass().getClassLoader().getResource(PLAYER_IMAGE_PREFIX + colorName + ".png").toExternalForm());
         ImageView plyrIV = new ImageView();
         plyrIV.fitHeightProperty().bind(playerBox.prefHeightProperty());
@@ -355,12 +354,12 @@ public class MapController {
         plrLabel.setStyle(String.format("-fx-background-color: %s; -fx-text-fill: white; -fx-padding: 0 0 0 5px;", playerColor));
         playerBox.getChildren().add(plrLabel);
 
-        playerBox.setId(player.getName());
+        playerBox.setId(colorName);
         return playerBox;
     }
 
-    private HBox buildAndGetPlayerHBoxBig(Player player) {
-        String playerColor = player.getColor().getHexValue().substring(0, 8).replace("0x", "#");
+    private HBox buildAndGetPlayerHBoxBig(Config.PlayerColor player) {
+        String playerColor = player.getHexValue().substring(0, 8).replace("0x", "#");
         HBox playerBox = new HBox();
         playerBox.setPrefHeight(100.0d * scale);
         playerBox.setPrefWidth(500.0d * scale);
@@ -369,7 +368,7 @@ public class MapController {
         playerBox.setAlignment(Pos.TOP_RIGHT);
         playerBox.setStyle("-fx-background-color: white;");
 
-        String colorName = player.getColor().name().toLowerCase();
+        String colorName = player.name().toLowerCase();
         Image plrImg = new Image(getClass().getClassLoader().getResource(PLAYER_IMAGE_PREFIX + colorName + ".png").toExternalForm());
         ImageView plyrIV = new ImageView();
         plyrIV.fitHeightProperty().bind(playerBox.prefHeightProperty());
@@ -377,14 +376,14 @@ public class MapController {
         plyrIV.setImage(plrImg);
         playerBox.getChildren().add(plyrIV);
 
-        Label plrLabel = new Label();
+        Label plrLabel = new Label(player.name().toLowerCase());
         plrLabel.prefHeightProperty().bind(playerBox.prefHeightProperty());
         plrLabel.prefWidthProperty().bind(playerBox.prefWidthProperty().subtract(playerBox.prefHeightProperty()));
         plrLabel.setAlignment(Pos.CENTER);
         plrLabel.setStyle(String.format("-fx-background-color: %s; -fx-text-fill: white; -fx-font-family: Arial; -fx-font-size: 40px;", playerColor));
         playerBox.getChildren().add(plrLabel);
 
-        playerBox.setId(player.getName());
+        playerBox.setId(colorName);
         return playerBox;
     }
 
@@ -466,7 +465,7 @@ public class MapController {
 
     private void highLightClickableZones() {
         stopAnimation();
-        Config.PlayerColor currPlayerColor = mapModel.getRisikoController().getCurrentPlayer().getColor();
+        Config.PlayerColor currPlayerColor = mapModel.getRisikoController().getCurrentPlayer();
         Color mix = colorService.mixColors(neighbourOverlayColor, colorService.getColor(currPlayerColor.getHexValue()));
         mapModel.updateClickableZones();
         KeyFrame highlightZonesKf = new KeyFrame(Duration.seconds(1), event -> mapModel.getClickableZones().forEach(zone -> setZoneActive(zone, mix, false)));
