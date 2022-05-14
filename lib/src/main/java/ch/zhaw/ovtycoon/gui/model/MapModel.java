@@ -1,6 +1,8 @@
 package ch.zhaw.ovtycoon.gui.model;
 
+import ch.zhaw.ovtycoon.Config;
 import ch.zhaw.ovtycoon.RisikoController;
+import ch.zhaw.ovtycoon.data.DiceRoll;
 import ch.zhaw.ovtycoon.gui.MapController;
 import ch.zhaw.ovtycoon.gui.service.ColorService;
 import ch.zhaw.ovtycoon.gui.service.MapLoaderService;
@@ -8,11 +10,15 @@ import ch.zhaw.ovtycoon.model.Player;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static ch.zhaw.ovtycoon.Config.PlayerColor.BLUE;
@@ -56,6 +62,79 @@ public class MapModel {
         this.mapController = mapController;
     }
 
+    public FightDTO handleFight(int attackerTroops, int defenderTroops) {
+        FightDTO fightDTO = new FightDTO();
+        Player attacker = playerColorToPlayer(source.getColor());
+        Player defender = playerColorToPlayer(target.getColor());
+        if (attacker == null || defender == null) return null;
+
+        final AtomicReference<Player> fightWinner= new AtomicReference<>(null);
+        final AtomicBoolean zoneOvertaken = new AtomicBoolean(false);
+
+        risikoController.getFightWinner().addListener((new ChangeListener<Player>() {
+            @Override
+            public void changed(ObservableValue<? extends Player> observable, Player oldValue, Player newValue) {
+                if (newValue != null) {
+                    fightWinner.set(newValue);
+                    risikoController.getFightWinner().removeListener(this);
+                }
+            }
+        }));
+
+        risikoController.getZoneOvertaken().addListener((new ChangeListener<Boolean>() {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+                if (newValue != null) {
+                    zoneOvertaken.set(newValue);
+                    risikoController.getZoneOvertaken().removeListener(this);
+                }
+            }
+        }));
+        // TODO check if listener removed
+        AtomicBoolean overtookRegion = new AtomicBoolean(false);
+        risikoController.getNewRegionOwnerProperty().addListener((new ChangeListener<Config.PlayerColor>() {
+            @Override
+            public void changed(ObservableValue<? extends Config.PlayerColor> observable, Config.PlayerColor oldValue, Config.PlayerColor newValue) {
+                if (newValue != null) {
+                    overtookRegion.set(true);
+                    System.out.println(newValue);
+                    risikoController.getNewRegionOwnerProperty().removeListener(this);
+                }
+            }
+        }));
+
+        DiceRoll fightRes = risikoController.runFight(source.getName(), target.getName(), attackerTroops, defenderTroops);
+        fightDTO.setAttackerDiceRoll(fightRes.getAttackerRoll());
+        fightDTO.setDefenderDiceRoll(fightRes.getDefenderRoll());
+
+        boolean attackerWon =  fightWinner.get().equals(attacker);
+
+        String winner = attackerWon ? attacker.getName() : defender.getName();
+        String loser = attackerWon ? defender.getName() : attacker.getName();
+        fightDTO.setFightWinner(winner);
+        fightDTO.setFightLoser(loser);
+
+        fightDTO.setOvertookZone(zoneOvertaken.get());
+        fightDTO.setOverTookRegion(overtookRegion.get());
+
+        fightDTO.setAttacker(attacker.getName());
+        fightDTO.setDefender(defender.getName());
+
+        fightDTO.setAttackerWon(attackerWon);
+
+
+        return fightDTO;
+    }
+
+    private Player playerColorToPlayer(Config.PlayerColor playerColor) {
+        for (Player player : risikoController.getPlayers()) {
+            if (player.getColor() == playerColor) {
+                return player;
+            }
+        }
+        return null;
+    }
+
     public void handleMapClick(int x, int y) {
         if (source == null || (source != null && target != null)) {
             darkenBackground.set(false);
@@ -89,6 +168,7 @@ public class MapModel {
                 mapController.setClickableZones(new ArrayList<>(hoverableZones));
 
                 highlightNeighbours.set(validTargets);
+                highlightNeighbours.set(null);
                 setZoneActive.set(new ActivateZoneDTO(sqr, overlayColor, true));
 
                 sourceOrTargetNull.set(source == null || target == null);
@@ -122,6 +202,8 @@ public class MapModel {
 
             sourceOrTargetNull.set(source == null || target == null);
         }
+        // uncomment for testing
+        // System.out.println(String.format("Click handling took %d ms", System.currentTimeMillis() - startTime));
     }
 
     private List<ZoneSquare> getTargets(ZoneSquare sqr) {

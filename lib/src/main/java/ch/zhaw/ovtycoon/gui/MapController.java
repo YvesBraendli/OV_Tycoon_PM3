@@ -2,9 +2,9 @@ package ch.zhaw.ovtycoon.gui;
 
 import ch.zhaw.ovtycoon.Config;
 import ch.zhaw.ovtycoon.TestBackend;
-import ch.zhaw.ovtycoon.data.DiceRoll;
 import ch.zhaw.ovtycoon.gui.model.Action;
 import ch.zhaw.ovtycoon.gui.model.CustomTimeline;
+import ch.zhaw.ovtycoon.gui.model.FightDTO;
 import ch.zhaw.ovtycoon.gui.model.FightResultGrid;
 import ch.zhaw.ovtycoon.gui.model.HorizontalStripe;
 import ch.zhaw.ovtycoon.gui.model.MapModel;
@@ -20,8 +20,6 @@ import ch.zhaw.ovtycoon.model.Player;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -53,7 +51,6 @@ import java.util.Queue;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 public class MapController {
@@ -120,7 +117,7 @@ public class MapController {
     private final Map<String, Text> zoneTroopsTexts = new HashMap<>();
     private double scale = 1.0d;
     // TODO only for testing scenarios, e.g. game won
-    private final Scenario scenarioToBeTested = Scenario.NONE;
+    private final Scenario scenarioToBeTested = Scenario.WIN_GAME;
 
     private final SimpleBooleanProperty clickedActionButton = new SimpleBooleanProperty();
 
@@ -175,7 +172,11 @@ public class MapController {
                 stopAnimation();
             }
         }));
-        mapModel.highlightNeighboursProperty().addListener(((observable, oldValue, newValue) -> markNeighbours(newValue)));
+        mapModel.highlightNeighboursProperty().addListener(((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                markNeighbours(newValue);
+            }
+        }));
         mapModel.removeUnnecessaryTooltipsProperty().addListener(((observable, oldValue, newValue) -> {
             if (newValue && labelStackPane.getChildren().size() > this.mapModel.getZoneSquares().size())
                 labelStackPane.getChildren().remove(labelStackPane.getChildren().size() - 1);
@@ -594,53 +595,15 @@ public class MapController {
         label.setPrefHeight(200.0d);
         label.getStyleClass().add("action-label");
         centerJavaFXRegion(labelStackPane, label);
-        Player attacker = playerColorToPlayer(source.getColor());
-        Player defender = playerColorToPlayer(target.getColor());
-        if (attacker == null || defender == null) return;
 
-        final AtomicReference<Player> fightWinner= new AtomicReference<>(null);
-        final AtomicBoolean zoneOvertaken = new AtomicBoolean(false);
+        FightDTO fightDTO = mapModel.handleFight(attackerTroops, defenderTroops);
+        source = mapModel.getSource();
+        target = mapModel.getTarget();
 
-        mapModel.getRisikoController().getFightWinner().addListener((new ChangeListener<Player>() {
-            @Override
-            public void changed(ObservableValue<? extends Player> observable, Player oldValue, Player newValue) {
-                if (newValue != null) {
-                    fightWinner.set(newValue);
-                    mapModel.getRisikoController().getFightWinner().removeListener(this);
-                }
-            }
-        }));
-
-        mapModel.getRisikoController().getZoneOvertaken().addListener((new ChangeListener<Boolean>() {
-            @Override
-            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-                if (newValue != null) {
-                    zoneOvertaken.set(newValue);
-                    mapModel.getRisikoController().getZoneOvertaken().removeListener(this);
-                }
-            }
-        }));
-        // TODO check if listener removed
-        AtomicBoolean overtookRegion = new AtomicBoolean(false);
-        mapModel.getRisikoController().getNewRegionOwnerProperty().addListener((new ChangeListener<Config.PlayerColor>() {
-            @Override
-            public void changed(ObservableValue<? extends Config.PlayerColor> observable, Config.PlayerColor oldValue, Config.PlayerColor newValue) {
-                if (newValue != null) {
-                    overtookRegion.set(true);
-                    System.out.println(newValue);
-                    mapModel.getRisikoController().getNewRegionOwnerProperty().removeListener(this);
-                }
-            }
-        }));
-
-        DiceRoll fightRes = mapModel.getRisikoController().runFight(source.getName(), target.getName(), attackerTroops, defenderTroops);
-        FightResultGrid grid = new FightResultGrid(fightRes.getAttackerRoll(), fightRes.getDefenderRoll(), scale);
+        FightResultGrid grid = new FightResultGrid(fightDTO.getAttackerDiceRoll(), fightDTO.getDefenderDiceRoll(), scale);
         centerJavaFXRegion(labelStackPane, grid);
 
-        String winner = fightWinner.get().equals(attacker) ?  attacker.getName() : defender.getName();
-        String loser = fightWinner.get().equals(attacker) ? defender.getName() : attacker.getName();
-
-        String fightResultText = fightWinner.get().equals(mapModel.getRisikoController().getCurrentPlayer()) ? ATTACKER_WON : DEFENDER_WON;
+        String fightResultText = fightDTO.isAttackerWon() ? ATTACKER_WON : DEFENDER_WON;
 
         KeyFrame diceThrowKf = new KeyFrame(Duration.seconds(0), event -> {
             overlayStackPane.setStyle("-fx-background-color: black; -fx-opacity: 0.5;");
@@ -648,24 +611,24 @@ public class MapController {
         });
         KeyFrame winnerKf = new KeyFrame(Duration.seconds(5), (event -> {
             labelStackPane.getChildren().remove(grid);
-            label.setText(String.format(fightResultText, winner, loser));
+            label.setText(String.format(fightResultText, fightDTO.getFightWinner(), fightDTO.getFightLoser()));
             this.labelStackPane.getChildren().add(label);
         }));
-        int regionOwnerSeconds = overtookRegion.get() ? 7 : 5;
+        int regionOwnerSeconds = fightDTO.isOverTookRegion() ? 7 : 5;
         KeyFrame overTookRegionKf = new KeyFrame(Duration.seconds(regionOwnerSeconds), event -> {
-            label.setText(String.format("%s hat die Region %s uebernommen!", winner, mapModel.getRisikoController().getRegionByOwner(target.getName()).toString()));
+            label.setText(String.format("%s hat die Region %s uebernommen!", fightDTO.getFightWinner(), mapModel.getRisikoController().getRegionByOwner(target.getName()).toString()));
         });
         KeyFrame finishFightKf = new KeyFrame(Duration.seconds(regionOwnerSeconds + 3), event -> {
             clickedActionButton.set(false);
             this.labelStackPane.getChildren().remove(label);
             // attacker wins
-            if (zoneOvertaken.get()) {
+            if (fightDTO.isOvertookZone()) {
                 Color attackerColor = colorService.getColor(source.getColor().getHexValue());
                 drawZone(target, attackerColor);
                 if (mapModel.getRisikoController().getWinner() == null) {
                     moveTroops(attackerTroops);
                 } else {
-                    gameWon(attacker.getName());
+                    gameWon(fightDTO.getAttacker());
                 }
             } else {
                 // update troops on zones after attack
@@ -687,7 +650,7 @@ public class MapController {
         Timeline fightTl = new Timeline();
         fightTl.getKeyFrames().add(diceThrowKf);
         fightTl.getKeyFrames().add(winnerKf);
-        if (overtookRegion.get()) {
+        if (fightDTO.isOverTookRegion()) {
             fightTl.getKeyFrames().add(overTookRegionKf);
         }
         fightTl.getKeyFrames().add(finishFightKf);
