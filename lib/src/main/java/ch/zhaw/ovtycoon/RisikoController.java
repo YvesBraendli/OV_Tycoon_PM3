@@ -204,10 +204,10 @@ public class RisikoController{
     }
     
     /**
-     * Gets the eliminated player property to implement a listener.
+     * Gets the eliminated player color property to implement a listener.
      * The property changes if after a fight a player does not own any more zones
      */
-    public ObjectProperty<Player> getEliminatedPlayerProperty(){
+    public ObjectProperty<PlayerColor> getEliminatedPlayerProperty(){
     	return game.getEliminiatedPlayerProperty();
     }
     

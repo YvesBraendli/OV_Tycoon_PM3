@@ -224,8 +224,8 @@ public class MapController {
     // TODO get current player from map model
     private void eliminatePlayer() {
         mapModel.getRisikoController().getEliminatedPlayerProperty().addListener(((observable, oldValue, newValue) -> {
-            showNotification(NotificationType.WARNING, String.format(PLAYER_ELIMINATED, newValue.getName()));
-            HBox toBeEliminated = playersListItems.stream().filter((hBox -> hBox.getId().equals(newValue.getName()))).findAny().orElse(null);
+            showNotification(NotificationType.WARNING, String.format(PLAYER_ELIMINATED, newValue.name().toLowerCase()));
+            HBox toBeEliminated = playersListItems.stream().filter((hBox -> hBox.getId().equals(newValue.name().toLowerCase()))).findAny().orElse(null);
             if (toBeEliminated != null) toBeEliminated.setStyle("-fx-opacity: 0.25;");
         }));
     }

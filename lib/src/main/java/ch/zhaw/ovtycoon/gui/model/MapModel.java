@@ -71,7 +71,7 @@ public class MapModel {
     private ZoneSquare target = null;
     private TooltipDTO currHovered = null;
     private final TestBackend testBackend = new TestBackend();
-    private final Scenario scenarioToBeTested = Scenario.NONE; // Only for initializing the zones and players to test certain scenarios, e.g. win game
+    private final Scenario scenarioToBeTested = Scenario.PLAYER_ELIMINATED; // Only for initializing the zones and players to test certain scenarios, e.g. win game
 
     public MapModel(Image mapImage, double scale) {
         mapLoaderService = new MapLoaderService(mapImage, scale);

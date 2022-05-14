@@ -25,7 +25,7 @@ public class Game implements Serializable {
 	private Player[] players;
 	private int currentPlayerIndex;
 	private TroopHandler troopHandler;
-	private ObjectProperty<Player> eliminatedPlayer;
+	private ObjectProperty<PlayerColor> eliminatedPlayer;
 	private SimpleObjectProperty<PlayerColor> newRegionOwner = new SimpleObjectProperty<>(null);
 	private int currentActionIndex = 0;
 
@@ -392,14 +392,14 @@ public class Game implements Serializable {
         return alreadyAdded;
     }
     
-    public Player getEliminatedPlayer() {
+    public PlayerColor getEliminatedPlayer() {
     	return eliminatedPlayer.get();
     }   
-    public ObjectProperty<Player> getEliminiatedPlayerProperty() {
+    public ObjectProperty<PlayerColor> getEliminiatedPlayerProperty() {
     	return eliminatedPlayer;
     }   
     public void setEliminiatedPlayer(Player player) {
-    	eliminatedPlayer.set(player);
+    	eliminatedPlayer.set(player.getColor());
     }
 
     public PlayerColor getNewRegionOwner() {
