@@ -2,6 +2,7 @@ package ch.zhaw.ovtycoon.gui.model;
 
 import ch.zhaw.ovtycoon.Config;
 import ch.zhaw.ovtycoon.RisikoController;
+import ch.zhaw.ovtycoon.TestBackend;
 import ch.zhaw.ovtycoon.data.DiceRoll;
 import ch.zhaw.ovtycoon.gui.MapController;
 import ch.zhaw.ovtycoon.gui.service.ColorService;
@@ -18,6 +19,7 @@ import javafx.scene.paint.Color;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -30,12 +32,14 @@ public class MapModel {
     private final List<ZoneSquare> zoneSquares;
     private final MapLoaderService mapLoaderService;
     private final ColorService colorService;
+    private final RisikoController risikoController = new RisikoController(3);
+    private final MapController mapController; // todo remove as soon as cleanup complete
+
     private final SimpleBooleanProperty sourceOrTargetNull = new SimpleBooleanProperty(true);
     private final SimpleBooleanProperty actionButtonVisible = new SimpleBooleanProperty(false);
     private final SimpleBooleanProperty showingPopup = new SimpleBooleanProperty(false);
     private final SimpleBooleanProperty gameWon = new SimpleBooleanProperty(false);
     private final SimpleObjectProperty<Player> currPlayer = new SimpleObjectProperty<>(new Player(""));
-    private final RisikoController risikoController = new RisikoController(3);
     private final SimpleStringProperty actionButtonText = new SimpleStringProperty();
     private final SimpleStringProperty showActionChange = new SimpleStringProperty();
     private final SimpleBooleanProperty darkenBackground = new SimpleBooleanProperty();
@@ -46,23 +50,25 @@ public class MapModel {
     private final SimpleObjectProperty<List<ZoneSquare>> highlightNeighbours = new SimpleObjectProperty<>();
     private final SimpleBooleanProperty actionButtonDisabled = new SimpleBooleanProperty();
     private final SimpleBooleanProperty removeUnnecessaryTooltips = new SimpleBooleanProperty();
-
     private final SimpleIntegerProperty moveTroops = new SimpleIntegerProperty();
     private final SimpleStringProperty gameWinner = new SimpleStringProperty();
     private final SimpleObjectProperty<DrawZoneDTO> drawZone = new SimpleObjectProperty<>();
-
     private final SimpleObjectProperty<MoveTroopsDTO> openMoveTroopsPopup = new SimpleObjectProperty<>();
     private final SimpleObjectProperty<TooltipDTO> showTooltip = new SimpleObjectProperty<>();
     private final SimpleObjectProperty<TooltipDTO> removeTooltip = new SimpleObjectProperty<>();
 
+    private final SimpleObjectProperty<Player> highlightPlayer = new SimpleObjectProperty<>();
+
     private final Color overlayColor = new Color(0.0d, 0.0d, 0.0d, 0.25d);
     private boolean mapClickEnabled = true;
+    private List<ZoneSquare> clickableZones = new ArrayList<>();
+    private List<ZoneSquare> hoverableZones = new ArrayList<>();
     private ZoneSquare source = null;
     private ZoneSquare target = null;
-
-    private MapController mapController; // todo remove as soon as cleanup complete
-
-    private final SimpleObjectProperty<Action> actionChange = new SimpleObjectProperty<>();
+    private TooltipDTO currHovered = null;
+    private final TestBackend testBackend = new TestBackend();
+    // TODO only for testing scenarios, e.g. game won
+    private final Scenario scenarioToBeTested = Scenario.NONE;
 
     public MapModel(Image mapImage, double scale, MapController mapController) {
         mapLoaderService = new MapLoaderService(mapImage, scale);
@@ -70,6 +76,62 @@ public class MapModel {
         zoneSquares = mapLoaderService.initZoneSquaresFromConfig();
         initPlayers();
         this.mapController = mapController;
+    }
+
+    public void notifyDefender() {
+        Config.PlayerColor defenderClr = risikoController.getZoneOwner(target.getName());
+        Player defender = playerColorToPlayer(defenderClr);
+        highlightPlayer.set(defender);
+        highlightPlayer.set(null);
+    }
+
+    public AttackDTO initializeAttack() {
+        if (source == null ||target == null) return null;
+        int maxAttackerTroops = risikoController.getMaxTroopsForAttack(source.getName());
+        int maxDefenderTroops = risikoController.getMaxTroopsForDefending(target.getName());
+        return new AttackDTO(maxAttackerTroops, maxDefenderTroops);
+    }
+
+    public int reinforcement() {
+        testBackend.diceThrow();
+        return testBackend.getTroopsToPlace();
+    }
+
+    public void placeTroops(String zoneSquareName, int amount) {
+        ZoneSquare sqr = getZsqByName(zoneSquareName);
+        if (sqr == null) return;
+        risikoController.updateZoneTroops(zoneSquareName, amount);
+        sqr.updateTroopsAmount(Integer.toString(risikoController.getZoneTroops(zoneSquareName)));
+        testBackend.placeTroops(amount);
+        if (testBackend.finishedPlacingTroops().get()) {
+            mapClickEnabled = false;
+            hoverableZones = new ArrayList<>();
+            nextAction();
+        } else {
+            mapClickEnabled = true;
+            hoverableZones = new ArrayList<>(zoneSquares);
+            removeOverlaidPixels.set(true);
+            removeOverlaidPixels.set(false);
+            darkenBackground.set(false);
+            updateClickableZones();
+        }
+    }
+
+    public ReinforcementDTO reinforcementClick(int x, int y) {
+        ZoneSquare sqr = getZoneAtCoordinates(x, y);
+        if (sqr == null || !clickableZones.contains(sqr)) return null;
+        stopAnimation.set(true);
+        stopAnimation.set(false);
+        removeOverlaidPixels.set(true);
+        removeOverlaidPixels.set(false);
+        mapClickEnabled = false;
+
+        clickableZones = new ArrayList<>();
+        hoverableZones = new ArrayList<>();
+        darkenBackground.set(true);
+        setZoneActive.set(new ActivateZoneDTO(sqr, overlayColor, false));
+        removeTooltip.set(currHovered);
+        return new ReinforcementDTO(sqr, testBackend.getTroopsToPlace());
     }
 
     public void initializeMovingTroops(int minAmount) {
@@ -84,18 +146,43 @@ public class MapModel {
         target.updateTroopsAmount(Integer.toString(troopAmtNew));
         source.updateTroopsAmount(Integer.toString(risikoController.getZoneTroops(source.getName())));
         mapClickEnabled = true;
-        mapController.setMapClickEnabled(true);
-        mapController.setHoverableZones(new ArrayList<>(zoneSquares));
-        mapController.updateClickableZones();
+        hoverableZones = new ArrayList<>(zoneSquares);
+        updateClickableZones();
         source = null;
         target = null;
+        sourceOrTargetNull.set(true);
         removeOverlaidPixels.set(true);
         removeOverlaidPixels.set(false);
         darkenBackground.set(false);
     }
 
-    public void handleHover(int x, int y) {
+    public void updateClickableZones() {
+        clickableZones = risikoController.getValidSourceZoneNames().stream()
+                .map(zoneName -> getZsqByName(zoneName)).collect(Collectors.toList());
+    }
 
+    public void handleHover(int x, int y) {
+        if (hoverableZones.isEmpty()) return;
+        ZoneSquare hoveredZone = getZoneAtCoordinates(x, y);
+        boolean alreadyHovered = hoveredZone == null || (currHovered != null && hoveredZone.getName().replace("Zone", "Zone ").equals(currHovered.getTooltipText()));
+        if (hoveredZone == null || !hoverableZones.contains(hoveredZone)) {
+            removeTooltip.set(currHovered);
+            removeTooltip.set(null);
+            currHovered = null;
+            return;
+        } else if (alreadyHovered) {
+            return;
+        }
+        else if (currHovered != null) { // remove old tooltip
+            removeTooltip.set(currHovered);
+            removeTooltip.set(null);
+        }
+        int tooltipX = hoveredZone.getCenter().getX();
+        int tooltipY = hoveredZone.getCenter().getY() - 30;
+        String tooltipText = hoveredZone.getName().replace("Zone", "Zone ");
+        currHovered = new TooltipDTO(tooltipX, tooltipY, tooltipText);
+        showTooltip.set(currHovered);
+        showTooltip.set(null);
     }
 
     public FightDTO handleFight(int attackerTroops, int defenderTroops) {
@@ -142,25 +229,20 @@ public class MapModel {
         DiceRoll fightRes = risikoController.runFight(source.getName(), target.getName(), attackerTroops, defenderTroops);
         fightDTO.setAttackerDiceRoll(fightRes.getAttackerRoll());
         fightDTO.setDefenderDiceRoll(fightRes.getDefenderRoll());
-
         boolean attackerWon =  fightWinner.get().equals(attacker);
-
         String winner = attackerWon ? attacker.getName() : defender.getName();
         String loser = attackerWon ? defender.getName() : attacker.getName();
         fightDTO.setFightWinner(winner);
         fightDTO.setFightLoser(loser);
-
         fightDTO.setOvertookZone(zoneOvertaken.get());
         fightDTO.setOverTookRegion(overtookRegion.get());
-
+        if (overtookRegion.get()) {
+            fightDTO.setOvertakenRegionName(risikoController.getRegionByOwner(target.getName()).toString());
+        }
         fightDTO.setAttacker(attacker.getName());
         fightDTO.setDefender(defender.getName());
-
         fightDTO.setAttackerWon(attackerWon);
-
         fightDTO.setAttackerTroops(attackerTroops);
-
-
         return fightDTO;
     }
 
@@ -178,31 +260,28 @@ public class MapModel {
             // update troops on zones after attack
             source.updateTroopsAmount(Integer.toString(risikoController.getZoneTroops(source.getName())));
             target.updateTroopsAmount(Integer.toString(risikoController.getZoneTroops(target.getName())));
-
             // ending attack
             mapClickEnabled = true;
-            mapController.setMapClickEnabled(true);
-            mapController.setHoverableZones(new ArrayList<>(zoneSquares));
+            hoverableZones = new ArrayList<>(zoneSquares);
             source = null;
             target = null;
             removeOverlaidPixels.set(true);
             removeOverlaidPixels.set(false);
             darkenBackground.set(false);
-            mapController.updateClickableZones();
+            updateClickableZones();
             sourceOrTargetNull.set(source == null || target == null);
         }
     }
 
     private void gameWon(String winnerName) {
         mapClickEnabled = false;
-        mapController.setMapClickEnabled(false);
-        mapController.setHoverableZones(new ArrayList<>(zoneSquares));
+        hoverableZones = new ArrayList<>(zoneSquares);
         source = null;
         target = null;
         removeOverlaidPixels.set(true);
         removeOverlaidPixels.set(false);
         darkenBackground.set(false);
-        mapController.updateClickableZones();
+        updateClickableZones();
         sourceOrTargetNull.set(source == null || target == null);
         gameWinner.set(winnerName);
     }
@@ -224,7 +303,7 @@ public class MapModel {
             removeOverlaidPixelsProperty().set(true);
             removeOverlaidPixelsProperty().set(false);
 
-            mapController.updateClickableZones();
+            updateClickableZones();
             source = null;
             target = null;
             sourceOrTargetNull.set(source == null || target == null);
@@ -233,7 +312,7 @@ public class MapModel {
         // long startTime = System.currentTimeMillis();
 
         ZoneSquare sqr = getZoneAtCoordinates(x, y);
-        if (sqr != null && sqr.getBorder() != null && mapController.getClickableZones().contains(sqr)) {
+        if (sqr != null && sqr.getBorder() != null && clickableZones.contains(sqr)) {
             stopAnimation.setValue(true);
             stopAnimation.set(false);
             removeOverlaidPixelsProperty().set(true);
@@ -242,11 +321,10 @@ public class MapModel {
                 source = sqr;
                 List<ZoneSquare> validTargets = getTargets(sqr);
 
-                List<ZoneSquare> hoverableZones = new ArrayList<>(validTargets);
+                hoverableZones = new ArrayList<>(validTargets);
                 hoverableZones.add(source);
-                mapController.setHoverableZones(hoverableZones);
 
-                mapController.setClickableZones(new ArrayList<>(hoverableZones));
+                clickableZones = new ArrayList<>(hoverableZones);
 
                 highlightNeighbours.set(validTargets);
                 highlightNeighbours.set(null);
@@ -266,8 +344,8 @@ public class MapModel {
                 actionButtonDisabled.set(false);
                 setZoneActive.set(new ActivateZoneDTO(sqr, colorService.getColor(sqr.getColor().getHexValue()), false));
                 setZoneActive.set(new ActivateZoneDTO(source, overlayColor, true));
-                mapController.setHoverableZones(new ArrayList<>());
-                mapController.setClickableZones(new ArrayList<>());
+                hoverableZones = new ArrayList<>();
+                clickableZones = new ArrayList<>();
 
                 sourceOrTargetNull.set(source == null || target == null);
             }
@@ -278,8 +356,8 @@ public class MapModel {
             removeOverlaidPixels.set(true);
             removeOverlaidPixels.set(false);
             darkenBackground.set(false);
-            mapController.setHoverableZones(new ArrayList<>(zoneSquares));
-            mapController.updateClickableZones();
+            hoverableZones = new ArrayList<>(zoneSquares);
+            updateClickableZones();
 
             sourceOrTargetNull.set(source == null || target == null);
         }
@@ -296,8 +374,16 @@ public class MapModel {
         return zoneSquares.stream().filter(zsq -> name.equals(zsq.getName())).findFirst().orElse(null);
     }
 
+    public List<ZoneSquare> getClickableZones() {
+        return clickableZones;
+    }
+
     public SimpleObjectProperty<TooltipDTO> showTooltipProperty() {
         return showTooltip;
+    }
+
+    public SimpleObjectProperty<Player> highlightPlayerProperty() {
+        return highlightPlayer;
     }
 
     // TODO check if can be omitted
@@ -322,6 +408,8 @@ public class MapModel {
     }
 
     public void emitInitialVals() {
+        hoverableZones = new ArrayList<>(zoneSquares);
+        addPlayerColorsToZones();
         currPlayer.set(risikoController.getCurrentPlayer());
         showActionChange.set(risikoController.getAction().getActionName());
     }
@@ -339,6 +427,8 @@ public class MapModel {
         Action next = risikoController.getAction();
         actionButtonVisible.set(next != Action.DEFEND);
         actionButtonText.set(risikoController.getAction().getActionName());
+        mapClickEnabled = false;
+        hoverableZones = new ArrayList<>();
         showActionChange.set(risikoController.getAction().getActionName());
     }
 
@@ -353,16 +443,12 @@ public class MapModel {
                 .findFirst().orElse(null);
     }
 
+    public void resetHoverableZones() {
+        hoverableZones = new ArrayList<>(zoneSquares);
+    }
+
     public SimpleBooleanProperty darkenBackgroundProperty() {
         return darkenBackground;
-    }
-
-    public void setSource(ZoneSquare source) {
-        this.source = source;
-    }
-
-    public void setTarget(ZoneSquare target) {
-        this.target = target;
     }
 
     public SimpleStringProperty actionButtonTextProperty() {
@@ -375,10 +461,6 @@ public class MapModel {
 
     public List<ZoneSquare> getZoneSquares() {
         return zoneSquares;
-    }
-
-    public boolean isSourceOrTargetNull() {
-        return sourceOrTargetNull.get();
     }
 
     public SimpleBooleanProperty sourceOrTargetNullProperty() {
@@ -421,12 +503,8 @@ public class MapModel {
         return mapClickEnabled;
     }
 
-    public ZoneSquare getSource() {
-        return source;
-    }
-
-    public ZoneSquare getTarget() {
-        return target;
+    public void setMapClickEnabled(boolean mapClickEnabled) {
+        this.mapClickEnabled = mapClickEnabled;
     }
 
     public RisikoController getRisikoController() {
@@ -469,5 +547,55 @@ public class MapModel {
         risikoController.getPlayers()[1].setColor(BLUE);
         risikoController.getPlayers()[2] = new Player("Player c");
         risikoController.getPlayers()[2].setColor(GREEN);
+    }
+
+    private void addPlayerColorsToZones() {
+        Random random = new Random();
+        Player[] players = risikoController.getPlayers();
+        if (scenarioToBeTested == Scenario.PLAYER_ELIMINATED) {
+            for (int i = 0; i < zoneSquares.size() - 1; i++) {
+                String name = zoneSquares.get(i).getName();
+                int troops = Integer.parseInt(zoneSquares.get(i).getTroopsAmountText().getText());
+
+                int randomInt = random.nextInt(2);
+                risikoController.setZoneOwner(players[randomInt], zoneSquares.get(i).getName());
+                Color zoneColor = colorService.getColor(players[randomInt].getColor().getHexValue());
+                drawZone.set(new DrawZoneDTO(zoneSquares.get(i), zoneColor));
+                risikoController.updateZoneTroops(name, troops);
+            }
+            // for testing elimination of player green
+            String name = zoneSquares.get(42).getName();
+            int troops = Integer.parseInt(zoneSquares.get(42).getTroopsAmountText().getText());
+            risikoController.setZoneOwner(players[2], zoneSquares.get(42).getName());
+            Color zoneColor = colorService.getColor(players[2].getColor().getHexValue());
+            this.drawZone.set(new DrawZoneDTO(zoneSquares.get(42), zoneColor));
+            risikoController.updateZoneTroops(name, troops);
+        } else if (scenarioToBeTested == Scenario.WIN_GAME) {
+            for (int i = 0; i < zoneSquares.size() - 1; i++) {
+                String name = zoneSquares.get(i).getName();
+                int troops = Integer.parseInt(zoneSquares.get(i).getTroopsAmountText().getText());
+                risikoController.setZoneOwner(players[0], zoneSquares.get(i).getName());
+                Color zoneColor = colorService.getColor(players[0].getColor().getHexValue());
+                this.drawZone.set(new DrawZoneDTO(zoneSquares.get(i), zoneColor));
+                risikoController.updateZoneTroops(name, troops);
+            }
+            String name = zoneSquares.get(42).getName();
+            int troops = Integer.parseInt(zoneSquares.get(42).getTroopsAmountText().getText());
+            risikoController.setZoneOwner(players[1], zoneSquares.get(42).getName());
+            Color zoneColor = colorService.getColor(players[1].getColor().getHexValue());
+            this.drawZone.set(new DrawZoneDTO(zoneSquares.get(42), zoneColor));
+            risikoController.updateZoneTroops(name, troops);
+        } else {
+            for (int i = 0; i < zoneSquares.size(); i++) {
+                int randomInt = random.nextInt(3);
+                String name = zoneSquares.get(i).getName();
+                int troops = Integer.parseInt(zoneSquares.get(i).getTroopsAmountText().getText());
+                risikoController.setZoneOwner(players[randomInt], zoneSquares.get(i).getName());
+                Color zoneColor = colorService.getColor(players[randomInt].getColor().getHexValue());
+                this.drawZone.set(new DrawZoneDTO(zoneSquares.get(i), zoneColor));
+                // TODO move, currently setting troops here
+                risikoController.updateZoneTroops(name, troops);
+            }
+        }
     }
 }

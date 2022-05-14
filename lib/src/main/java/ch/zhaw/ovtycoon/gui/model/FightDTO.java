@@ -11,6 +11,15 @@ public class FightDTO {
     private int[] attackerDiceRoll;
     private int[] defenderDiceRoll;
     private int attackerTroops;
+    private String overtakenRegionName;
+
+    public String getOvertakenRegionName() {
+        return overtakenRegionName;
+    }
+
+    public void setOvertakenRegionName(String overtakenRegionName) {
+        this.overtakenRegionName = overtakenRegionName;
+    }
 
     public int getAttackerTroops() {
         return attackerTroops;
