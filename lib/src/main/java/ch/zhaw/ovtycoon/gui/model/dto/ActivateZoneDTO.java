@@ -1,5 +1,6 @@
-package ch.zhaw.ovtycoon.gui.model;
+package ch.zhaw.ovtycoon.gui.model.dto;
 
+import ch.zhaw.ovtycoon.gui.model.ZoneSquare;
 import javafx.scene.paint.Color;
 
 public class ActivateZoneDTO {

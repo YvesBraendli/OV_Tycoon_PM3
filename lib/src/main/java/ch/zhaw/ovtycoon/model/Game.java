@@ -16,7 +16,7 @@ import java.util.Map.Entry;
 
 public class Game implements Serializable {
 	private final Action[] actions = {Action.DEFEND, Action.ATTACK, Action.MOVE};
-	private final SimpleObjectProperty<Player> fightWinner = new SimpleObjectProperty<>(null);
+	private final SimpleObjectProperty<PlayerColor> fightWinner = new SimpleObjectProperty<>(null);
 	private final SimpleBooleanProperty zoneOvertaken = new SimpleBooleanProperty(false);
 	private final SimpleObjectProperty<Player> currentPlayerProperty = new SimpleObjectProperty<>(null);
 	private final SimpleObjectProperty<Region> regionOwnerChange = new SimpleObjectProperty<>(null);
@@ -73,7 +73,7 @@ public class Game implements Serializable {
 		Fight fight = new Fight(attacker, defender);
 		DiceRoll diceRoll = fight.fight(numOfAttackers, numOfDefenders);
 		Player winner = attacker.getTroops() < initialAttackerTroops ? getZoneOwner(defender) : getZoneOwner(attacker);
-		fightWinner.set(winner);
+		fightWinner.set(winner.getColor());
 		if (defender.getTroops() == 0) {
 			Player attackingPlayer = getZoneOwner(attacker);
 			setZoneOwner(attackingPlayer, defender);
@@ -472,9 +472,9 @@ public class Game implements Serializable {
 
 	/**
 	 * Gets the winner of a fight
-	 * @return Player which won the fight
+	 * @return PlayerColor of the player who won the fight
 	 */
-	public SimpleObjectProperty<Player> getFightWinner() {
+	public SimpleObjectProperty<PlayerColor> getFightWinner() {
 		return fightWinner;
 	}
 

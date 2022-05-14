@@ -1,4 +1,4 @@
-package ch.zhaw.ovtycoon.gui.model;
+package ch.zhaw.ovtycoon.gui.model.dto;
 
 public class TooltipDTO {
     private final int translateX;

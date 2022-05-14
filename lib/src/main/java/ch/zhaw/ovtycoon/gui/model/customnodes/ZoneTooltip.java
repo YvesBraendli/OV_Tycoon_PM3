@@ -1,4 +1,4 @@
-package ch.zhaw.ovtycoon.gui.model;
+package ch.zhaw.ovtycoon.gui.model.customnodes;
 
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;

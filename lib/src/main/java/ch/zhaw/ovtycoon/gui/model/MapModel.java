@@ -4,7 +4,15 @@ import ch.zhaw.ovtycoon.Config;
 import ch.zhaw.ovtycoon.RisikoController;
 import ch.zhaw.ovtycoon.TestBackend;
 import ch.zhaw.ovtycoon.data.DiceRoll;
-import ch.zhaw.ovtycoon.gui.MapController;
+import ch.zhaw.ovtycoon.gui.model.dto.ActivateZoneDTO;
+import ch.zhaw.ovtycoon.gui.model.dto.AttackDTO;
+import ch.zhaw.ovtycoon.gui.model.dto.DrawZoneDTO;
+import ch.zhaw.ovtycoon.gui.model.dto.FightDTO;
+import ch.zhaw.ovtycoon.gui.model.dto.MoveTroopsDTO;
+import ch.zhaw.ovtycoon.gui.model.dto.ReinforcementDTO;
+import ch.zhaw.ovtycoon.gui.model.dto.TooltipDTO;
+import ch.zhaw.ovtycoon.gui.model.dto.ZoneTroopAmountDTO;
+import ch.zhaw.ovtycoon.gui.model.dto.ZoneTroopAmountInitDTO;
 import ch.zhaw.ovtycoon.gui.service.ColorService;
 import ch.zhaw.ovtycoon.gui.service.MapLoaderService;
 import ch.zhaw.ovtycoon.model.Player;
@@ -33,12 +41,8 @@ public class MapModel {
     private final MapLoaderService mapLoaderService;
     private final ColorService colorService;
     private final RisikoController risikoController = new RisikoController(3);
-    private final MapController mapController; // todo remove as soon as cleanup complete
-
     private final SimpleBooleanProperty sourceOrTargetNull = new SimpleBooleanProperty(true);
     private final SimpleBooleanProperty actionButtonVisible = new SimpleBooleanProperty(false);
-    private final SimpleBooleanProperty showingPopup = new SimpleBooleanProperty(false);
-    private final SimpleBooleanProperty gameWon = new SimpleBooleanProperty(false);
     private final SimpleObjectProperty<Config.PlayerColor> currPlayer = new SimpleObjectProperty<>(BLUE);
     private final SimpleStringProperty actionButtonText = new SimpleStringProperty();
     private final SimpleStringProperty showActionChange = new SimpleStringProperty();
@@ -56,11 +60,9 @@ public class MapModel {
     private final SimpleObjectProperty<MoveTroopsDTO> openMoveTroopsPopup = new SimpleObjectProperty<>();
     private final SimpleObjectProperty<TooltipDTO> showTooltip = new SimpleObjectProperty<>();
     private final SimpleObjectProperty<TooltipDTO> removeTooltip = new SimpleObjectProperty<>();
-
     private final SimpleObjectProperty<Config.PlayerColor> highlightPlayer = new SimpleObjectProperty<>();
     private final SimpleObjectProperty<ZoneTroopAmountInitDTO> initializeZoneTroopsText = new SimpleObjectProperty<>();
     private final SimpleObjectProperty<ZoneTroopAmountDTO> updateZoneTroopsText = new SimpleObjectProperty<>();
-
     private final Color overlayColor = new Color(0.0d, 0.0d, 0.0d, 0.25d);
     private boolean mapClickEnabled = true;
     private List<ZoneSquare> clickableZones = new ArrayList<>();
@@ -69,15 +71,13 @@ public class MapModel {
     private ZoneSquare target = null;
     private TooltipDTO currHovered = null;
     private final TestBackend testBackend = new TestBackend();
-    // TODO only for testing scenarios, e.g. game won
-    private final Scenario scenarioToBeTested = Scenario.NONE;
+    private final Scenario scenarioToBeTested = Scenario.NONE; // Only for initializing the zones and players to test certain scenarios, e.g. win game
 
-    public MapModel(Image mapImage, double scale, MapController mapController) {
+    public MapModel(Image mapImage, double scale) {
         mapLoaderService = new MapLoaderService(mapImage, scale);
         colorService = new ColorService();
         zoneSquares = mapLoaderService.initZoneSquaresFromConfig();
         initPlayers();
-        this.mapController = mapController;
     }
 
     public void notifyDefender() {
@@ -188,16 +188,16 @@ public class MapModel {
 
     public FightDTO handleFight(int attackerTroops, int defenderTroops) {
         FightDTO fightDTO = new FightDTO();
-        Player attacker = playerColorToPlayer(source.getColor());
-        Player defender = playerColorToPlayer(target.getColor());
+        Config.PlayerColor attacker = source.getColor();
+        Config.PlayerColor defender = target.getColor();
         if (attacker == null || defender == null) return null;
 
-        final AtomicReference<Player> fightWinner= new AtomicReference<>(null);
+        final AtomicReference<Config.PlayerColor> fightWinner= new AtomicReference<>(null);
         final AtomicBoolean zoneOvertaken = new AtomicBoolean(false);
 
-        risikoController.getFightWinner().addListener((new ChangeListener<Player>() {
+        risikoController.getFightWinner().addListener((new ChangeListener<Config.PlayerColor>() {
             @Override
-            public void changed(ObservableValue<? extends Player> observable, Player oldValue, Player newValue) {
+            public void changed(ObservableValue<? extends Config.PlayerColor> observable, Config.PlayerColor oldValue, Config.PlayerColor newValue) {
                 if (newValue != null) {
                     fightWinner.set(newValue);
                     risikoController.getFightWinner().removeListener(this);
@@ -221,7 +221,6 @@ public class MapModel {
             public void changed(ObservableValue<? extends Config.PlayerColor> observable, Config.PlayerColor oldValue, Config.PlayerColor newValue) {
                 if (newValue != null) {
                     overtookRegion.set(true);
-                    System.out.println(newValue);
                     risikoController.getNewRegionOwnerProperty().removeListener(this);
                 }
             }
@@ -231,8 +230,8 @@ public class MapModel {
         fightDTO.setAttackerDiceRoll(fightRes.getAttackerRoll());
         fightDTO.setDefenderDiceRoll(fightRes.getDefenderRoll());
         boolean attackerWon =  fightWinner.get().equals(attacker);
-        String winner = attackerWon ? attacker.getName() : defender.getName();
-        String loser = attackerWon ? defender.getName() : attacker.getName();
+        String winner = attackerWon ? attacker.name().toLowerCase(): defender.name().toLowerCase();
+        String loser = attackerWon ? defender.name().toLowerCase(): attacker.name().toLowerCase();
         fightDTO.setFightWinner(winner);
         fightDTO.setFightLoser(loser);
         fightDTO.setOvertookZone(zoneOvertaken.get());
@@ -240,8 +239,8 @@ public class MapModel {
         if (overtookRegion.get()) {
             fightDTO.setOvertakenRegionName(risikoController.getRegionByOwner(target.getName()).toString());
         }
-        fightDTO.setAttacker(attacker.getName());
-        fightDTO.setDefender(defender.getName());
+        fightDTO.setAttacker(attacker.name().toLowerCase());
+        fightDTO.setDefender(defender.name().toLowerCase());
         fightDTO.setAttackerWon(attackerWon);
         fightDTO.setAttackerTroops(attackerTroops);
         return fightDTO;
@@ -287,15 +286,6 @@ public class MapModel {
         gameWinner.set(winnerName);
     }
 
-    private Player playerColorToPlayer(Config.PlayerColor playerColor) {
-        for (Player player : risikoController.getPlayers()) {
-            if (player.getColor() == playerColor) {
-                return player;
-            }
-        }
-        return null;
-    }
-
     public void handleMapClick(int x, int y) {
         if (source == null || (source != null && target != null)) {
             darkenBackground.set(false);
@@ -338,7 +328,11 @@ public class MapModel {
                     return;
                 }
                 target = sqr;
-                mapController.getOverlaidZones().keySet().stream().filter((zone) -> !(zone.equals(source.getName()) || zone.equals(target.getName()))).collect(Collectors.toList()).forEach(zoneToInactivate -> this.zoneToInactivate.set(zoneToInactivate));
+                // TODO check
+                clickableZones.stream()
+                        .map(zone -> zone.getName())
+                        .filter(zoneName -> !(zoneName.equals(source.getName()) || zoneName.equals(target.getName())))
+                        .forEach(zoneToBeInactivated -> this.zoneToInactivate.set(zoneToBeInactivated));
                 removeUnnecessaryTooltips.set(true);
                 removeUnnecessaryTooltips.set(false);
                 // TODO bind in controller
@@ -408,7 +402,7 @@ public class MapModel {
         return openMoveTroopsPopup;
     }
 
-    public void emitInitialVals() {
+    public void setInitialValues() {
         hoverableZones = new ArrayList<>(zoneSquares);
         addPlayerColorsToZones();
         initTroopAmountText();
@@ -434,7 +428,7 @@ public class MapModel {
         showActionChange.set(risikoController.getAction().getActionName());
     }
 
-    public ZoneSquare getZoneAtCoordinates(int x, int y) {
+    private ZoneSquare getZoneAtCoordinates(int x, int y) {
         List<ZoneSquare> containsY = this.zoneSquares.stream()
                 .filter(zone ->
                         zone.getBorder().stream().map(str -> str.getY()).collect(Collectors.toList()).contains(y)
@@ -469,36 +463,16 @@ public class MapModel {
         return sourceOrTargetNull;
     }
 
-    public boolean isActionButtonVisible() {
-        return actionButtonVisible.get();
-    }
-
     public SimpleBooleanProperty actionButtonVisibleProperty() {
         return actionButtonVisible;
     }
 
-    public boolean isShowingPopup() {
-        return showingPopup.get();
-    }
-
-    public SimpleBooleanProperty showingPopupProperty() {
-        return showingPopup;
-    }
-
-    public boolean isGameWon() {
-        return gameWon.get();
-    }
-
-    public SimpleBooleanProperty gameWonProperty() {
-        return gameWon;
+    public SimpleObjectProperty<Config.PlayerColor> currPlayerProperty() {
+        return currPlayer;
     }
 
     public Config.PlayerColor getCurrPlayer() {
         return currPlayer.get();
-    }
-
-    public SimpleObjectProperty<Config.PlayerColor> currPlayerProperty() {
-        return currPlayer;
     }
 
     public boolean isMapClickEnabled() {
@@ -549,16 +523,6 @@ public class MapModel {
         return updateZoneTroopsText;
     }
 
-    // todo to backend
-    private void initPlayers() {
-        risikoController.getPlayers()[0] = new Player("Player a");
-        risikoController.getPlayers()[0].setColor(RED);
-        risikoController.getPlayers()[1] = new Player("Player b");
-        risikoController.getPlayers()[1].setColor(BLUE);
-        risikoController.getPlayers()[2] = new Player("Player c");
-        risikoController.getPlayers()[2].setColor(GREEN);
-    }
-
     private void initTroopAmountText() {
         zoneSquares.forEach(zoneSquare -> {
             int troops = risikoController.getZoneTroops(zoneSquare.getName());
@@ -568,8 +532,17 @@ public class MapModel {
         });
     }
 
+    // TODO Should happen in backend: methods below will be removed as soon as player initialization is implemented in the backend -------------------------------
 
-    // TODO move, currently setting troops here
+    private void initPlayers() {
+        risikoController.getPlayers()[0] = new Player("Player a");
+        risikoController.getPlayers()[0].setColor(RED);
+        risikoController.getPlayers()[1] = new Player("Player b");
+        risikoController.getPlayers()[1].setColor(BLUE);
+        risikoController.getPlayers()[2] = new Player("Player c");
+        risikoController.getPlayers()[2].setColor(GREEN);
+    }
+
     private void addPlayerColorsToZones() {
         Random random = new Random();
         Player[] players = risikoController.getPlayers();

@@ -274,7 +274,7 @@ public class RisikoController{
 		}
 	}
 
-	public SimpleObjectProperty<Player> getFightWinner() {
+	public SimpleObjectProperty<PlayerColor> getFightWinner() {
 		return game.getFightWinner();
 	}
 

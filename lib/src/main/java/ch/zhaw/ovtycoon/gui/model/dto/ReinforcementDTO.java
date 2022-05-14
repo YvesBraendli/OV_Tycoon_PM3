@@ -1,4 +1,6 @@
-package ch.zhaw.ovtycoon.gui.model;
+package ch.zhaw.ovtycoon.gui.model.dto;
+
+import ch.zhaw.ovtycoon.gui.model.ZoneSquare;
 
 public class ReinforcementDTO {
     private final ZoneSquare zoneSquare;

@@ -1,4 +1,4 @@
-package ch.zhaw.ovtycoon.gui.model;
+package ch.zhaw.ovtycoon.gui.model.dto;
 
 public class ZoneTroopAmountDTO {
     private final String zoneName;
