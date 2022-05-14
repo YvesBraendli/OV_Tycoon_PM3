@@ -58,6 +58,8 @@ public class MapModel {
     private final SimpleObjectProperty<TooltipDTO> removeTooltip = new SimpleObjectProperty<>();
 
     private final SimpleObjectProperty<Player> highlightPlayer = new SimpleObjectProperty<>();
+    private final SimpleObjectProperty<ZoneTroopAmountInitDTO> initializeZoneTroopsText = new SimpleObjectProperty<>();
+    private final SimpleObjectProperty<ZoneTroopAmountDTO> updateZoneTroopsText = new SimpleObjectProperty<>();
 
     private final Color overlayColor = new Color(0.0d, 0.0d, 0.0d, 0.25d);
     private boolean mapClickEnabled = true;
@@ -101,7 +103,7 @@ public class MapModel {
         ZoneSquare sqr = getZsqByName(zoneSquareName);
         if (sqr == null) return;
         risikoController.updateZoneTroops(zoneSquareName, amount);
-        sqr.updateTroopsAmount(Integer.toString(risikoController.getZoneTroops(zoneSquareName)));
+        updateZoneTroopsText.set(new ZoneTroopAmountDTO(zoneSquareName, risikoController.getZoneTroops(zoneSquareName)));
         testBackend.placeTroops(amount);
         if (testBackend.finishedPlacingTroops().get()) {
             mapClickEnabled = false;
@@ -143,8 +145,8 @@ public class MapModel {
     public void finishMovingTroops(int amountToMove) {
         risikoController.moveUnits(source.getName(), target.getName(), amountToMove);
         int troopAmtNew = risikoController.getZoneTroops(target.getName());
-        target.updateTroopsAmount(Integer.toString(troopAmtNew));
-        source.updateTroopsAmount(Integer.toString(risikoController.getZoneTroops(source.getName())));
+        updateZoneTroopsText.set(new ZoneTroopAmountDTO(target.getName(), troopAmtNew));
+        updateZoneTroopsText.set(new ZoneTroopAmountDTO(source.getName(), risikoController.getZoneTroops(source.getName())));
         mapClickEnabled = true;
         hoverableZones = new ArrayList<>(zoneSquares);
         updateClickableZones();
@@ -258,8 +260,8 @@ public class MapModel {
             }
         } else {
             // update troops on zones after attack
-            source.updateTroopsAmount(Integer.toString(risikoController.getZoneTroops(source.getName())));
-            target.updateTroopsAmount(Integer.toString(risikoController.getZoneTroops(target.getName())));
+            updateZoneTroopsText.set(new ZoneTroopAmountDTO(source.getName(), risikoController.getZoneTroops(source.getName())));
+            updateZoneTroopsText.set(new ZoneTroopAmountDTO(target.getName(), risikoController.getZoneTroops(target.getName())));
             // ending attack
             mapClickEnabled = true;
             hoverableZones = new ArrayList<>(zoneSquares);
@@ -410,6 +412,7 @@ public class MapModel {
     public void emitInitialVals() {
         hoverableZones = new ArrayList<>(zoneSquares);
         addPlayerColorsToZones();
+        initTroopAmountText();
         currPlayer.set(risikoController.getCurrentPlayer());
         showActionChange.set(risikoController.getAction().getActionName());
     }
@@ -539,6 +542,14 @@ public class MapModel {
         return removeUnnecessaryTooltips;
     }
 
+    public SimpleObjectProperty<ZoneTroopAmountInitDTO> initializeZoneTroopsTextProperty() {
+        return initializeZoneTroopsText;
+    }
+
+    public SimpleObjectProperty<ZoneTroopAmountDTO> updateZoneTroopsTextProperty() {
+        return updateZoneTroopsText;
+    }
+
     // todo to backend
     private void initPlayers() {
         risikoController.getPlayers()[0] = new Player("Player a");
@@ -549,13 +560,24 @@ public class MapModel {
         risikoController.getPlayers()[2].setColor(GREEN);
     }
 
+    private void initTroopAmountText() {
+        zoneSquares.forEach(zoneSquare -> {
+            int troops = risikoController.getZoneTroops(zoneSquare.getName());
+            int translateX = zoneSquare.getCenter().getX();
+            int translateY = zoneSquare.getCenter().getY();
+            initializeZoneTroopsText.set(new ZoneTroopAmountInitDTO(zoneSquare.getName(), troops, translateX, translateY));
+        });
+    }
+
+
+    // TODO move, currently setting troops here
     private void addPlayerColorsToZones() {
         Random random = new Random();
         Player[] players = risikoController.getPlayers();
         if (scenarioToBeTested == Scenario.PLAYER_ELIMINATED) {
             for (int i = 0; i < zoneSquares.size() - 1; i++) {
                 String name = zoneSquares.get(i).getName();
-                int troops = Integer.parseInt(zoneSquares.get(i).getTroopsAmountText().getText());
+                int troops = random.nextInt(3) + 1;
 
                 int randomInt = random.nextInt(2);
                 risikoController.setZoneOwner(players[randomInt], zoneSquares.get(i).getName());
@@ -565,7 +587,7 @@ public class MapModel {
             }
             // for testing elimination of player green
             String name = zoneSquares.get(42).getName();
-            int troops = Integer.parseInt(zoneSquares.get(42).getTroopsAmountText().getText());
+            int troops = random.nextInt(3) + 1;
             risikoController.setZoneOwner(players[2], zoneSquares.get(42).getName());
             Color zoneColor = colorService.getColor(players[2].getColor().getHexValue());
             this.drawZone.set(new DrawZoneDTO(zoneSquares.get(42), zoneColor));
@@ -573,14 +595,14 @@ public class MapModel {
         } else if (scenarioToBeTested == Scenario.WIN_GAME) {
             for (int i = 0; i < zoneSquares.size() - 1; i++) {
                 String name = zoneSquares.get(i).getName();
-                int troops = Integer.parseInt(zoneSquares.get(i).getTroopsAmountText().getText());
+                int troops = random.nextInt(3) + 1;
                 risikoController.setZoneOwner(players[0], zoneSquares.get(i).getName());
                 Color zoneColor = colorService.getColor(players[0].getColor().getHexValue());
                 this.drawZone.set(new DrawZoneDTO(zoneSquares.get(i), zoneColor));
                 risikoController.updateZoneTroops(name, troops);
             }
             String name = zoneSquares.get(42).getName();
-            int troops = Integer.parseInt(zoneSquares.get(42).getTroopsAmountText().getText());
+            int troops = random.nextInt(3) + 1;
             risikoController.setZoneOwner(players[1], zoneSquares.get(42).getName());
             Color zoneColor = colorService.getColor(players[1].getColor().getHexValue());
             this.drawZone.set(new DrawZoneDTO(zoneSquares.get(42), zoneColor));
@@ -589,11 +611,10 @@ public class MapModel {
             for (int i = 0; i < zoneSquares.size(); i++) {
                 int randomInt = random.nextInt(3);
                 String name = zoneSquares.get(i).getName();
-                int troops = Integer.parseInt(zoneSquares.get(i).getTroopsAmountText().getText());
+                int troops = random.nextInt(3) + 1;
                 risikoController.setZoneOwner(players[randomInt], zoneSquares.get(i).getName());
                 Color zoneColor = colorService.getColor(players[randomInt].getColor().getHexValue());
                 this.drawZone.set(new DrawZoneDTO(zoneSquares.get(i), zoneColor));
-                // TODO move, currently setting troops here
                 risikoController.updateZoneTroops(name, troops);
             }
         }

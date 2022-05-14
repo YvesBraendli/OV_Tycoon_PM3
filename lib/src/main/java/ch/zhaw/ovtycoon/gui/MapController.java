@@ -16,6 +16,8 @@ import ch.zhaw.ovtycoon.gui.model.ReinforcementDTO;
 import ch.zhaw.ovtycoon.gui.model.TroopAmountPopup;
 import ch.zhaw.ovtycoon.gui.model.ZoneSquare;
 import ch.zhaw.ovtycoon.gui.model.ZoneTooltip;
+import ch.zhaw.ovtycoon.gui.model.ZoneTroopAmountDTO;
+import ch.zhaw.ovtycoon.gui.model.ZoneTroopAmountInitDTO;
 import ch.zhaw.ovtycoon.gui.service.ColorService;
 import ch.zhaw.ovtycoon.model.Player;
 import javafx.animation.KeyFrame;
@@ -107,7 +109,6 @@ public class MapController {
     private PixelWriter mapPw;
     private Map<String, List<Pixel>> overlaidZones = new HashMap<>();
     private ColorService colorService = new ColorService();
-    private final Map<String, Text> zoneTroopsTexts = new HashMap<>();
     private double scale = 1.0d;
     private MapModel mapModel;
 
@@ -123,7 +124,7 @@ public class MapController {
         GraphicsContext overlayGc = mapCanvasOverlay.getGraphicsContext2D();
         pw = overlayGc.getPixelWriter();
         mapPw = gc.getPixelWriter();
-        mapModel.getZoneSquares().forEach(zoneSquare -> labelStackPane.getChildren().add(zoneSquare.getTroopsAmountText()));
+        // mapModel.getZoneSquares().forEach(zoneSquare -> labelStackPane.getChildren().add(zoneSquare.getTroopsAmountText()));
         labelStackPane.setOnMouseMoved(mouseEvent -> handleMapHover(mouseEvent));
         nextMoveBtn.setOnMouseClicked(event -> {
             clickedActionButton.set(false); // TODO cleanup
@@ -141,7 +142,28 @@ public class MapController {
         mapModel.emitInitialVals(); // TODO not clean like this
     }
 
+    private void initTroopAmountText(ZoneTroopAmountInitDTO zoneTroopAmountInitDTO) {
+        Text troopAmountText = new Text();
+        troopAmountText.setId(zoneTroopAmountInitDTO.getZoneName());
+        troopAmountText.setText(Integer.toString(zoneTroopAmountInitDTO.getTroopAmount()));
+        troopAmountText.setTranslateX(zoneTroopAmountInitDTO.getTranslateX());
+        troopAmountText.setTranslateY(zoneTroopAmountInitDTO.getTranslateY());
+        troopAmountText.setStyle("-fx-fill: lightgray;-fx-font-weight: bold;");
+        labelStackPane.getChildren().add(troopAmountText);
+    }
+
+    private void updateTroopAmountText(ZoneTroopAmountDTO zoneTroopAmountDTO) {
+        Text toUpdate = (Text) labelStackPane.getChildren().stream()
+                .filter(node -> node instanceof Text && node.getId() != null && node.getId().equals(zoneTroopAmountDTO.getZoneName()))
+                .findFirst()
+                .orElse(null);
+        if (toUpdate == null) return;
+        toUpdate.setText(Integer.toString(zoneTroopAmountDTO.getTroopAmount()));
+    }
+
     private void initMapListeners() {
+        mapModel.initializeZoneTroopsTextProperty().addListener(((observable, oldValue, newValue) -> initTroopAmountText(newValue)));
+        mapModel.updateZoneTroopsTextProperty().addListener(((observable, oldValue, newValue) -> updateTroopAmountText(newValue)));
         mapModel.darkenBackgroundProperty().addListener(((observable, oldValue, newValue) -> {
             String style = newValue ? "-fx-background-color: black; -fx-opacity: 0.5;" : "-fx-background-color: transparent";
             overlayStackPane.setStyle(style);
