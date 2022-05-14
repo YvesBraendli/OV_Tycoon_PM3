@@ -39,7 +39,7 @@ public class MapModel {
     private final SimpleBooleanProperty actionButtonVisible = new SimpleBooleanProperty(false);
     private final SimpleBooleanProperty showingPopup = new SimpleBooleanProperty(false);
     private final SimpleBooleanProperty gameWon = new SimpleBooleanProperty(false);
-    private final SimpleObjectProperty<Config.PlayerColor> currPlayer = new SimpleObjectProperty<>();
+    private final SimpleObjectProperty<Config.PlayerColor> currPlayer = new SimpleObjectProperty<>(BLUE);
     private final SimpleStringProperty actionButtonText = new SimpleStringProperty();
     private final SimpleStringProperty showActionChange = new SimpleStringProperty();
     private final SimpleBooleanProperty darkenBackground = new SimpleBooleanProperty();
