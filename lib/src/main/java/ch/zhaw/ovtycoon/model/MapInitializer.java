@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -141,4 +142,14 @@ public class MapInitializer {
         }
     }
 
+    public void placetroopsForPlayerAmounts(int playerAmount) {
+    	int numberOfTroopsPerPlayer = Config.TROOPS_PER_PLAYER_AMOUNT.get(playerAmount);
+    	ArrayList<Zone> zonesWithNoTroops = new ArrayList<>(zonesByName.values());
+    	for(int i=0; i < Config.NUMBER_OF_ZONES;i++) {
+    		int playerIndex = i%playerAmount;
+    		Zone settingZone = zonesWithNoTroops.get(new Random().nextInt(zonesWithNoTroops.size()));
+    		settingZone.setTroops(1);
+    		
+    	}
+    }
 }
