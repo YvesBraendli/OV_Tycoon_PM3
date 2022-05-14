@@ -8,6 +8,7 @@ import ch.zhaw.ovtycoon.gui.service.ColorService;
 import ch.zhaw.ovtycoon.gui.service.MapLoaderService;
 import ch.zhaw.ovtycoon.model.Player;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
@@ -45,6 +46,15 @@ public class MapModel {
     private final SimpleObjectProperty<List<ZoneSquare>> highlightNeighbours = new SimpleObjectProperty<>();
     private final SimpleBooleanProperty actionButtonDisabled = new SimpleBooleanProperty();
     private final SimpleBooleanProperty removeUnnecessaryTooltips = new SimpleBooleanProperty();
+
+    private final SimpleIntegerProperty moveTroops = new SimpleIntegerProperty();
+    private final SimpleStringProperty gameWinner = new SimpleStringProperty();
+    private final SimpleObjectProperty<DrawZoneDTO> drawZone = new SimpleObjectProperty<>();
+
+    private final SimpleObjectProperty<MoveTroopsDTO> openMoveTroopsPopup = new SimpleObjectProperty<>();
+    private final SimpleObjectProperty<TooltipDTO> showTooltip = new SimpleObjectProperty<>();
+    private final SimpleObjectProperty<TooltipDTO> removeTooltip = new SimpleObjectProperty<>();
+
     private final Color overlayColor = new Color(0.0d, 0.0d, 0.0d, 0.25d);
     private boolean mapClickEnabled = true;
     private ZoneSquare source = null;
@@ -60,6 +70,32 @@ public class MapModel {
         zoneSquares = mapLoaderService.initZoneSquaresFromConfig();
         initPlayers();
         this.mapController = mapController;
+    }
+
+    public void initializeMovingTroops(int minAmount) {
+        if (source == null || target == null) return;
+        int maxMovableTroops = risikoController.getMaxMovableTroops(source.getName());
+        openMoveTroopsPopup.set(new MoveTroopsDTO(minAmount, maxMovableTroops));
+    }
+
+    public void finishMovingTroops(int amountToMove) {
+        risikoController.moveUnits(source.getName(), target.getName(), amountToMove);
+        int troopAmtNew = risikoController.getZoneTroops(target.getName());
+        target.updateTroopsAmount(Integer.toString(troopAmtNew));
+        source.updateTroopsAmount(Integer.toString(risikoController.getZoneTroops(source.getName())));
+        mapClickEnabled = true;
+        mapController.setMapClickEnabled(true);
+        mapController.setHoverableZones(new ArrayList<>(zoneSquares));
+        mapController.updateClickableZones();
+        source = null;
+        target = null;
+        removeOverlaidPixels.set(true);
+        removeOverlaidPixels.set(false);
+        darkenBackground.set(false);
+    }
+
+    public void handleHover(int x, int y) {
+
     }
 
     public FightDTO handleFight(int attackerTroops, int defenderTroops) {
@@ -122,8 +158,53 @@ public class MapModel {
 
         fightDTO.setAttackerWon(attackerWon);
 
+        fightDTO.setAttackerTroops(attackerTroops);
+
 
         return fightDTO;
+    }
+
+    public void finishFight(FightDTO fightDTO) {
+        if (fightDTO.isOvertookZone()) {
+            Color attackerColor = colorService.getColor(source.getColor().getHexValue());
+            drawZone.set(new DrawZoneDTO(target, attackerColor));
+            if (risikoController.getWinner() == null) {
+                moveTroops.set(fightDTO.getAttackerTroops());
+                moveTroops.set(-1);
+            } else {
+                gameWon(fightDTO.getAttacker());
+            }
+        } else {
+            // update troops on zones after attack
+            source.updateTroopsAmount(Integer.toString(risikoController.getZoneTroops(source.getName())));
+            target.updateTroopsAmount(Integer.toString(risikoController.getZoneTroops(target.getName())));
+
+            // ending attack
+            mapClickEnabled = true;
+            mapController.setMapClickEnabled(true);
+            mapController.setHoverableZones(new ArrayList<>(zoneSquares));
+            source = null;
+            target = null;
+            removeOverlaidPixels.set(true);
+            removeOverlaidPixels.set(false);
+            darkenBackground.set(false);
+            mapController.updateClickableZones();
+            sourceOrTargetNull.set(source == null || target == null);
+        }
+    }
+
+    private void gameWon(String winnerName) {
+        mapClickEnabled = false;
+        mapController.setMapClickEnabled(false);
+        mapController.setHoverableZones(new ArrayList<>(zoneSquares));
+        source = null;
+        target = null;
+        removeOverlaidPixels.set(true);
+        removeOverlaidPixels.set(false);
+        darkenBackground.set(false);
+        mapController.updateClickableZones();
+        sourceOrTargetNull.set(source == null || target == null);
+        gameWinner.set(winnerName);
     }
 
     private Player playerColorToPlayer(Config.PlayerColor playerColor) {
@@ -213,6 +294,31 @@ public class MapModel {
 
     private ZoneSquare getZsqByName(String name) {
         return zoneSquares.stream().filter(zsq -> name.equals(zsq.getName())).findFirst().orElse(null);
+    }
+
+    public SimpleObjectProperty<TooltipDTO> showTooltipProperty() {
+        return showTooltip;
+    }
+
+    // TODO check if can be omitted
+    public SimpleObjectProperty<TooltipDTO> removeTooltipProperty() {
+        return removeTooltip;
+    }
+
+    public SimpleIntegerProperty moveTroopsProperty() {
+        return moveTroops;
+    }
+
+    public SimpleObjectProperty<DrawZoneDTO> drawZoneProperty() {
+        return drawZone;
+    }
+
+    public SimpleStringProperty gameWinnerProperty() {
+        return gameWinner;
+    }
+
+    public SimpleObjectProperty<MoveTroopsDTO> openMoveTroopsPopupProperty() {
+        return openMoveTroopsPopup;
     }
 
     public void emitInitialVals() {

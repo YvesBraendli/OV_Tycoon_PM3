@@ -10,6 +10,15 @@ public class FightDTO {
     private String fightLoser;
     private int[] attackerDiceRoll;
     private int[] defenderDiceRoll;
+    private int attackerTroops;
+
+    public int getAttackerTroops() {
+        return attackerTroops;
+    }
+
+    public void setAttackerTroops(int attackerTroops) {
+        this.attackerTroops = attackerTroops;
+    }
 
     public boolean isOvertookZone() {
         return overtookZone;
