@@ -40,7 +40,6 @@ public class MapModel {
     private final List<ZoneSquare> zoneSquares;
     private final MapLoaderService mapLoaderService;
     private final ColorService colorService;
-    private final RisikoController risikoController = new RisikoController(3);
     private final SimpleBooleanProperty sourceOrTargetNull = new SimpleBooleanProperty(true);
     private final SimpleBooleanProperty actionButtonVisible = new SimpleBooleanProperty(false);
     private final SimpleObjectProperty<Config.PlayerColor> currPlayer = new SimpleObjectProperty<>(BLUE);
@@ -71,9 +70,12 @@ public class MapModel {
     private ZoneSquare target = null;
     private TooltipDTO currHovered = null;
     private final TestBackend testBackend = new TestBackend();
+    private RisikoController risikoController = new RisikoController(3);
     private final Scenario scenarioToBeTested = Scenario.PLAYER_ELIMINATED; // Only for initializing the zones and players to test certain scenarios, e.g. win game
+    private final double scale;
 
     public MapModel(Image mapImage, double scale) {
+        this.scale = scale;
         mapLoaderService = new MapLoaderService(mapImage, scale);
         colorService = new ColorService();
         zoneSquares = mapLoaderService.initZoneSquaresFromConfig();
@@ -545,8 +547,16 @@ public class MapModel {
         this.currHovered = currHovered;
     }
 
+    public void setRisikoController(RisikoController risikoController) {
+        this.risikoController = risikoController;
+    }
+
     public SimpleObjectProperty<ZoneTroopAmountDTO> updateZoneTroopsTextProperty() {
         return updateZoneTroopsText;
+    }
+
+    public double getScale() {
+        return scale;
     }
 
     private void initTroopAmountText() {

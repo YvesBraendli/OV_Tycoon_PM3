@@ -1,7 +1,10 @@
 package ch.zhaw.ovtycoon.gui;
 
+import ch.zhaw.ovtycoon.Config;
+import ch.zhaw.ovtycoon.RisikoController;
 import ch.zhaw.ovtycoon.gui.model.MapModel;
 import ch.zhaw.ovtycoon.gui.model.ZoneSquare;
+import ch.zhaw.ovtycoon.gui.model.dto.FightDTO;
 import ch.zhaw.ovtycoon.gui.model.dto.TooltipDTO;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -14,7 +17,12 @@ import java.util.ArrayList;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
 import static junit.framework.TestCase.assertNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+/**
+ * Tests for the {@link MapModel} class.
+ */
 public class MapModelTest {
     private MapModel uut;
     private final int zonesAmount = 43;
@@ -159,6 +167,8 @@ public class MapModelTest {
     private void initializeSourceAndTargetZoneSquare() {
         ZoneSquare source = uut.getZoneSquares().stream().filter(zone -> zone.getName().equals("Zone110")).findFirst().orElse(null);
         ZoneSquare target = uut.getZoneSquares().stream().filter(zone -> zone.getName().equals("Zone110")).findFirst().orElse(null);
+        source.setColor(Config.PlayerColor.RED);
+        target.setColor(Config.PlayerColor.BLUE);
         assert source != null;
         assert target != null;
         uut.setSource(source);
@@ -167,13 +177,34 @@ public class MapModelTest {
     }
 
     public void testFightAttackerWins() {
-        initializeUUTWithDefaultScale();
-        initializeSourceAndTargetZoneSquare();
+
     }
 
     public void testFightDefenderWins() {}
 
-    public void testFightZoneOvertaken() {}
+    @Test
+    public void testFinishFightZoneOvertaken() {
+        final int attackerTroops = 3;
+        initializeUUTWithDefaultScale();
+        initializeSourceAndTargetZoneSquare();
+
+        RisikoController mockRisikoController = mock(RisikoController.class);
+        when(mockRisikoController.getWinner()).thenReturn(null);
+        uut.setRisikoController(mockRisikoController);
+
+        FightDTO attackerOvertakesZone = new FightDTO();
+        attackerOvertakesZone.setAttackerTroops(attackerTroops);
+        attackerOvertakesZone.setOvertookZone(true);
+
+        uut.moveTroopsProperty().addListener((new ChangeListener<Number>() {
+            @Override
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+                assertEquals(attackerTroops, newValue.intValue());
+                uut.moveTroopsProperty().removeListener(this);
+            }
+        }));
+        uut.finishFight(attackerOvertakesZone);
+    }
 
     public void testFightRegionOvertaken() {}
 

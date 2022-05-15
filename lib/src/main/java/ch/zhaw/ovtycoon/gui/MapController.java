@@ -109,17 +109,31 @@ public class MapController {
     private PixelWriter mapPw;
     private Map<String, List<Pixel>> overlaidPixelsByZone = new HashMap<>();
     private ColorService colorService = new ColorService();
-    private double scale = 1.0d;
-    private MapModel mapModel;
+    private final double scale;
+    private final MapModel mapModel;
 
+    // TODO BUG: hover possible while initialization animation
+
+    /**
+     * Creates an instance of the controller with the passed model.
+     * Sets {@link #scale} to the value provided by the passed model.
+     * @param mapModel MapModel to be used by the controller
+     */
+    public MapController(MapModel mapModel) {
+        this.mapModel = mapModel;
+        this.scale = mapModel.getScale();
+    }
+
+    /**
+     * Initializes the zones map view. Rescales boxes and panes based on {@link #scale}.
+     * Adds event handlers and binds nodes to properties provided by this class itself
+     * or by {@link #mapModel}.
+     */
     @FXML
     public void initialize() {
-        scale = Screen.getPrimary().getBounds().getHeight() < 1000.0d ? 0.7d : 1.0d;
         if (scale != 1.0d) {
             rescale();
         }
-        // TODO should not be initialized in map controller
-        mapModel = new MapModel(mapImage, scale);
         GraphicsContext gc = mapCanvas.getGraphicsContext2D();
         GraphicsContext overlayGc = mapCanvasOverlay.getGraphicsContext2D();
         pw = overlayGc.getPixelWriter();
@@ -135,12 +149,16 @@ public class MapController {
         actionBtn.disableProperty().bind(mapModel.actionButtonDisabledProperty().or(mapModel.sourceOrTargetNullProperty()).or(clickedActionButton));
         actionBtn.textProperty().bind(mapModel.actionButtonTextProperty());
         addPlayers();
-        mapModel.showActionChangeProperty().addListener(((observable, oldValue, newValue) -> showActionChange(newValue)));
         eliminatePlayer();
         initMapListeners();
         mapModel.setInitialValues(); // TODO ev clean up
     }
 
+    /**
+     * Creates an instance of the javafx text node and adds it to the {@link #labelStackPane} at the position
+     * provided by the passed dto and with the text string from the dto.
+     * @param zoneTroopAmountInitDTO dto containing properties to be set on the text node created by the method
+     */
     private void initTroopAmountText(ZoneTroopAmountInitDTO zoneTroopAmountInitDTO) {
         Text troopAmountText = new Text();
         troopAmountText.setId(zoneTroopAmountInitDTO.getZoneName());
@@ -151,6 +169,11 @@ public class MapController {
         labelStackPane.getChildren().add(troopAmountText);
     }
 
+    /**
+     * Updates the text property of the text node with the id equal to the zoneName property of the passed dto.
+     * @param zoneTroopAmountDTO dto containing the updated troop amount and the name of the zone of which the troop
+     *                           amount should be updated.
+     */
     private void updateTroopAmountText(ZoneTroopAmountDTO zoneTroopAmountDTO) {
         Text toUpdate = (Text) labelStackPane.getChildren().stream()
                 .filter(node -> node instanceof Text && node.getId() != null && node.getId().equals(zoneTroopAmountDTO.getZoneName()))
@@ -160,7 +183,11 @@ public class MapController {
         toUpdate.setText(Integer.toString(zoneTroopAmountDTO.getTroopAmount()));
     }
 
+    /**
+     * Adds change listeners to properties provided by {@link #mapModel}
+     */
     private void initMapListeners() {
+        mapModel.showActionChangeProperty().addListener(((observable, oldValue, newValue) -> showActionChange(newValue)));
         mapModel.initializeZoneTroopsTextProperty().addListener(((observable, oldValue, newValue) -> initTroopAmountText(newValue)));
         mapModel.updateZoneTroopsTextProperty().addListener(((observable, oldValue, newValue) -> updateTroopAmountText(newValue)));
         mapModel.darkenBackgroundProperty().addListener(((observable, oldValue, newValue) -> {
@@ -222,6 +249,10 @@ public class MapController {
     }
 
     // TODO get current player from map model
+
+    /**
+     * Adds a change listener to the eliminated player property provided by {@link #mapModel}
+     */
     private void eliminatePlayer() {
         mapModel.getRisikoController().getEliminatedPlayerProperty().addListener(((observable, oldValue, newValue) -> {
             showNotification(NotificationType.WARNING, String.format(PLAYER_ELIMINATED, newValue.name().toLowerCase()));
@@ -230,6 +261,9 @@ public class MapController {
         }));
     }
 
+    /**
+     * Rescales the zones map view based on {@link #scale}
+     */
     private void rescale() {
         upperHBox.setPrefHeight(upperHBox.getPrefHeight() * scale);
         upperHBox.setPrefWidth(upperHBox.getPrefWidth() * scale);
@@ -254,6 +288,11 @@ public class MapController {
         buttonHBox.setPrefWidth(buttonHBox.getPrefWidth() * scale);
     }
 
+    /**
+     * Adds a HBox to the {@link #labelStackPane} with information about the passed player.
+     * Removes the HBox after 3 seconds.
+     * @param currPlayer player about whom the information should be displayed
+     */
     private void highlightCurrPlayerLarge(Config.PlayerColor currPlayer) {
         HBox playerBoxLarge = buildAndGetPlayerHBoxBig(currPlayer);
         centerJavaFXRegion(labelStackPane, playerBoxLarge);
@@ -263,10 +302,20 @@ public class MapController {
         playAnimation(highlightPlayerTl, true);
     }
 
+    /**
+     * Stops the {@link #highlightClickableZonesTl} timeline.
+     */
     private void stopHighlightClickableZonesAnimation() {
         highlightClickableZonesTl.stop();
     }
 
+    /**
+     * Plays the passed timeline. If a blocking timeline is already playing, the passed timeline
+     * gets played as soon as the currently playing timeline finishes playing.
+     * @param tlToPlay timeline to be played
+     * @param isBlocking whether the passed timeline should block other later passed timelines
+     *                   from being played until itself finished playing or not.
+     */
     private void playAnimation(Timeline tlToPlay, boolean isBlocking) {
         final EventHandler<ActionEvent> handler = new EventHandler<ActionEvent>() {
             @Override
@@ -303,6 +352,11 @@ public class MapController {
         }
     }
 
+    /**
+     * Adds HBoxes representing the player colors provided by the {@link #mapModel} to the {@link #playersListItems} - list
+     * abd the {@link #playersVBox}. Adds an action listener to the currPlayerProperty provided by the {@link #mapModel},
+     * highlighting the set player when it changes.
+     */
     private void addPlayers() {
         for (Config.PlayerColor playerColor : mapModel.getRisikoController().getPlayerColors()) {
             HBox playerHBox = buildAndGetPlayerHBox(playerColor);
@@ -316,13 +370,11 @@ public class MapController {
         });
     }
 
-    private void highlightPlayerTile(String id) {
-        HBox toBeHighlighted = playersListItems.stream().filter(box -> id.equals(box.getId())).findFirst().orElse(null);
-        if (toBeHighlighted == null) return;
-        toBeHighlighted.setPrefWidth(175.0d * scale);
-        toBeHighlighted.setPrefHeight(35.0d * scale);
-    }
-
+    /**
+     * Highlights the HBox with the passed idNew and unhighlights (resets its size) of the HBox with the id equal to idOld.
+     * @param idOld id of the HBox to be unhighlighted
+     * @param idNew id of the HBox to be highlighted
+     */
     private void highlightCurrPlayerTile(String idOld, String idNew) {
         HBox toBeUnHighlighted = playersListItems.stream().filter(box -> idOld.equals(box.getId())).findFirst().orElse(null);
         highlightPlayerTile(idNew);
@@ -331,7 +383,24 @@ public class MapController {
         toBeUnHighlighted.setPrefHeight(25.0d * scale);
     }
 
+    /**
+     * Highlights the HBox with the passed id representing a player color by enlarging it.
+     * @param id id of the HBox to be highlighted
+     */
+    private void highlightPlayerTile(String id) {
+        HBox toBeHighlighted = playersListItems.stream().filter(box -> id.equals(box.getId())).findFirst().orElse(null);
+        if (toBeHighlighted == null) return;
+        toBeHighlighted.setPrefWidth(175.0d * scale);
+        toBeHighlighted.setPrefHeight(35.0d * scale);
+    }
+
     // TODO use player color instead
+
+    /**
+     * Creates a HBox representing the passed player color, then returns it.
+     * @param player player color
+     * @return HBox created
+     */
     private HBox buildAndGetPlayerHBox(Config.PlayerColor player) {
         String playerColor = player.getHexValue().substring(0, 8).replace("0x", "#");
         HBox playerBox = new HBox();
@@ -359,6 +428,11 @@ public class MapController {
         return playerBox;
     }
 
+    /**
+     * Creates a big HBox representing the passed player color, then returns it.
+     * @param player player color
+     * @return Big HBox created
+     */
     private HBox buildAndGetPlayerHBoxBig(Config.PlayerColor player) {
         String playerColor = player.getHexValue().substring(0, 8).replace("0x", "#");
         HBox playerBox = new HBox();
@@ -388,6 +462,11 @@ public class MapController {
         return playerBox;
     }
 
+    /**
+     * Displays a label with the name of the newly set current action for 3 seconds.
+     * Updates the click handler of {@link #labelStackPane} based on the newly set current action.
+     * @param text Name of the action after the action changed
+     */
     private void showActionChange(String text) {
         Label label = new Label();
         label.setText(text);
@@ -419,12 +498,21 @@ public class MapController {
         playAnimation(actionChangeTl, true);
     }
 
+    /**
+     * Handler for the mouse move event. Passes the coordinates of the mouseEvent parameter casted to integers
+     * to the handleHover - method of {@link #mapModel}
+     * @param mouseEvent MouseEvent to be handled
+     */
     private void handleMapHover(MouseEvent mouseEvent) {
         int x = (int) mouseEvent.getX();
         int y = (int) mouseEvent.getY();
         mapModel.handleHover(x, y);
     }
 
+    /**
+     * Click handler for the {@link #actionBtn}. Calls the initAttack or initMoveTroops - method based on
+     * the current action provided by the {@link #mapModel}
+     */
     private void onActionButtonClick() {
         clickedActionButton.set(true);
         mapModel.setMapClickEnabled(false);
@@ -440,10 +528,19 @@ public class MapController {
         }
     }
 
+    /**
+     * Redirects the handling of initializing move troops to the initializeMovingTroops - method of {@link #mapModel}.
+     * @param minAmount Minimal amount of troops which can be moved
+     */
     private void initMoveTroops(int minAmount) {
         mapModel.initializeMovingTroops(minAmount);
     }
 
+    /**
+     * Adds a {@link TroopAmountPopup} to the {@link #labelStackPane} with data from the passed dto.
+     * Adds a mouse click handler to the confirm button of the popup.
+     * @param moveTroopsDTO dto containing the data for the popup.
+     */
     private void moveTroops(MoveTroopsDTO moveTroopsDTO) {
         TroopAmountPopup troopAmountPopup = new TroopAmountPopup(moveTroopsDTO.getMinAmount(), moveTroopsDTO.getMaxMovableTroops(), MOVE_TROOPS_TEXT);
         centerJavaFXRegion(labelStackPane, troopAmountPopup);
@@ -456,6 +553,11 @@ public class MapController {
         });
     }
 
+    /**
+     * Highlights all zones on which a mouse click is allowed during the current action.
+     * Plays a timeline changing the color of the clickable zones on the {@link #mapCanvasOverlay} for 1 second.
+     * The timeline stops after 30 cycles.
+     */
     private void highLightClickableZones() {
         stopHighlightClickableZonesAnimation();
         Config.PlayerColor currPlayerColor = mapModel.getCurrPlayer();
