@@ -112,8 +112,8 @@ public class RisikoController{
     
 	/**
 	 * Checks if a player owns a specific zone
-	 * @param player color
-	 * @param zone name
+	 * @param playerColor color
+	 * @param zoneName name
 	 * @return true if the player owns the zone, false if not
 	 */
     public boolean isZoneOwner(String zoneName, PlayerColor playerColor) {
@@ -139,7 +139,7 @@ public class RisikoController{
     
 	/**
 	 * Searches for all zones which are oned by a specific player
-	 * @param player to search zones for
+	 * @param playerColor to search zones for
 	 * @return ArrayList of the zones owned by the player
 	 */
     public ArrayList<String> getZonesOwnedbyPlayer(PlayerColor playerColor){
@@ -149,7 +149,7 @@ public class RisikoController{
 	/**
 	 * Gets zones which are classified as "attackable"
 	 * An attackable zone needs to be next to a zone owned by the player and must not be owned by the player
-	 * @param zone the attacker zone
+	 * @param attackerZoneName the attacker zone
 	 * @return ArrayList of the zones that can be attacked from the current zone
 	 */
     public ArrayList<String> getAttackableZones(String attackerZoneName){
@@ -160,7 +160,7 @@ public class RisikoController{
 	 * Gets zones which can be used to attack. 
 	 * This is defined by having more than one troop on the zone
 	 * and being next to a zone which is not owned by the player
-	 * @param player to check for
+	 * @param playerColor to check for
 	 * @return ArrayList of possible attacking zones
 	 */
     public ArrayList<String> getPossibleAttackerZones(PlayerColor playerColor){
@@ -171,7 +171,7 @@ public class RisikoController{
 	 * Gets zones which have movable troops
 	 * zones have movable troops if they have more than one troop on them 
 	 * and have a neighborzone which is owned by the same player
-	 * @param player to check for
+	 * @param playerColor to check for
 	 * @return ArrayList of zones with movable troops
 	 */
     public ArrayList<String> getZonesWithMovableTroops(PlayerColor playerColor){
@@ -180,7 +180,7 @@ public class RisikoController{
     
 	/**
 	 * gets neighbours of zone
-	 * @param zone
+	 * @param zoneName
 	 * @return ArrayList with neighbours
 	 */
     public ArrayList<String> getZoneNeighbours(String zoneName){

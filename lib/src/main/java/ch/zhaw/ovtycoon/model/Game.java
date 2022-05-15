@@ -110,9 +110,9 @@ public class Game implements Serializable {
 
 	/**
 	 * allows current player to add a number of troops to his/her controlled zones
-
 	 */
-	public void reinforce() {
+	public void reinforce(Player player) {
+		int reinforcements = getAmountOfReinforcement(player);
 
 
 	}
