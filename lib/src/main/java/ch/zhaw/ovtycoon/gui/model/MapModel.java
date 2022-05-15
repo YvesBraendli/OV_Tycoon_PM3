@@ -328,14 +328,12 @@ public class MapModel {
                     return;
                 }
                 target = sqr;
-                // TODO check
                 clickableZones.stream()
                         .map(zone -> zone.getName())
                         .filter(zoneName -> !(zoneName.equals(source.getName()) || zoneName.equals(target.getName())))
                         .forEach(zoneToBeInactivated -> this.zoneToInactivate.set(zoneToBeInactivated));
                 removeUnnecessaryTooltips.set(true);
                 removeUnnecessaryTooltips.set(false);
-                // TODO bind in controller
                 actionButtonDisabled.set(false);
                 setZoneActive.set(new ActivateZoneDTO(sqr, colorService.getColor(sqr.getColor().getHexValue()), false));
                 setZoneActive.set(new ActivateZoneDTO(source, overlayColor, true));
@@ -517,6 +515,34 @@ public class MapModel {
 
     public SimpleObjectProperty<ZoneTroopAmountInitDTO> initializeZoneTroopsTextProperty() {
         return initializeZoneTroopsText;
+    }
+
+    public ZoneSquare getSource() {
+        return source;
+    }
+
+    public ZoneSquare getTarget() {
+        return target;
+    }
+
+    public void setSource(ZoneSquare source) {
+        this.source = source;
+    }
+
+    public void setTarget(ZoneSquare target) {
+        this.target = target;
+    }
+
+    public TooltipDTO getCurrHovered() {
+        return currHovered;
+    }
+
+    public void setHoverableZones(List<ZoneSquare> hoverableZones) {
+        this.hoverableZones = hoverableZones;
+    }
+
+    public void setCurrHovered(TooltipDTO currHovered) {
+        this.currHovered = currHovered;
     }
 
     public SimpleObjectProperty<ZoneTroopAmountDTO> updateZoneTroopsTextProperty() {
