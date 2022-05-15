@@ -16,16 +16,17 @@ import java.util.Map.Entry;
 
 public class Game implements Serializable {
 	private final Action[] actions = {Action.DEFEND, Action.ATTACK, Action.MOVE};
-	private final SimpleObjectProperty<Player> fightWinner = new SimpleObjectProperty<>(null);
+	private final SimpleObjectProperty<PlayerColor> fightWinner = new SimpleObjectProperty<>(null);
 	private final SimpleBooleanProperty zoneOvertaken = new SimpleBooleanProperty(false);
 	private final SimpleObjectProperty<Player> currentPlayerProperty = new SimpleObjectProperty<>(null);
+	private final SimpleObjectProperty<Region> regionOwnerChange = new SimpleObjectProperty<>(null);
 	private HashMap<Config.RegionName, ArrayList<Zone>> gameMap;
 	private HashMap<Zone, Player> zoneOwner = new HashMap<Zone, Player>();
 	private Player[] players;
 	private int currentPlayerIndex;
 	private TroopHandler troopHandler;
-	private ObjectProperty<Player> eliminatedPlayer;
-	private ObjectProperty<PlayerColor> newRegionOwner;
+	private ObjectProperty<PlayerColor> eliminatedPlayer;
+	private SimpleObjectProperty<PlayerColor> newRegionOwner = new SimpleObjectProperty<>(null);
 	private int currentActionIndex = 0;
 
 	/**
@@ -72,14 +73,16 @@ public class Game implements Serializable {
 		Fight fight = new Fight(attacker, defender);
 		DiceRoll diceRoll = fight.fight(numOfAttackers, numOfDefenders);
 		Player winner = attacker.getTroops() < initialAttackerTroops ? getZoneOwner(defender) : getZoneOwner(attacker);
-		fightWinner.set(winner);
+		fightWinner.set(winner.getColor());
 		if (defender.getTroops() == 0) {
 			Player attackingPlayer = getZoneOwner(attacker);
 			setZoneOwner(attackingPlayer, defender);
 			tryEliminatePlayer(defendingPlayer);
 			zoneOvertaken.set(true);
+
 			if (getRegionOwner(getRegionOfZone(defender)) == attackingPlayer) {
-				setNewRegionOwner(attackingPlayer);
+				setNewRegionOwner(attackingPlayer.getColor());
+				setNewRegionOwner(null); // reset
 			}
 		} else {
 			zoneOvertaken.set(false);
@@ -389,14 +392,14 @@ public class Game implements Serializable {
         return alreadyAdded;
     }
     
-    public Player getEliminatedPlayer() {
+    public PlayerColor getEliminatedPlayer() {
     	return eliminatedPlayer.get();
     }   
-    public ObjectProperty<Player> getEliminiatedPlayerProperty() {
+    public ObjectProperty<PlayerColor> getEliminiatedPlayerProperty() {
     	return eliminatedPlayer;
     }   
     public void setEliminiatedPlayer(Player player) {
-    	eliminatedPlayer.set(player);
+    	eliminatedPlayer.set(player.getColor());
     }
 
     public PlayerColor getNewRegionOwner() {
@@ -405,8 +408,8 @@ public class Game implements Serializable {
     public ObjectProperty<PlayerColor> getNewRegionOwnerProperty(){
     	return newRegionOwner;
     }
-    public void setNewRegionOwner(Player player) {
-    	newRegionOwner.set(player.getColor());
+    public void setNewRegionOwner(PlayerColor playerColor) {
+    	newRegionOwner.set(playerColor);
     }
 
 	// TODO doc for new methods -------------------------------------------------------------------------------------
@@ -469,9 +472,9 @@ public class Game implements Serializable {
 
 	/**
 	 * Gets the winner of a fight
-	 * @return Player which won the fight
+	 * @return PlayerColor of the player who won the fight
 	 */
-	public SimpleObjectProperty<Player> getFightWinner() {
+	public SimpleObjectProperty<PlayerColor> getFightWinner() {
 		return fightWinner;
 	}
 

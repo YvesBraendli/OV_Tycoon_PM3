@@ -14,6 +14,7 @@ import javafx.scene.Parent;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Interface between ÖVTycoon front- and backend
@@ -97,9 +98,8 @@ public class RisikoController{
 	 * Gets current player
 	 * @return the current player by color
 	 */
-	// TODO doc
-    public Player getCurrentPlayer() {
-    	return game.getCurrentPlayer();
+    public PlayerColor getCurrentPlayer() {
+    	return game.getCurrentPlayer().getColor();
     }
     
 	/**
@@ -207,10 +207,10 @@ public class RisikoController{
     }
     
     /**
-     * Gets the eliminated player property to implement a listener.
+     * Gets the eliminated player color property to implement a listener.
      * The property changes if after a fight a player does not own any more zones
      */
-    public ObjectProperty<Player> getEliminatedPlayerProperty(){
+    public ObjectProperty<PlayerColor> getEliminatedPlayerProperty(){
     	return game.getEliminiatedPlayerProperty();
     }
     
@@ -218,8 +218,8 @@ public class RisikoController{
      * Gets the new region owner property to implement a listener.
      * The property changes if after a fight a player owns a new region.
      */
-    public ObjectProperty<Player> getNewRegionOwnerProperty(){
-    	return game.getEliminiatedPlayerProperty();
+    public ObjectProperty<PlayerColor> getNewRegionOwnerProperty(){
+    	return game.getNewRegionOwnerProperty(); // TODO doc
     }
 
 	// TODO doc for new methods -------------------------------------------------------------------------------------
@@ -236,8 +236,17 @@ public class RisikoController{
 		return game.getMaxMovableTroops(zoneName);
 	}
 
+	// TODO remove as soon as player initialization implemented
 	public Player[] getPlayers() {
 		return game.getPlayers();
+	}
+
+	public PlayerColor[] getPlayerColors() {
+		PlayerColor[] playerColors = new PlayerColor[game.getPlayers().length];
+		for (int i = 0; i < game.getPlayers().length; i++) {
+			playerColors[i] = game.getPlayers()[i].getColor();
+		}
+		return playerColors;
 	}
 
 	public void setZoneOwner(Player owner, String zoneName) {
@@ -257,24 +266,27 @@ public class RisikoController{
 	}
 
 	public List<String> getValidTargetZoneNames(String sourceZoneName) {
-		// TODO possible bug in getPossibleMovementNeighbours: sometimes not showing all neighbours
-		return getAction() == Action.ATTACK ? getAttackableZones(sourceZoneName) : getPossibleMovementNeighbours(sourceZoneName, getCurrentPlayer().getColor());
+		return getAction() == Action.ATTACK ? getAttackableZones(sourceZoneName) : getPossibleMovementNeighbours(sourceZoneName, getCurrentPlayer());
 	}
 
 	public List<String> getValidSourceZoneNames() {
 		switch(getAction()) {
-			case ATTACK: return getPossibleAttackerZones(getCurrentPlayer().getColor());
-			case MOVE: return getZonesWithMovableTroops(getCurrentPlayer().getColor());
-			default: return getZonesOwnedbyPlayer(getCurrentPlayer().getColor());
+			case ATTACK: return getPossibleAttackerZones(getCurrentPlayer());
+			case MOVE: return getZonesWithMovableTroops(getCurrentPlayer());
+			default: return getZonesOwnedbyPlayer(getCurrentPlayer());
 		}
 	}
 
-	public SimpleObjectProperty<Player> getFightWinner() {
+	public SimpleObjectProperty<PlayerColor> getFightWinner() {
 		return game.getFightWinner();
 	}
 
 	public SimpleBooleanProperty getZoneOvertaken() {
 		return game.getZoneOvertaken();
+	}
+
+	public RegionName getRegionByOwner(String zoneName) {
+		return game.getRegionOfZone(game.getZone(zoneName));
 	}
 
 	// ---------------------------------------------------------------------------------------------------------

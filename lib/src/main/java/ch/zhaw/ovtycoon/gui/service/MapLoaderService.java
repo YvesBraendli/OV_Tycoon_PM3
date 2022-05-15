@@ -6,7 +6,6 @@ import ch.zhaw.ovtycoon.gui.model.ZoneColor;
 import ch.zhaw.ovtycoon.gui.model.ZoneSquare;
 import javafx.scene.image.Image;
 import javafx.scene.image.PixelReader;
-import javafx.scene.text.Text;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -14,7 +13,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -58,9 +56,7 @@ public class MapLoaderService {
                         String center = matcher.group(7);
                         String[] centerCoordinates = center.split(",");
                         Pixel zoneCenter = getCenter(Integer.parseInt(centerCoordinates[0]), Integer.parseInt(centerCoordinates[1]));
-
                         ZoneSquare zoneSquare = new ZoneSquare(name, getXBorderStripes(dto), zoneCenter);
-                        setInitialTroopCount(zoneSquare); // TODO dont set here
                         zoneSquares.add(zoneSquare);
                     }
                 }
@@ -97,11 +93,6 @@ public class MapLoaderService {
             }
         }
         return stripes;
-    }
-
-    private void setInitialTroopCount(ZoneSquare zoneSquare) {
-        int randomTroopsAmount = new Random().nextInt(3) + 1; // zwischen 1 und 3 Truppen zum testen
-        zoneSquare.updateTroopsAmount(Integer.toString(randomTroopsAmount));
     }
 
     private Pixel getCenter(int x, int y) {
