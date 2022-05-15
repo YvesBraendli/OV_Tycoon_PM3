@@ -21,15 +21,6 @@ public class Game implements Serializable {
 	private TroopHandler troopHandler;
 	private ObjectProperty<PlayerColor> eliminatedPlayer;
 	private ObjectProperty<PlayerColor> newRegionOwner;
-	
-	/**
-	 * TODO REMOVE AFTER PLAYER INIT IMPLEMENTATION
-	 * Helperfunction for testing until player implementation is complete
-	 * @param players
-	 */
-	public void setPlayerList(Player[] players) {
-		this.players = players;
-	}
 
 	/**
 	 * Initializes the gameMap and creates players with their corresponding colors
