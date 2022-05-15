@@ -1,9 +1,6 @@
 package ch.zhaw.ovtycoon.model;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
+import ch.zhaw.ovtycoon.Config;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -11,6 +8,8 @@ import ch.zhaw.ovtycoon.Config.PlayerColor;
 import ch.zhaw.ovtycoon.Config.RegionName;
 
 import java.util.ArrayList;
+
+import static org.junit.Assert.*;
 
 
 public class GameTest {
@@ -437,7 +436,6 @@ public class GameTest {
 		testee.setZoneOwner(a, testee.getZone("Zone112"));
 		testee.getZone("Zone112").setTroops(10);
 
-		
 		//Act
 		ArrayList<Zone> actual = testee.getAttackableZones(testee.getZone("Zone112"));
 				
@@ -494,7 +492,6 @@ public class GameTest {
 		testee.getZone("Zone135").setTroops(10);
 		testee.getZone("Zone170").setTroops(1);
 
-		
 		ArrayList<Zone> expected = new ArrayList<Zone>();
 		expected.add(testee.getZone("Zone113"));
 		expected.add(testee.getZone("Zone135"));
@@ -626,7 +623,7 @@ public class GameTest {
 		Zone returnVal = testee.getZone(searchZoneName);
 		
 		//Assert
-		assertEquals(returnVal, null);	
+		assertNull(returnVal);
 	}		
 	
 	
@@ -645,7 +642,7 @@ public class GameTest {
 		Player returnVal = testee.getPlayer(PlayerColor.GREEN);
 		
 		//Assert
-		assertEquals(returnVal,null);
+		assertNull(returnVal);
 	}
 	
 	@Test
@@ -660,8 +657,6 @@ public class GameTest {
 		//Assert
 		assertEquals(expected, actual);	
 	}
-	
-
 
 	private ArrayList<Zone> createNeighboursManually(){
 		ArrayList<Zone> neighbours = new ArrayList<>();
@@ -690,5 +685,137 @@ public class GameTest {
 		}
 		return hasNoMatch;
 	}
-	
+
+	@Test
+	public void calcReinforcementsZonesMultipleOf3NoRegion(){
+		testee.setZoneOwner(a, testee.getZone("Zone114"));
+		testee.setZoneOwner(a, testee.getZone("Zone115"));
+		testee.setZoneOwner(a, testee.getZone("Zone122"));
+		testee.setZoneOwner(a, testee.getZone("Zone142"));
+		testee.setZoneOwner(a, testee.getZone("Zone155"));
+		testee.setZoneOwner(a, testee.getZone("Zone113"));
+		testee.setZoneOwner(a, testee.getZone("Zone112"));
+		testee.setZoneOwner(a, testee.getZone("Zone121"));
+		testee.setZoneOwner(a, testee.getZone("Zone111"));
+		testee.setZoneOwner(a, testee.getZone("Zone117"));
+		testee.setZoneOwner(a, testee.getZone("Zone154"));
+		testee.setZoneOwner(a, testee.getZone("Zone124"));
+		testee.setZoneOwner(a, testee.getZone("Zone123"));
+		testee.setZoneOwner(a, testee.getZone("Zone120"));
+		testee.setZoneOwner(a, testee.getZone("Zone170"));
+
+		int expected = 5; // Magic number because formula already used in tested method
+		int actual = testee.getAmountOfReinforcements();
+
+		assertEquals(expected, actual);
+	}
+
+	@Test
+	public void calcReinforcementsZonesNotMultipleOf3NoRegion(){
+		testee.setZoneOwner(a, testee.getZone("Zone114"));
+		testee.setZoneOwner(a, testee.getZone("Zone115"));
+		testee.setZoneOwner(a, testee.getZone("Zone122"));
+		testee.setZoneOwner(a, testee.getZone("Zone142"));
+		testee.setZoneOwner(a, testee.getZone("Zone155"));
+		testee.setZoneOwner(a, testee.getZone("Zone113"));
+		testee.setZoneOwner(a, testee.getZone("Zone112"));
+		testee.setZoneOwner(a, testee.getZone("Zone121"));
+		testee.setZoneOwner(a, testee.getZone("Zone111"));
+		testee.setZoneOwner(a, testee.getZone("Zone117"));
+		testee.setZoneOwner(a, testee.getZone("Zone154"));
+		testee.setZoneOwner(a, testee.getZone("Zone124"));
+		testee.setZoneOwner(a, testee.getZone("Zone123"));
+		testee.setZoneOwner(a, testee.getZone("Zone120"));
+
+		int expected = 4; // Magic number because formula already used in tested method
+		int actual = testee.getAmountOfReinforcements();
+
+		assertEquals(expected, actual);
+	}
+
+	@Test
+	public void calcReinforcementsZonesLessThan9(){
+		testee.setZoneOwner(a, testee.getZone("Zone114"));
+		testee.setZoneOwner(a, testee.getZone("Zone115"));
+
+		int expected = Config.MIN_NUMBER_OF_REINFORCEMENTS;
+		int actual = testee.getAmountOfReinforcements();
+
+		assertEquals(expected, actual);
+	}
+
+	@Test
+	public void calcReinforcements1Region(){
+		testee.setZoneOwner(a, testee.getZone("Zone114"));
+		testee.setZoneOwner(a, testee.getZone("Zone113"));
+		testee.setZoneOwner(a, testee.getZone("Zone112"));
+		testee.setZoneOwner(a, testee.getZone("Zone121"));
+		testee.setZoneOwner(a, testee.getZone("Zone111"));
+		testee.setZoneOwner(a, testee.getZone("Zone117"));
+		testee.setZoneOwner(a, testee.getZone("Zone154"));
+		testee.setZoneOwner(a, testee.getZone("Zone184"));
+		testee.setZoneOwner(a, testee.getZone("Zone118"));
+
+		int expected = 5; // Magic number because formula already used in tested method
+		int actual = testee.getAmountOfReinforcements();
+
+		assertEquals(expected, actual);
+	}
+
+	@Test
+	public void calcReinforcements1RegionAndRandomZones(){
+		testee.setZoneOwner(a, testee.getZone("Zone114"));
+		testee.setZoneOwner(a, testee.getZone("Zone113"));
+		testee.setZoneOwner(a, testee.getZone("Zone112"));
+		testee.setZoneOwner(a, testee.getZone("Zone121"));
+		testee.setZoneOwner(a, testee.getZone("Zone111"));
+		testee.setZoneOwner(a, testee.getZone("Zone117"));
+		testee.setZoneOwner(a, testee.getZone("Zone154"));
+		testee.setZoneOwner(a, testee.getZone("Zone184"));
+		testee.setZoneOwner(a, testee.getZone("Zone118"));
+		testee.setZoneOwner(a, testee.getZone("Zone115"));
+		testee.setZoneOwner(a, testee.getZone("Zone124"));
+		testee.setZoneOwner(a, testee.getZone("Zone123"));
+		testee.setZoneOwner(a, testee.getZone("Zone120"));
+		testee.setZoneOwner(a, testee.getZone("Zone170"));
+
+		int expected = 6; // Magic number because formula already used in tested method
+		int actual = testee.getAmountOfReinforcements();
+
+		assertEquals(expected, actual);
+	}
+
+	@Test
+	public void calcReinforcementsMultipleRegionsAndRandomZones(){
+		testee.setZoneOwner(a, testee.getZone("Zone114"));
+		testee.setZoneOwner(a, testee.getZone("Zone113"));
+		testee.setZoneOwner(a, testee.getZone("Zone112"));
+		testee.setZoneOwner(a, testee.getZone("Zone121"));
+		testee.setZoneOwner(a, testee.getZone("Zone111"));
+		testee.setZoneOwner(a, testee.getZone("Zone117"));
+		testee.setZoneOwner(a, testee.getZone("Zone154"));
+		testee.setZoneOwner(a, testee.getZone("Zone184"));
+		testee.setZoneOwner(a, testee.getZone("Zone118"));
+		testee.setZoneOwner(a, testee.getZone("Zone115"));
+		testee.setZoneOwner(a, testee.getZone("Zone124"));
+		testee.setZoneOwner(a, testee.getZone("Zone123"));
+		testee.setZoneOwner(a, testee.getZone("Zone120"));
+		testee.setZoneOwner(a, testee.getZone("Zone170"));
+		testee.setZoneOwner(a, testee.getZone("Zone171"));
+		testee.setZoneOwner(a, testee.getZone("Zone164"));
+		testee.setZoneOwner(a, testee.getZone("Zone163"));
+		testee.setZoneOwner(a, testee.getZone("Zone160"));
+		testee.setZoneOwner(a, testee.getZone("Zone161"));
+		testee.setZoneOwner(a, testee.getZone("Zone162"));
+		testee.setZoneOwner(a, testee.getZone("Zone116"));
+		testee.setZoneOwner(a, testee.getZone("Zone170"));
+		testee.setZoneOwner(a, testee.getZone("Zone132"));
+		testee.setZoneOwner(a, testee.getZone("Zone131"));
+		testee.setZoneOwner(a, testee.getZone("Zone130"));
+
+		int expected = 12; // Magic number because formula already used in tested method
+		int actual = testee.getAmountOfReinforcements();
+
+		assertEquals(expected, actual);
+	}
 }

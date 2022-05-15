@@ -93,10 +93,10 @@ public class Game implements Serializable {
 	 *
 	 * min. amount of reinforcement is 3
 	 *
-	 * @param player current player
 	 * @return amount of reinforcement
 	 */
-	private int getAmountOfReinforcement(Player player){
+	public int getAmountOfReinforcements(){
+		Player player = players[currentPlayerIndex];
 		int reinforcements = (getZonesOwnedbyPlayer(player).size() / 3)
 				+ (getRegionsOwnedByPlayer(player).size() * 2);
 
@@ -109,12 +109,12 @@ public class Game implements Serializable {
 	}
 
 	/**
-	 * allows current player to add a number of troops to his/her controlled zones
+	 * Allows current player to add an amount of troops to an owned zone
+	 * @param amount number of troops to add to zone
+	 * @param zone zone to reinforce
 	 */
-	public void reinforce(Player player) {
-		int reinforcements = getAmountOfReinforcement(player);
-
-
+	public void reinforce(int amount, Zone zone) {
+		troopHandler.reinforce(amount, zone);
 	}
 
 	/**

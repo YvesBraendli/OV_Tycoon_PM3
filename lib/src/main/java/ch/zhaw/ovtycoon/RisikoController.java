@@ -52,6 +52,15 @@ public class RisikoController{
     public void moveUnits(String from, String to, int numberOfTroops) {
     	game.moveUnits(game.getZone(from), game.getZone(to), numberOfTroops);
     }
+
+	/**
+	 * Adds troops to a zone if owned by current player
+	 * @param amount amount of troops to add
+	 * @param zone name of the zone to add troops to
+	 */
+	public void reinforce(int amount, String zone) throws Exception {
+		game.reinforce(amount, game.getZone(zone));
+	}
     
 	/**
 	 * Checks for a winner. A winner is defined by owning all zones
@@ -221,4 +230,12 @@ public class RisikoController{
     	}
     	return zoneNameList;
     }
+
+	/**
+	 * Gets the amount of Reinforcements the current player receives
+	 * @return amount of reinforcements
+	 */
+	public int getAmountOfReinforcements(){
+		return game.getAmountOfReinforcements();
+	}
 }
