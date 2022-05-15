@@ -445,12 +445,11 @@ public class MapModel {
     }
 
     /**
-     * Sets the initial values of {@link #hoverableZones}, {@link #currPlayer} and {@link #showActionChange}.
+     * Sets the initial values of {@link #currPlayer} and {@link #showActionChange}.
      * Colors all zones in the player color of the player they are owned by. Sets the troop amount of all
      * zones to the values provided by {@link #risikoController}.
      */
     public void setInitialValues() {
-        hoverableZones = new ArrayList<>(zoneSquares);
         addPlayerColorsToZones();
         initTroopAmountText();
         currPlayer.set(risikoController.getCurrentPlayer());
@@ -634,6 +633,10 @@ public class MapModel {
 
     public double getScale() {
         return scale;
+    }
+
+    public List<ZoneSquare> getHoverableZones() {
+        return hoverableZones;
     }
 
     private ZoneSquare getZoneAtCoordinates(int x, int y) {

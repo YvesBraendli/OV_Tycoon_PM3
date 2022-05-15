@@ -2,6 +2,7 @@ package ch.zhaw.ovtycoon.gui;
 
 import ch.zhaw.ovtycoon.Config;
 import ch.zhaw.ovtycoon.RisikoController;
+import ch.zhaw.ovtycoon.gui.model.Action;
 import ch.zhaw.ovtycoon.gui.model.MapModel;
 import ch.zhaw.ovtycoon.gui.model.ZoneSquare;
 import ch.zhaw.ovtycoon.gui.model.dto.FightDTO;
@@ -11,12 +12,15 @@ import javafx.beans.value.ObservableValue;
 import javafx.scene.image.Image;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
 
 import java.util.ArrayList;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
 import static junit.framework.TestCase.assertNull;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -166,7 +170,7 @@ public class MapModelTest {
 
     private void initializeSourceAndTargetZoneSquare() {
         ZoneSquare source = uut.getZoneSquares().stream().filter(zone -> zone.getName().equals("Zone110")).findFirst().orElse(null);
-        ZoneSquare target = uut.getZoneSquares().stream().filter(zone -> zone.getName().equals("Zone110")).findFirst().orElse(null);
+        ZoneSquare target = uut.getZoneSquares().stream().filter(zone -> zone.getName().equals("Zone154")).findFirst().orElse(null);
         source.setColor(Config.PlayerColor.RED);
         target.setColor(Config.PlayerColor.BLUE);
         assert source != null;
@@ -206,11 +210,15 @@ public class MapModelTest {
         uut.finishFight(attackerOvertakesZone);
     }
 
-    public void testFightRegionOvertaken() {}
+    public void testFightRegionOvertaken() {
+
+    }
 
     public void testFightAttackerWinsGame() {}
 
-    public void testClickOnZone(){}
+    public void testClickOnZone(){
+
+    }
 
     public void testClickOnNoZone(){}
 
@@ -220,17 +228,58 @@ public class MapModelTest {
 
     public void testClickNoClickableZones() {}
 
-    public void testReinforcement() {}
+    @Test
+    public void testNextActionValuesSetCorrectly() {
+        initializeUUTWithDefaultScale();
+        initializeSourceAndTargetZoneSquare();
+        final Config.PlayerColor currPlayerColor = Config.PlayerColor.RED;
+        final int amountOfHoverableZonesAfterNextActionCalled = 0;
+        final String actionNameAfterNextActionCalled = Action.ATTACK.getActionName();
+        RisikoController mockRisikoController = mock(RisikoController.class);
+        uut.setRisikoController(mockRisikoController);
+        when(mockRisikoController.getAction()).thenReturn(Action.ATTACK);
+        when(mockRisikoController.getCurrentPlayer()).thenReturn(currPlayerColor);
+        uut.nextAction();
+        assertNull(uut.getSource());
+        assertNull(uut.getTarget());
+        assertTrue(uut.sourceOrTargetNullProperty().get());
+        assertFalse(uut.isMapClickEnabled());
+        assertEquals(amountOfHoverableZonesAfterNextActionCalled, uut.getHoverableZones().size());
+        assertTrue(uut.actionButtonVisibleProperty().get());
+        assertEquals(actionNameAfterNextActionCalled, uut.actionButtonTextProperty().get());
+        assertEquals(actionNameAfterNextActionCalled, uut.showActionChangeProperty().get());
+    }
 
-    public void testNextAction() {}
+    @Test
+    public void testNextActionWithPlayerSwitch() {
+        initializeUUTWithDefaultScale();
+        initializeSourceAndTargetZoneSquare();
+        final Config.PlayerColor currPlayerBeforeNextActionCalled = Config.PlayerColor.RED;
+        final Config.PlayerColor currPlayerAfterNextActionCalled = Config.PlayerColor.BLUE;
+        RisikoController mockRisikoController = mock(RisikoController.class);
+        uut.setRisikoController(mockRisikoController);
+        when(mockRisikoController.getCurrentPlayer()).thenReturn(currPlayerBeforeNextActionCalled, currPlayerAfterNextActionCalled);
+        uut.currPlayerProperty().addListener((new ChangeListener<Config.PlayerColor>() {
+            @Override
+            public void changed(ObservableValue<? extends Config.PlayerColor> observable, Config.PlayerColor oldValue, Config.PlayerColor newValue) {
+                assertEquals(currPlayerAfterNextActionCalled, newValue);
+                uut.currPlayerProperty().removeListener(this);
+            }
+        }));
+    }
 
-    public void testNextActionWithPlayerSwitch() {}
-
-    public void testResetHoverableZones() {}
+    @Test
+    public void testResetHoverableZones() {
+        initializeUUTWithDefaultScale();
+        uut.setHoverableZones(new ArrayList<>());
+        final int amountOfHoverableZonesAfterReset = uut.getZoneSquares().size();
+        uut.resetHoverableZones();
+        assertEquals(amountOfHoverableZonesAfterReset, uut.getHoverableZones().size());
+    }
 
     public void testUpdateClickableZones() {}
 
-    public void testInitializeMovingTroops() {}
+    public void testReinforcement() {}
 
     public void testReinforcementClickOnZone() {}
 
@@ -238,9 +287,26 @@ public class MapModelTest {
 
     public void testReinforcementClickWithNoClickableZones() {}
 
-    public void testInitializeAttack() {}
+    public void testPlaceTroops() {
+    }
 
-    public void testPlaceTroops() {}
-
-    public void testNotifyDefender() {}
+    @Test
+    public void testNotifyDefender() {
+        initializeUUTWithDefaultScale();
+        final Config.PlayerColor defenderPlayerColor = Config.PlayerColor.RED;
+        ZoneSquare target = uut.getZoneSquares().stream().filter(zone -> zone.getName().equals("Zone110")).findFirst().orElse(null);
+        target.setColor(Config.PlayerColor.RED);
+        uut.setTarget(target);
+        RisikoController mockRisikoController = mock(RisikoController.class);
+        uut.setRisikoController(mockRisikoController);
+        when(mockRisikoController.getZoneOwner(target.getName())).thenReturn(defenderPlayerColor);
+        uut.highlightPlayerProperty().addListener((new ChangeListener<Config.PlayerColor>() {
+            @Override
+            public void changed(ObservableValue<? extends Config.PlayerColor> observable, Config.PlayerColor oldValue, Config.PlayerColor newValue) {
+                assertEquals(target.getColor(), newValue);
+                uut.highlightPlayerProperty().removeListener(this);
+            }
+        }));
+        uut.notifyDefender();
+    }
 }
