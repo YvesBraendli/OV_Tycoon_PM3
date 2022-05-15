@@ -10,6 +10,7 @@ import ch.zhaw.ovtycoon.model.Zone;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.scene.Parent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,8 +21,9 @@ import java.util.List;
  */
 public class RisikoController{
 
+
 	private Game game;
-	
+
 	/**
 	 * Constructor of Interface, instantiates game with number of Players
 	 * @param numberOfPlayers - amount of players that will play the game
@@ -30,6 +32,7 @@ public class RisikoController{
 		game = new Game();
     	game.initGame(numberOfPlayers);
 	}
+
 
     /**
      * starts a fight, between two zones

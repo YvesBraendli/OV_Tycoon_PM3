@@ -1,4 +1,4 @@
-package ch.zhaw.ovtycoon;
+package ch.zhaw.ovtycoon.gui.controller;
 
 import javafx.application.Platform;
 import javafx.fxml.FXML;

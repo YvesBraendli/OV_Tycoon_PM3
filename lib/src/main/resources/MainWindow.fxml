@@ -7,17 +7,16 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-
-<AnchorPane prefHeight="969.0" prefWidth="1027.0" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.ov_tycoon_window.HelloController">
+<AnchorPane prefHeight="969.0" prefWidth="1027.0" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ch.zhaw.ovtycoon.gui.controller.MainWindowController">
    <children>
       <ImageView fitHeight="781.0" fitWidth="688.0" layoutX="61.0" layoutY="44.0" pickOnBounds="true" preserveRatio="true">
          <image>
-            <Image url="@../../../Image/Map.png" />
+            <Image url="@Image/Map.png" />
          </image>
       </ImageView>
       <ImageView fitHeight="969.0" fitWidth="1027.0" pickOnBounds="true" preserveRatio="true">
          <image>
-            <Image url="@../../../Image/MainWindowBackground.png" />
+            <Image url="@Image/MainWindowBackground.png" />
          </image>
       </ImageView>
       <Button fx:id="SaveButton" layoutX="135.0" layoutY="874.0" mnemonicParsing="false" prefHeight="46.0" prefWidth="45.0" text="Save" />
@@ -32,6 +31,6 @@
          </font>
       </Button>
       <VBox fx:id="BoxPlayerView" layoutX="749.0" layoutY="148.0" prefHeight="397.0" prefWidth="235.0" />
-      <Button fx:id="CloseButton" layoutX="61.0" layoutY="874.0" mnemonicParsing="false" prefHeight="46.0" prefWidth="45.0" text="Close" />
+      <Button fx:id="CloseButton" layoutX="61.0" layoutY="874.0" mnemonicParsing="false" onMouseClicked="#closeGame" prefHeight="46.0" prefWidth="45.0" text="Close" />
    </children>
 </AnchorPane>

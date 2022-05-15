@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onMouseClicked="#moveFlugzeug" prefHeight="400.0" prefWidth="600.0" style="-fx-background-color: White;" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.ov_tycoon_window.HelloController">
+<GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onMouseClicked="#moveFlugzeug" prefHeight="400.0" prefWidth="600.0" style="-fx-background-color: White;" xmlns="http://javafx.com/javafx/11.0.2" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ch.zhaw.ovtycoon.gui.controller.StartWindowController">
   <columnConstraints>
       <ColumnConstraints />
     <ColumnConstraints hgrow="SOMETIMES" maxWidth="195.333251953125" minWidth="10.0" prefWidth="16.6666259765625" />
@@ -24,36 +25,24 @@
    <children>
       <ImageView fitHeight="274.0" fitWidth="603.0" pickOnBounds="true" preserveRatio="true" GridPane.columnIndex="1" GridPane.rowIndex="3" GridPane.rowSpan="2">
          <image>
-            <Image url="@../../../Image/Zürich_Skizze.jpg" />
+            <Image url="@Image/Zürich_Skizze.jpg" />
          </image>
       </ImageView>
       <ImageView fitHeight="297.0" fitWidth="521.0" pickOnBounds="true" preserveRatio="true" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.valignment="CENTER">
          <image>
-            <Image url="@../../../Image/logo.png" />
-         </image>
-      </ImageView>
-      <ImageView fx:id="ImageNewGame" fitHeight="50.0" fitWidth="98.0" pickOnBounds="true" preserveRatio="true" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER">
-         <image>
-            <Image url="@../../../Image/NewGameButton1.png" />
-         </image>
-      </ImageView>
-      <ImageView fx:id="ImageLoadGame" fitHeight="48.0" fitWidth="95.0" pickOnBounds="true" preserveRatio="true" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="2" GridPane.valignment="CENTER">
-         <image>
-            <Image url="@../../../Image/LoadGameButton1.png" />
-         </image>
-      </ImageView>
-      <ImageView fx:id="ImageClose" fitHeight="48.0" fitWidth="170.0" pickOnBounds="true" preserveRatio="true" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="3" GridPane.valignment="CENTER">
-         <image>
-            <Image url="@../../../Image/CloseButton1.png" />
+            <Image url="@Image/logo.png" />
          </image>
       </ImageView>
       <ImageView fx:id="flugzeug" fitHeight="208.0" fitWidth="498.0" pickOnBounds="true" preserveRatio="true" GridPane.columnIndex="3" GridPane.halignment="LEFT" GridPane.valignment="CENTER">
          <image>
-            <Image url="@../../../Image/flugzeug.png" />
+            <Image url="@Image/flugzeug.png" />
          </image>
          <GridPane.margin>
             <Insets left="50.0" top="20.0" />
          </GridPane.margin>
       </ImageView>
+      <Button fx:id="newGameButton" mnemonicParsing="false" onMouseClicked="#doNewGame" text="New Game" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER" />
+      <Button fx:id="loadGameButton" mnemonicParsing="false" onMouseClicked="#loadGame" text="LoadGame" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="2" GridPane.valignment="CENTER" />
+      <Button fx:id="closeButton" mnemonicParsing="false" onMouseClicked="#closeGame" text="Close" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="3" GridPane.valignment="CENTER" />
    </children>
 </GridPane>
