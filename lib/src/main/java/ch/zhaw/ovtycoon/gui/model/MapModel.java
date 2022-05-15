@@ -360,13 +360,34 @@ public class MapModel {
         // System.out.println(String.format("Click handling took %d ms", System.currentTimeMillis() - startTime));
     }
 
-    private List<ZoneSquare> getTargets(ZoneSquare sqr) {
-        return risikoController.getValidTargetZoneNames(sqr.getName()).stream()
-                .map(zoneName -> getZsqByName(zoneName)).collect(Collectors.toList());
+    public void setInitialValues() {
+        hoverableZones = new ArrayList<>(zoneSquares);
+        addPlayerColorsToZones();
+        initTroopAmountText();
+        currPlayer.set(risikoController.getCurrentPlayer());
+        showActionChange.set(risikoController.getAction().getActionName());
     }
 
-    private ZoneSquare getZsqByName(String name) {
-        return zoneSquares.stream().filter(zsq -> name.equals(zsq.getName())).findFirst().orElse(null);
+    public void nextAction() {
+        source = null;
+        target = null;
+        sourceOrTargetNull.set(true);
+        Config.PlayerColor currentPlayerBeforeActionSwitch = risikoController.getCurrentPlayer();
+        risikoController.nextAction();
+        Config.PlayerColor playerAfterActionSwitch = risikoController.getCurrentPlayer();
+        if (currentPlayerBeforeActionSwitch != playerAfterActionSwitch) {
+            currPlayer.set(risikoController.getCurrentPlayer()); // TODO ev bind to property in mapModel.getRisikoController()
+        }
+        Action next = risikoController.getAction();
+        actionButtonVisible.set(next != Action.DEFEND);
+        actionButtonText.set(risikoController.getAction().getActionName());
+        mapClickEnabled = false;
+        hoverableZones = new ArrayList<>();
+        showActionChange.set(risikoController.getAction().getActionName());
+    }
+
+    public void resetHoverableZones() {
+        hoverableZones = new ArrayList<>(zoneSquares);
     }
 
     public List<ZoneSquare> getClickableZones() {
@@ -400,47 +421,6 @@ public class MapModel {
 
     public SimpleObjectProperty<MoveTroopsDTO> openMoveTroopsPopupProperty() {
         return openMoveTroopsPopup;
-    }
-
-    public void setInitialValues() {
-        hoverableZones = new ArrayList<>(zoneSquares);
-        addPlayerColorsToZones();
-        initTroopAmountText();
-        currPlayer.set(risikoController.getCurrentPlayer());
-        showActionChange.set(risikoController.getAction().getActionName());
-    }
-
-    public void nextAction() {
-        source = null;
-        target = null;
-        sourceOrTargetNull.set(true);
-        Config.PlayerColor currentPlayerBeforeActionSwitch = risikoController.getCurrentPlayer();
-        risikoController.nextAction();
-        Config.PlayerColor playerAfterActionSwitch = risikoController.getCurrentPlayer();
-        if (currentPlayerBeforeActionSwitch != playerAfterActionSwitch) {
-            currPlayer.set(risikoController.getCurrentPlayer()); // TODO ev bind to property in mapModel.getRisikoController()
-        }
-        Action next = risikoController.getAction();
-        actionButtonVisible.set(next != Action.DEFEND);
-        actionButtonText.set(risikoController.getAction().getActionName());
-        mapClickEnabled = false;
-        hoverableZones = new ArrayList<>();
-        showActionChange.set(risikoController.getAction().getActionName());
-    }
-
-    private ZoneSquare getZoneAtCoordinates(int x, int y) {
-        List<ZoneSquare> containsY = this.zoneSquares.stream()
-                .filter(zone ->
-                        zone.getBorder().stream().map(str -> str.getY()).collect(Collectors.toList()).contains(y)
-                ).collect(Collectors.toList());
-        return containsY.stream()
-                .filter(zone -> zone.getBorder().stream()
-                        .anyMatch(st -> st.getY() == y && st.getStartX() <= x && st.getEndX() >= x))
-                .findFirst().orElse(null);
-    }
-
-    public void resetHoverableZones() {
-        hoverableZones = new ArrayList<>(zoneSquares);
     }
 
     public SimpleBooleanProperty darkenBackgroundProperty() {
@@ -557,6 +537,26 @@ public class MapModel {
 
     public double getScale() {
         return scale;
+    }
+
+    private ZoneSquare getZoneAtCoordinates(int x, int y) {
+        List<ZoneSquare> containsY = this.zoneSquares.stream()
+                .filter(zone ->
+                        zone.getBorder().stream().map(str -> str.getY()).collect(Collectors.toList()).contains(y)
+                ).collect(Collectors.toList());
+        return containsY.stream()
+                .filter(zone -> zone.getBorder().stream()
+                        .anyMatch(st -> st.getY() == y && st.getStartX() <= x && st.getEndX() >= x))
+                .findFirst().orElse(null);
+    }
+
+    private List<ZoneSquare> getTargets(ZoneSquare sqr) {
+        return risikoController.getValidTargetZoneNames(sqr.getName()).stream()
+                .map(zoneName -> getZsqByName(zoneName)).collect(Collectors.toList());
+    }
+
+    private ZoneSquare getZsqByName(String name) {
+        return zoneSquares.stream().filter(zsq -> name.equals(zsq.getName())).findFirst().orElse(null);
     }
 
     private void initTroopAmountText() {
