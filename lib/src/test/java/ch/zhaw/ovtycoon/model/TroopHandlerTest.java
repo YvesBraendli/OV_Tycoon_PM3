@@ -31,11 +31,20 @@ public class TroopHandlerTest {
         ArrayList<PlayerColor> colors = new ArrayList<>();
 		colors.add(PlayerColor.BLACK);
         gameInstance.initGame(colors);
+        clearBoard(colors);
         numberOfTroopsInZone = 20;
         fillTroopUnitsInZone(gameInstance.getZone("Zone140"));
         fillTroopUnitsInZone(gameInstance.getZone("Zone141"));
 
     }
+    
+	private void clearBoard(ArrayList<PlayerColor> colors) {
+		for(PlayerColor c : colors)
+		for(Zone zone: gameInstance.getZonesOwnedbyPlayer(gameInstance.getPlayer(c))) {
+			zone.setTroops(0);
+			gameInstance.setZoneOwner(null, zone);
+		}
+	}
 
     @Test
     public void movedRigthAmountsOfUnits() {
