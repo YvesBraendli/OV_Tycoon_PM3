@@ -20,15 +20,31 @@ public class GameTest {
 	@Before
 	public void init() {
 		testee = new Game();
-		testee.initGame(3);
-		initPlayer();
+		ArrayList<PlayerColor> colors = new ArrayList<>();
+		colors.add(PlayerColor.BLACK);
+		colors.add(PlayerColor.BLUE);
+		colors.add(PlayerColor.RED);
+		
+		testee.initGame(colors);
+		
+		a = testee.getPlayer(PlayerColor.BLACK);
+		b = testee.getPlayer(PlayerColor.BLUE);
+		c = testee.getPlayer(PlayerColor.RED);
+		clearBoard(colors);
+		//initPlayer();
+	}
+	
+	private void clearBoard(ArrayList<PlayerColor> colors) {
+		for(PlayerColor c : colors)
+		for(Zone zone: testee.getZonesOwnedbyPlayer(testee.getPlayer(c))) {
+			zone.setTroops(0);
+			testee.setZoneOwner(null, zone);
+		}
 	}
 	
 	private void initPlayer() {
 
-		a = new Player("a");
-		b = new Player("b");
-		c = new Player("c");
+
 		a.setColor(PlayerColor.BLACK);
 		b.setColor(PlayerColor.BLUE);
 		c.setColor(PlayerColor.RED);
@@ -44,35 +60,35 @@ public class GameTest {
 		testee.initPlayers(colors);
 	}
 
-	@Test
-	public void initPlayers_twoColorButThreePlayersExpected(){
-		// Arrange
-		testee = new Game();
-		testee.initGame(3);
-
-		ArrayList<PlayerColor> colors = new ArrayList<>();
-		colors.add(PlayerColor.BLACK);
-		colors.add(PlayerColor.BLUE);
-
-		// Act + Assert
-		assertThrows(IllegalArgumentException.class, () -> testee.initPlayers(colors));
-	}
+//	@Test redundant because of change to game init
+//	public void initPlayers_twoColorButThreePlayersExpected(){
+//		// Arrange
+//		testee = new Game();
+//		
+//
+//		ArrayList<PlayerColor> colors = new ArrayList<>();
+//		colors.add(PlayerColor.BLACK);
+//		colors.add(PlayerColor.BLUE);
+//
+//		// Act + Assert
+//		assertThrows(IllegalArgumentException.class, () -> testee.initGame(colors));
+//	}
 
 	@Test
 	public void initPlayers_invalidArgument_null(){
 		// Arrange
 		testee = new Game();
-		testee.initGame(3);
+		
 
 		// Act + Assert
-		assertThrows(IllegalArgumentException.class, () -> testee.initPlayers(null));
+		assertThrows(IllegalArgumentException.class, () -> testee.initGame(null));
 	}
 
 	@Test
 	public void initPlayers_correctArguments(){
 		// Arrange
 		testee = new Game();
-		testee.initGame(3);
+		
 
 		ArrayList<PlayerColor> colors = new ArrayList<>();
 		colors.add(PlayerColor.BLACK);
@@ -80,7 +96,7 @@ public class GameTest {
 		colors.add(PlayerColor.RED);
 
 		// Act
-		testee.initPlayers(colors);
+		testee.initGame(colors);
 
 		// Arrange
 		assertEquals(PlayerColor.RED, testee.getPlayer(PlayerColor.RED).getColor());

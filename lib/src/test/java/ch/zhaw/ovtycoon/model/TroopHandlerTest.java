@@ -3,7 +3,11 @@ package ch.zhaw.ovtycoon.model;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
+
 import ch.zhaw.ovtycoon.Config;
+import ch.zhaw.ovtycoon.Config.PlayerColor;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -24,7 +28,9 @@ public class TroopHandlerTest {
         evenBigPlayerNumber = 16;
         troopHandlerTestOnePlayer = new TroopHandler(1);
         gameInstance = new Game();
-        gameInstance.initGame(1);
+        ArrayList<PlayerColor> colors = new ArrayList<>();
+		colors.add(PlayerColor.BLACK);
+        gameInstance.initGame(colors);
         numberOfTroopsInZone = 20;
         fillTroopUnitsInZone(gameInstance.getZone("Zone140"));
         fillTroopUnitsInZone(gameInstance.getZone("Zone141"));
