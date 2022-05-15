@@ -1,5 +1,6 @@
 package ch.zhaw.ovtycoon.gui.service;
 
+import ch.zhaw.ovtycoon.Config;
 import ch.zhaw.ovtycoon.gui.model.ZoneColor;
 import javafx.scene.image.PixelReader;
 import javafx.scene.paint.Color;
@@ -25,10 +26,10 @@ public class ColorService {
         return zoneColor == getZoneColor(pixelReader.getColor(x, y).toString());
     }
 
-    public ZoneColor getZoneColor(String color) {
-        for (ZoneColor mapColor : ZoneColor.values()) {
-            if (mapColor.getColorAsHexString().equals(color)) {
-                return mapColor;
+    public Config.PlayerColor getPlayerColor(String color) {
+        for (Config.PlayerColor playerColor : Config.PlayerColor.values()) {
+            if (playerColor.getHexValue().equals(color)) {
+                return playerColor;
             }
         }
         return null;
@@ -59,5 +60,14 @@ public class ColorService {
         double g = foregroundColor.getGreen() * foregroundColor.getOpacity() / opacity + backgroundColor.getGreen() * backgroundColor.getOpacity() * (1 - foregroundColor.getOpacity()) / opacity;
         double b = foregroundColor.getBlue() * foregroundColor.getOpacity() / opacity + backgroundColor.getBlue() * backgroundColor.getOpacity() * (1 - foregroundColor.getOpacity()) / opacity;
         return new Color(r, g, b, opacity);
+    }
+
+    private ZoneColor getZoneColor(String color) {
+        for (ZoneColor mapColor : ZoneColor.values()) {
+            if (mapColor.getColorAsHexString().equals(color)) {
+                return mapColor;
+            }
+        }
+        return null;
     }
 }

@@ -5,7 +5,9 @@ import ch.zhaw.ovtycoon.Config.PlayerColor;
 import ch.zhaw.ovtycoon.Config.RegionName;
 import ch.zhaw.ovtycoon.data.DiceRoll;
 import ch.zhaw.ovtycoon.data.Player;
+import ch.zhaw.ovtycoon.gui.model.Action;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
 import java.io.Serializable;
@@ -14,6 +16,11 @@ import java.util.HashMap;
 import java.util.Map.Entry;
 
 public class Game implements Serializable {
+	private final Action[] actions = {Action.DEFEND, Action.ATTACK, Action.MOVE};
+	private final SimpleObjectProperty<PlayerColor> fightWinner = new SimpleObjectProperty<>(null);
+	private final SimpleBooleanProperty zoneOvertaken = new SimpleBooleanProperty(false);
+	private final SimpleObjectProperty<Player> currentPlayerProperty = new SimpleObjectProperty<>(null);
+	private final SimpleObjectProperty<Region> regionOwnerChange = new SimpleObjectProperty<>(null);
 	private HashMap<Config.RegionName, ArrayList<Zone>> gameMap;
 	private HashMap<Zone, Player> zoneOwner = new HashMap<Zone,Player>();
 	private Player[] players;
@@ -21,6 +28,7 @@ public class Game implements Serializable {
 	private TroopHandler troopHandler;
 	private ObjectProperty<PlayerColor> eliminatedPlayer;
 	private ObjectProperty<PlayerColor> newRegionOwner;
+	private int currentActionIndex = 0;
 
 	/**
 	 * Initializes the gameMap and creates players with their corresponding colors
@@ -64,18 +72,26 @@ public class Game implements Serializable {
      * @return a Data Transfer Object (DTO) of the rolls made
      */
 	public DiceRoll runFight(Zone attacker, Zone defender, int numOfAttackers, int numOfDefenders) {
+		fightWinner.set(null); // resetting after each fight
+		zoneOvertaken.setValue(null); // set value called here for being able to set it to null
+		Player defendingPlayer = getZoneOwner(defender);
+		int initialAttackerTroops = attacker.getTroops();
 		Fight fight = new Fight(attacker, defender);
 		DiceRoll diceRoll = fight.fight(numOfAttackers, numOfDefenders);
-		if(defender.getTroops() == 0) {
-			
-			tryEliminatePlayer(getZoneOwner(defender));
+		Player winner = attacker.getTroops() < initialAttackerTroops ? getZoneOwner(defender) : getZoneOwner(attacker);
+		fightWinner.set(winner.getColor());
+		if (defender.getTroops() == 0) {
 			Player attackingPlayer = getZoneOwner(attacker);
 			setZoneOwner(attackingPlayer, defender);
-			defender.setTroops(numOfAttackers);
-			
-			if(getRegionOwner(getRegionOfZone(defender)) == attackingPlayer) {
-				setNewRegionOwner(attackingPlayer);
+			tryEliminatePlayer(defendingPlayer);
+			zoneOvertaken.set(true);
+
+			if (getRegionOwner(getRegionOfZone(defender)) == attackingPlayer) {
+				setNewRegionOwner(attackingPlayer.getColor());
+				setNewRegionOwner(null); // reset
 			}
+		} else {
+			zoneOvertaken.set(false);
 		}
 		return diceRoll;
 	}
@@ -88,7 +104,7 @@ public class Game implements Serializable {
      * @param numberOfTroops
      */
 	public void moveUnits(Zone from, Zone to, int numberOfTroops) {
-		troopHandler.moveUnits(from, to, currentPlayerIndex);
+		troopHandler.moveUnits(from, to, numberOfTroops);
 	}
 	
 	/**
@@ -178,6 +194,7 @@ public class Game implements Serializable {
 		}
 		currentPlayerIndex = currentPlayerIndex+1 == players.length ? 0 : currentPlayerIndex+1;
 		if(players[currentPlayerIndex].isEliminated()) switched = switchToNextPlayer(rec+1, true);
+		currentPlayerProperty.set(players[currentPlayerIndex]);
 		return switched;
 	}
 
@@ -233,7 +250,7 @@ public class Game implements Serializable {
 	 */
 	public ArrayList<Zone> getAttackableZones(Zone zone){
 		ArrayList<Zone> neighbourZones = new ArrayList<Zone>();
-		if(zone.getTroops()<=1) return neighbourZones;
+		if (zone.getTroops()<=1) return neighbourZones; // TODO can ev be removed
 		Player player = getZoneOwner(zone);
 		ArrayList<Zone> zonesOwnedByPlayer = getZonesOwnedbyPlayer(player);
 		neighbourZones = zone.getNeighbours();
@@ -279,7 +296,7 @@ public class Game implements Serializable {
 		ArrayList<Zone> zonesWithMovableTroops = new ArrayList<Zone>();
 		for(Zone zone: zonesOwnedByPlayer) {
 			if(zone.getTroops() > 1) {
-				if(zone.getNeighbours().removeAll(zonesOwnedByPlayer)) {
+				if(zone.getNeighbours().stream().anyMatch((neighbour -> zonesOwnedByPlayer.contains(neighbour)))) {
 					zonesWithMovableTroops.add(zone);
 				}
 			}
@@ -334,7 +351,7 @@ public class Game implements Serializable {
 	public void tryEliminatePlayer(Player player) {
 		if(getZonesOwnedbyPlayer(player).isEmpty()) {
 			player.setEliminated();
-			setEliminiatedPlayer(player);	
+			setEliminiatedPlayer(player);
 		}
 	}
 
@@ -397,7 +414,85 @@ public class Game implements Serializable {
     public ObjectProperty<PlayerColor> getNewRegionOwnerProperty(){
     	return newRegionOwner;
     }
-    public void setNewRegionOwner(Player player) {
-    	newRegionOwner.set(player.getColor());
+    public void setNewRegionOwner(PlayerColor playerColor) {
+    	newRegionOwner.set(playerColor);
     }
+
+	// TODO doc for new methods -------------------------------------------------------------------------------------
+
+	/**
+	 * Gets the players array
+	 * @return array of all players
+	 */
+	public Player[] getPlayers() {
+		return players;
+	}
+
+	/**
+	 * Sets the owner of a zone
+	 * @param owner Player which should become the owner of the zone
+	 * @param zoneName name of the player which should be the owner of the passed zone
+	 */
+	public void setZoneOwner(Player owner, String zoneName) {
+		zoneOwner.put(getZone(zoneName), owner);
+	}
+
+	/**
+	 * Updates the amount of troops of a zone
+	 * @param zoneName name of the zone of which the troops should be updated
+	 * @param troops amount of troops which should be added to the current troop amount
+	 */
+	public void updateZoneTroops(String zoneName, int troops) {
+		Zone zone = getZone(zoneName);
+		zone.setTroops(zone.getTroops() + troops);
+	}
+
+	/**
+	 * Gets the current action
+	 * @return current action
+	 */
+	public Action getCurrentAction() {
+		return actions[currentActionIndex];
+	}
+
+	/**
+	 * Switches to the next action in the actions array. If the current action is
+	 * equal to the last action in the array, the player gets switched as well.
+	 */
+	public void nextAction() {
+		if (currentActionIndex == actions.length - 1) {
+			switchToNextPlayer();
+			currentActionIndex = 0;
+		} else {
+			currentActionIndex = currentActionIndex + 1;
+		}
+	}
+
+	/**
+	 * Property indicating if a zone has been overtaken during an attack
+	 * @return whether the zone has been overtaken or not
+	 */
+	public SimpleBooleanProperty getZoneOvertaken() {
+		return zoneOvertaken;
+	}
+
+	/**
+	 * Gets the winner of a fight
+	 * @return PlayerColor of the player who won the fight
+	 */
+	public SimpleObjectProperty<PlayerColor> getFightWinner() {
+		return fightWinner;
+	}
+
+	public int getMaxTroopsForAttack(String zoneName) {
+		return Math.min(getMaxMovableTroops(zoneName), 3);
+	}
+
+	public int getMaxTroopsForDefending(String zoneName) {
+		return Math.min(getZone(zoneName).getTroops(), 2);
+	}
+
+	public int getMaxMovableTroops(String zoneName) {
+		return getZone(zoneName).getTroops() - 1;
+	}
 }
