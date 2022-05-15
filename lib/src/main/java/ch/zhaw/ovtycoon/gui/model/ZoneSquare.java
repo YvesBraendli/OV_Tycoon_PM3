@@ -1,42 +1,30 @@
 package ch.zhaw.ovtycoon.gui.model;
 
-import javafx.scene.text.Text;
+import ch.zhaw.ovtycoon.Config;
 
 import java.util.List;
 
 public class ZoneSquare {
-    private Square square;
-    private ZoneColor color;
-    private String name;
-    private List<HorizontalStripe> border;
-    private Pixel center;
-    private Text txt;
+    private final String name;
+    private final List<HorizontalStripe> border;
+    private final Pixel center;
+    private Config.PlayerColor color;
 
-    public void setSquare(Square square) {
-        this.square = square;
-    }
-
-    public void setColor(ZoneColor color) {
-        this.color = color;
-    }
-
-    public void setName(String name) {
+    public ZoneSquare(String name, List<HorizontalStripe> border, Pixel center) {
         this.name = name;
+        this.border = border;
+        this.center = center;
     }
 
-    public void setBorder(List<HorizontalStripe> border) {
-        this.border = border;
+    public void setColor(Config.PlayerColor color) {
+        this.color = color;
     }
 
     public String getName() {
         return name;
     }
 
-    public Square getSquare() {
-        return square;
-    }
-
-    public ZoneColor getColor() {
+    public Config.PlayerColor getColor() {
         return color;
     }
 
@@ -48,18 +36,6 @@ public class ZoneSquare {
         return center;
     }
 
-    public void setCenter(Pixel center) {
-        this.center = center;
-    }
-
-    public Text getTxt() {
-        return txt;
-    }
-
-    public void setTroopsAmountText(Text txt) {
-        this.txt = txt;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -67,18 +43,14 @@ public class ZoneSquare {
 
         ZoneSquare that = (ZoneSquare) o;
 
-        if (square != null ? !square.equals(that.square) : that.square != null) return false;
-        if (color != that.color) return false;
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
         if (border != null ? !border.equals(that.border) : that.border != null) return false;
-        if (center != null ? !center.equals(that.center) : that.center != null) return false;
-        return txt != null ? txt.equals(that.txt) : that.txt == null;
+        return center != null ? center.equals(that.center) : that.center == null;
     }
 
     @Override
     public int hashCode() {
-        int result = square != null ? square.hashCode() : 0;
-        result = 31 * result + (name != null ? name.hashCode() : 0);
+        int result = name != null ? name.hashCode() : 0;
         result = 31 * result + (border != null ? border.hashCode() : 0);
         result = 31 * result + (center != null ? center.hashCode() : 0);
         return result;
