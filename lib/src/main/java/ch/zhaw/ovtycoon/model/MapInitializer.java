@@ -162,6 +162,9 @@ public class MapInitializer {
     		int playerIndex = i%playerAmount;
     		settingZone = zones.get(new Random().nextInt(zones.size()));
     		owner.put(settingZone, players[playerIndex]);
+    		settingZone.setTroops(1);
+    		numberOfTotalTroops = numberOfTotalTroops-1;
+    		numberOfTroopsPerPlayerToPlace.put(players[playerIndex], numberOfTroopsPerPlayerToPlace.get(players[playerIndex])-1);
     		zones.remove(settingZone);
     	}
     	

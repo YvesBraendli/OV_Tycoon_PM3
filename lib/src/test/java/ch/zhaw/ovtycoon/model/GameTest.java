@@ -736,17 +736,36 @@ public class GameTest {
 		int expectedTroupTotal = colors.size()* Config.TROOPS_PER_PLAYER_AMOUNT.get(colors.size());
 		int expectedTroupPerPlayer = Config.TROOPS_PER_PLAYER_AMOUNT.get(colors.size());
 		int minExpectedZoneAmountPerPlayer = 14;
-		int maxExpectedZoneAmountPerPlayer = 14;
+		int maxExpectedZoneAmountPerPlayer = 15;
 		
 		//Act
 		testee.initGame(colors);
+		a = testee.getPlayer(PlayerColor.BLACK);
+		b = testee.getPlayer(PlayerColor.BLUE);
+		c = testee.getPlayer(PlayerColor.RED);
+		int actualTroupPlayera = 0;
+		int actualTroupPlayerb = 0;
+		int actualTroupPlayerc = 0;
+		int actualNumZonesa = 0;
+		int actualNumZonesb = 0;
+		int actualNumZonesc = 0;
 		
-		testee.getZonesOwnedbyPlayer(a).stream().;
+		for(Zone zone : testee.getZonesOwnedbyPlayer(a)) {actualTroupPlayera += zone.getTroops(); actualNumZonesa += 1; }
+		for(Zone zone : testee.getZonesOwnedbyPlayer(b)) {actualTroupPlayerb += zone.getTroops(); actualNumZonesb += 1;}
+		for(Zone zone : testee.getZonesOwnedbyPlayer(c)) {actualTroupPlayerc += zone.getTroops(); actualNumZonesc += 1;}
+		
+		int actualTroupTotal = actualTroupPlayera + actualTroupPlayerb + actualTroupPlayerc;
 		
 		
 		//Assert
+		assertEquals(expectedTroupTotal, actualTroupTotal);
+		assertTrue(expectedTroupPerPlayer == actualTroupPlayera);
+		assertTrue(expectedTroupPerPlayer == actualTroupPlayerb);
+		assertTrue(expectedTroupPerPlayer == actualTroupPlayerc);
 		
-		
+		assertTrue(minExpectedZoneAmountPerPlayer <= actualNumZonesa && actualNumZonesa <= maxExpectedZoneAmountPerPlayer);
+		assertTrue(minExpectedZoneAmountPerPlayer <= actualNumZonesb && actualNumZonesb <= maxExpectedZoneAmountPerPlayer);
+		assertTrue(minExpectedZoneAmountPerPlayer <= actualNumZonesc && actualNumZonesc <= maxExpectedZoneAmountPerPlayer);
 	}
 	
 
