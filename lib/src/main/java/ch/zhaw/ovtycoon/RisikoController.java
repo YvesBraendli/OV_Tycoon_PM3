@@ -3,12 +3,17 @@ package ch.zhaw.ovtycoon;
 import ch.zhaw.ovtycoon.Config.PlayerColor;
 import ch.zhaw.ovtycoon.Config.RegionName;
 import ch.zhaw.ovtycoon.data.DiceRoll;
+import ch.zhaw.ovtycoon.gui.model.Action;
 import ch.zhaw.ovtycoon.model.Game;
-import ch.zhaw.ovtycoon.model.Player;
+import ch.zhaw.ovtycoon.data.Player;
 import ch.zhaw.ovtycoon.model.Zone;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleObjectProperty;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Interface between ÖVTycoon front- and backend
@@ -25,6 +30,22 @@ public class RisikoController{
 	public RisikoController(int numberOfPlayers) {
 		game = new Game();
     	game.initGame(numberOfPlayers);
+	}
+
+	/**
+	 * Initializes the players with the chosen colors.
+	 * The Number of Colors need to be the same as the number of players.
+	 * Otherwise, an IllegalArgumentException will be thrown.
+	 * @param colors
+	 * @throws IllegalArgumentException
+	 */
+	public void initPlayers(ArrayList<PlayerColor> colors){
+		 try {
+			 game.initPlayers(colors);
+		 }
+		 catch (IllegalArgumentException e){
+			 throw e;
+		 }
 	}
 
     /**
@@ -208,7 +229,7 @@ public class RisikoController{
     }
     
     /**
-     * Gets the eliminated player property to implement a listener.
+     * Gets the eliminated player color property to implement a listener.
      * The property changes if after a fight a player does not own any more zones
      */
     public ObjectProperty<PlayerColor> getEliminatedPlayerProperty(){
@@ -220,8 +241,77 @@ public class RisikoController{
      * The property changes if after a fight a player owns a new region.
      */
     public ObjectProperty<PlayerColor> getNewRegionOwnerProperty(){
-    	return game.getEliminiatedPlayerProperty();
+    	return game.getNewRegionOwnerProperty(); // TODO doc
     }
+
+	// TODO doc for new methods -------------------------------------------------------------------------------------
+
+	public int getMaxTroopsForAttack(String zoneName) {
+		return game.getMaxTroopsForAttack(zoneName);
+	}
+
+	public int getMaxTroopsForDefending(String zoneName) {
+		return game.getMaxTroopsForDefending(zoneName);
+	}
+
+	public int getMaxMovableTroops(String zoneName) {
+		return game.getMaxMovableTroops(zoneName);
+	}
+
+	// TODO remove as soon as player initialization implemented
+	public Player[] getPlayers() {
+		return game.getPlayers();
+	}
+
+	public PlayerColor[] getPlayerColors() {
+		PlayerColor[] playerColors = new PlayerColor[game.getPlayers().length];
+		for (int i = 0; i < game.getPlayers().length; i++) {
+			playerColors[i] = game.getPlayers()[i].getColor();
+		}
+		return playerColors;
+	}
+
+	public void setZoneOwner(Player owner, String zoneName) {
+		game.setZoneOwner(owner, zoneName);
+	}
+
+	public void updateZoneTroops(String zone, int troops) {
+		game.updateZoneTroops(zone, troops);
+	}
+
+	public void nextAction() {
+		game.nextAction();
+	}
+
+	public Action getAction() {
+		return game.getCurrentAction();
+	}
+
+	public List<String> getValidTargetZoneNames(String sourceZoneName) {
+		return getAction() == Action.ATTACK ? getAttackableZones(sourceZoneName) : getPossibleMovementNeighbours(sourceZoneName, getCurrentPlayer());
+	}
+
+	public List<String> getValidSourceZoneNames() {
+		switch(getAction()) {
+			case ATTACK: return getPossibleAttackerZones(getCurrentPlayer());
+			case MOVE: return getZonesWithMovableTroops(getCurrentPlayer());
+			default: return getZonesOwnedbyPlayer(getCurrentPlayer());
+		}
+	}
+
+	public SimpleObjectProperty<PlayerColor> getFightWinner() {
+		return game.getFightWinner();
+	}
+
+	public SimpleBooleanProperty getZoneOvertaken() {
+		return game.getZoneOvertaken();
+	}
+
+	public RegionName getRegionByOwner(String zoneName) {
+		return game.getRegionOfZone(game.getZone(zoneName));
+	}
+
+	// ---------------------------------------------------------------------------------------------------------
     
     private ArrayList<String> translateZoneListToNameList(ArrayList<Zone> zoneList){
     	ArrayList<String> zoneNameList = new ArrayList<String>();

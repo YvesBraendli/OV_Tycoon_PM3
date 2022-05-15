@@ -1,4 +1,4 @@
-package ch.zhaw.ovtycoon.model;
+package ch.zhaw.ovtycoon.data;
 
 import ch.zhaw.ovtycoon.Config;
 
@@ -9,9 +9,19 @@ public class Player implements Serializable {
     private Config.PlayerColor color = null;
     private boolean isEliminated = false;
 
+    /**
+     * Inits player with name from argument
+     * @param name player name
+     */
     public Player(String name){
         this.name = name;
     }
+
+    /**
+     * Inits player with color from argument
+     * @param color player color
+     */
+    public Player(Config.PlayerColor color) { this.color = color;}
 
     public String getName() {
         return name;

@@ -1,4 +1,4 @@
-package ch.zhaw.ovtycoon.gui.model;
+package ch.zhaw.ovtycoon.gui.model.customnodes;
 
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
@@ -14,6 +14,7 @@ public class ZoneTooltip extends VBox {
     public ZoneTooltip(String text) {
         setWidth(TOOLTIP_WIDTH);
         setHeight(TOOLTIP_HEIGHT);
+        setId(text); // TODO ev only use number
         Polygon triangle = new Polygon();
         triangle.getPoints().addAll(new Double[]{0.0d, 0.0d, TRIANGLE_SIDE_LENGTH, 0.0d, TRIANGLE_SIDE_LENGTH / 2.0d, TRIANGLE_SIDE_LENGTH});
         Label label = new Label();
