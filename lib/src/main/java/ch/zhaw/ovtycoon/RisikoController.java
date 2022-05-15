@@ -4,7 +4,7 @@ import ch.zhaw.ovtycoon.Config.PlayerColor;
 import ch.zhaw.ovtycoon.Config.RegionName;
 import ch.zhaw.ovtycoon.data.DiceRoll;
 import ch.zhaw.ovtycoon.model.Game;
-import ch.zhaw.ovtycoon.model.Player;
+import ch.zhaw.ovtycoon.data.Player;
 import ch.zhaw.ovtycoon.model.Zone;
 import javafx.beans.property.ObjectProperty;
 
@@ -25,6 +25,22 @@ public class RisikoController{
 	public RisikoController(int numberOfPlayers) {
 		game = new Game();
     	game.initGame(numberOfPlayers);
+	}
+
+	/**
+	 * Initializes the players with the chosen colors.
+	 * The Number of Colors need to be the same as the number of players.
+	 * Otherwise, an IllegalArgumentException will be thrown.
+	 * @param colors
+	 * @throws IllegalArgumentException
+	 */
+	public void initPlayers(ArrayList<PlayerColor> colors){
+		 try {
+			 game.initPlayers(colors);
+		 }
+		 catch (IllegalArgumentException e){
+			 throw e;
+		 }
 	}
 
     /**

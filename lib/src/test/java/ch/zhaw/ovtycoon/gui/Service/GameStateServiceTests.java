@@ -4,7 +4,7 @@ import ch.zhaw.ovtycoon.Config;
 import ch.zhaw.ovtycoon.Config.ZoneName;
 import ch.zhaw.ovtycoon.gui.service.GameStateService;
 import ch.zhaw.ovtycoon.model.Game;
-import ch.zhaw.ovtycoon.model.Player;
+import ch.zhaw.ovtycoon.data.Player;
 import ch.zhaw.ovtycoon.model.Zone;
 import org.junit.Test;
 
