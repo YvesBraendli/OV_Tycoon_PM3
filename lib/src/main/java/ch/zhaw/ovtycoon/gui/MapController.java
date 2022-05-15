@@ -2,20 +2,20 @@ package ch.zhaw.ovtycoon.gui;
 
 import ch.zhaw.ovtycoon.Config;
 import ch.zhaw.ovtycoon.gui.model.Action;
-import ch.zhaw.ovtycoon.gui.model.dto.AttackDTO;
 import ch.zhaw.ovtycoon.gui.model.CustomTimeline;
-import ch.zhaw.ovtycoon.gui.model.dto.FightDTO;
-import ch.zhaw.ovtycoon.gui.model.customnodes.FightResultGrid;
 import ch.zhaw.ovtycoon.gui.model.HorizontalStripe;
 import ch.zhaw.ovtycoon.gui.model.MapModel;
-import ch.zhaw.ovtycoon.gui.model.dto.MoveTroopsDTO;
 import ch.zhaw.ovtycoon.gui.model.Notification;
 import ch.zhaw.ovtycoon.gui.model.NotificationType;
 import ch.zhaw.ovtycoon.gui.model.Pixel;
-import ch.zhaw.ovtycoon.gui.model.dto.ReinforcementDTO;
-import ch.zhaw.ovtycoon.gui.model.customnodes.TroopAmountPopup;
 import ch.zhaw.ovtycoon.gui.model.ZoneSquare;
+import ch.zhaw.ovtycoon.gui.model.customnodes.FightResultGrid;
+import ch.zhaw.ovtycoon.gui.model.customnodes.TroopAmountPopup;
 import ch.zhaw.ovtycoon.gui.model.customnodes.ZoneTooltip;
+import ch.zhaw.ovtycoon.gui.model.dto.AttackDTO;
+import ch.zhaw.ovtycoon.gui.model.dto.FightDTO;
+import ch.zhaw.ovtycoon.gui.model.dto.MoveTroopsDTO;
+import ch.zhaw.ovtycoon.gui.model.dto.ReinforcementDTO;
 import ch.zhaw.ovtycoon.gui.model.dto.ZoneTroopAmountDTO;
 import ch.zhaw.ovtycoon.gui.model.dto.ZoneTroopAmountInitDTO;
 import ch.zhaw.ovtycoon.gui.service.ColorService;
@@ -42,7 +42,6 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
-import javafx.stage.Screen;
 import javafx.util.Duration;
 
 import java.util.ArrayList;
@@ -54,6 +53,9 @@ import java.util.Queue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * Controller for the zones-map-view.
+ */
 public class MapController {
     private static final String PLAYER_ELIMINATED = "%s wurde eliminiert!";
     private static final String PLAYER_IMAGE_PREFIX = "player_";
@@ -77,7 +79,8 @@ public class MapController {
     private final SimpleBooleanProperty gameWon = new SimpleBooleanProperty(false);
     private final Queue<CustomTimeline> waitingTimelines = new LinkedList<>();
     private final SimpleBooleanProperty clickedActionButton = new SimpleBooleanProperty();
-
+    private final double scale;
+    private final MapModel mapModel;
     @FXML
     private StackPane stackPane;
     @FXML
@@ -109,14 +112,13 @@ public class MapController {
     private PixelWriter mapPw;
     private Map<String, List<Pixel>> overlaidPixelsByZone = new HashMap<>();
     private ColorService colorService = new ColorService();
-    private final double scale;
-    private final MapModel mapModel;
 
     // TODO BUG: hover possible while initialization animation
 
     /**
      * Creates an instance of the controller with the passed model.
      * Sets {@link #scale} to the value provided by the passed model.
+     *
      * @param mapModel MapModel to be used by the controller
      */
     public MapController(MapModel mapModel) {
@@ -157,6 +159,7 @@ public class MapController {
     /**
      * Creates an instance of the javafx text node and adds it to the {@link #labelStackPane} at the position
      * provided by the passed dto and with the text string from the dto.
+     *
      * @param zoneTroopAmountInitDTO dto containing properties to be set on the text node created by the method
      */
     private void initTroopAmountText(ZoneTroopAmountInitDTO zoneTroopAmountInitDTO) {
@@ -171,6 +174,7 @@ public class MapController {
 
     /**
      * Updates the text property of the text node with the id equal to the zoneName property of the passed dto.
+     *
      * @param zoneTroopAmountDTO dto containing the updated troop amount and the name of the zone of which the troop
      *                           amount should be updated.
      */
@@ -291,6 +295,7 @@ public class MapController {
     /**
      * Adds a HBox to the {@link #labelStackPane} with information about the passed player.
      * Removes the HBox after 3 seconds.
+     *
      * @param currPlayer player about whom the information should be displayed
      */
     private void highlightCurrPlayerLarge(Config.PlayerColor currPlayer) {
@@ -312,7 +317,8 @@ public class MapController {
     /**
      * Plays the passed timeline. If a blocking timeline is already playing, the passed timeline
      * gets played as soon as the currently playing timeline finishes playing.
-     * @param tlToPlay timeline to be played
+     *
+     * @param tlToPlay   timeline to be played
      * @param isBlocking whether the passed timeline should block other later passed timelines
      *                   from being played until itself finished playing or not.
      */
@@ -372,6 +378,7 @@ public class MapController {
 
     /**
      * Highlights the HBox with the passed idNew and unhighlights (resets its size) of the HBox with the id equal to idOld.
+     *
      * @param idOld id of the HBox to be unhighlighted
      * @param idNew id of the HBox to be highlighted
      */
@@ -385,6 +392,7 @@ public class MapController {
 
     /**
      * Highlights the HBox with the passed id representing a player color by enlarging it.
+     *
      * @param id id of the HBox to be highlighted
      */
     private void highlightPlayerTile(String id) {
@@ -394,10 +402,9 @@ public class MapController {
         toBeHighlighted.setPrefHeight(35.0d * scale);
     }
 
-    // TODO use player color instead
-
     /**
      * Creates a HBox representing the passed player color, then returns it.
+     *
      * @param player player color
      * @return HBox created
      */
@@ -430,6 +437,7 @@ public class MapController {
 
     /**
      * Creates a big HBox representing the passed player color, then returns it.
+     *
      * @param player player color
      * @return Big HBox created
      */
@@ -465,6 +473,7 @@ public class MapController {
     /**
      * Displays a label with the name of the newly set current action for 3 seconds.
      * Updates the click handler of {@link #labelStackPane} based on the newly set current action.
+     *
      * @param text Name of the action after the action changed
      */
     private void showActionChange(String text) {
@@ -501,6 +510,7 @@ public class MapController {
     /**
      * Handler for the mouse move event. Passes the coordinates of the mouseEvent parameter casted to integers
      * to the handleHover - method of {@link #mapModel}
+     *
      * @param mouseEvent MouseEvent to be handled
      */
     private void handleMapHover(MouseEvent mouseEvent) {
@@ -530,6 +540,7 @@ public class MapController {
 
     /**
      * Redirects the handling of initializing move troops to the initializeMovingTroops - method of {@link #mapModel}.
+     *
      * @param minAmount Minimal amount of troops which can be moved
      */
     private void initMoveTroops(int minAmount) {
@@ -539,6 +550,7 @@ public class MapController {
     /**
      * Adds a {@link TroopAmountPopup} to the {@link #labelStackPane} with data from the passed dto.
      * Adds a mouse click handler to the confirm button of the popup.
+     *
      * @param moveTroopsDTO dto containing the data for the popup.
      */
     private void moveTroops(MoveTroopsDTO moveTroopsDTO) {
@@ -570,6 +582,11 @@ public class MapController {
         playAnimation(highlightClickableZonesTl, false);
     }
 
+    /**
+     * Method for the reinforcement action.
+     * Displays a label with the amount of troops received provided by the {@link #mapModel} for 2 seconds.
+     * Displays an info label for 2 seconds.
+     */
     private void reinforcement() {
         int troopsToPlace = mapModel.reinforcement();
         Label label = new Label();
@@ -597,6 +614,13 @@ public class MapController {
         playAnimation(reinforcementTl, true);
     }
 
+    /**
+     * Click handler for a click on the {@link #labelStackPane} during the reinforcement action.
+     * Gets a dto from the @{@link #mapModel}, adds a {@link TroopAmountPopup} to the {@link #labelStackPane}
+     * and adds a click handler to the popup's confirm button, removing the popup as soon as the button gets clicked.
+     *
+     * @param mouseEvent MouseEvent to be handled
+     */
     private void reinforcementClickHandler(MouseEvent mouseEvent) {
         if (!mapModel.isMapClickEnabled()) return;
         int x = (int) mouseEvent.getX();
@@ -613,6 +637,12 @@ public class MapController {
         });
     }
 
+    /**
+     * Initialized an attack based on the dto received by the {@link #mapModel}.
+     * Prompts the attacker and defender for the troop amount to be used in the fight.
+     * Notifies the defender. Performs the attack as soon as the attacker and defender
+     * both confirmed the amount of troops to be used.
+     */
     private void initAttack() {
         AttackDTO attackDTO = mapModel.initializeAttack();
         if (attackDTO == null) return;
@@ -639,6 +669,13 @@ public class MapController {
         });
     }
 
+    /**
+     * Displays an attack based on a dto received from the {@link #mapModel}.
+     * Plays a timeline with the fight result.
+     *
+     * @param attackerTroops amount of troops used by the attacker
+     * @param defenderTroops amount of troops used by the defender
+     */
     private void performAttack(int attackerTroops, int defenderTroops) {
         Label label = new Label();
         label.setPrefWidth(400.0d);
@@ -682,6 +719,13 @@ public class MapController {
         playAnimation(fightTl, true);
     }
 
+    /**
+     * Handles a click on the {@link #labelStackPane} during the move and attack action.
+     * Casts the x and y coordinate from the mouseEvent parameter to integers and passes
+     * those values to the handleMapClick - method from the {@link #mapModel}.
+     *
+     * @param mouseEvent MouseEvent to be handled
+     */
     private void onMapClick(MouseEvent mouseEvent) {
         if (!mapModel.isMapClickEnabled()) return;
         int x = (int) mouseEvent.getX();
@@ -689,6 +733,12 @@ public class MapController {
         mapModel.handleMapClick(x, y);
     }
 
+    /**
+     * Marks the pixels of each {@link ZoneSquare} by setting their color on the {@link #mapCanvasOverlay}
+     * to a mix of their own color with the {@link #neighbourOverlayColor}.
+     *
+     * @param neighbours list of {@link ZoneSquare} to be marked
+     */
     private void markNeighbours(List<ZoneSquare> neighbours) {
         neighbours.forEach(n -> {
             Color nOverLay = colorService.mixColors(neighbourOverlayColor, colorService.getColor(n.getColor().getHexValue()));
@@ -696,11 +746,21 @@ public class MapController {
         });
     }
 
+    /**
+     * Clears the {@link #mapCanvasOverlay} by setting the color of each pixel in the {@link #overlaidPixelsByZone} - map
+     * to {@link #transparentColor}. Clears the {@link #overlaidPixelsByZone} - map afterwards.
+     */
     private void removeAllOverlaidPixels() {
         overlaidPixelsByZone.values().forEach(zone -> zone.forEach(pixel -> pw.setColor(pixel.getX(), pixel.getY(), transparentColor)));
         overlaidPixelsByZone.clear();
     }
 
+    /**
+     * "Inactivates" the zone with the passed name by setting the drawn pixels on the {@link #mapCanvasOverlay} belonging to the
+     * zone to {@link #transparentColor}. Removes the value of the passed zoneName from the {@link #overlaidPixelsByZone} - map afterwards.
+     *
+     * @param zoneName
+     */
     private void inactivateZone(String zoneName) {
         List<Pixel> overlaidPixelsToRemove = overlaidPixelsByZone.get(zoneName);
         if (overlaidPixelsToRemove == null) return;
@@ -708,6 +768,17 @@ public class MapController {
         overlaidPixelsByZone.remove(zoneName);
     }
 
+    /**
+     * Sets a zone active by drawing the pixels belonging to the zone on the {@link #mapCanvasOverlay}.
+     * All drawn pixels get added to the {@link #overlaidPixelsByZone} - map with the name of the zone as key.
+     * If the shift parameter is true, the zones pixels get drawn shifted by {@link #OVERLAY_EFFECT_SHIFT_PIXELS},
+     * and the pixels between the zone pixel and the shifted pixel get drawn in a color mixed from the zone color
+     * and the passed overlay color, creating a 3D like effect.
+     *
+     * @param sqr          Zone which should be set active
+     * @param overlayColor Color for the overlay shift effect.
+     * @param shift        If zone activated should get shifted (highlighted with a 3D - like effect or not)
+     */
     private void setZoneActive(ZoneSquare sqr, Color overlayColor, boolean shift) {
         Color currColor = colorService.getColor(sqr.getColor().getHexValue());
         if (currColor == null) return;
@@ -719,7 +790,7 @@ public class MapController {
                 overlaidPixels.add(new Pixel(x, y));
                 pw.setColor(x, y, overlayColor);
                 if (shift) {
-                    for (int k = 1; k < OVERLAY_EFFECT_SHIFT_PIXELS; k++) {
+                    for (int k = 1; k < OVERLAY_EFFECT_SHIFT_PIXELS; k++) { // TODO check for index out of bounds
                         pw.setColor(x - k, y - k, mix);
                         overlaidPixels.add(new Pixel(x - k, y - k));
                     }
@@ -732,6 +803,13 @@ public class MapController {
         overlaidPixelsByZone.put(sqr.getName(), overlaidPixels);
     }
 
+    /**
+     * Draws the pixels of a {@link ZoneSquare} in the passed color on the {@link #mapCanvas}, then sets the color
+     * of the passed zone to the passed color.
+     *
+     * @param sqr Zone to be drawn
+     * @param c   Color in which the passed zone should be drawn
+     */
     private void drawZone(ZoneSquare sqr, Color c) {
         for (HorizontalStripe str : sqr.getBorder()) {
             int y = str.getY();
@@ -742,6 +820,14 @@ public class MapController {
         sqr.setColor(colorService.getPlayerColor(c.toString()));
     }
 
+    /**
+     * Adds a {@link TroopAmountPopup} to the {@link #labelStackPane} with the properties passed to the method
+     * prompting the user to enter an amount of troops. The minimal amount of troops is set to 1.
+     *
+     * @param maxAmt maximal amount of troops which can be set
+     * @param text   Text to be displayed on the popup.
+     * @return created troop amount popup
+     */
     private TroopAmountPopup promptUserForTroopAmount(int maxAmt, String text) {
         TroopAmountPopup popup = new TroopAmountPopup(1, maxAmt, text);
         centerJavaFXRegion(labelStackPane, popup);
@@ -749,21 +835,46 @@ public class MapController {
         return popup;
     }
 
+    /**
+     * Sets the translateX and translateY properties to a certain value
+     * so the passed JavaFX region will be centered on the passed JavaFX pane when its added to it.
+     *
+     * @param pane   JavaFX pane on which the region should be centered
+     * @param region JavaFX region to be centered
+     */
     private void centerJavaFXRegion(Pane pane, Region region) {
         region.setTranslateX((pane.getMaxWidth() - region.getPrefWidth()) / 2.0d);
         region.setTranslateY((pane.getMaxHeight() - region.getPrefHeight()) / 2.0d);
     }
 
+    /**
+     * Sets the {@link #showingPopup} property to true and adds the passed {@link TroopAmountPopup}
+     * to the {@link #labelStackPane}
+     *
+     * @param popup troop amount popup to be added to the {@link #labelStackPane}
+     */
     private void addPopup(TroopAmountPopup popup) {
         this.showingPopup.set(true);
         labelStackPane.getChildren().add(popup);
     }
 
+    /**
+     * Sets the {@link #showingPopup} property to false and removes the passed {@link TroopAmountPopup}
+     * from the {@link #labelStackPane}
+     *
+     * @param popup troop amount popup to be removed from the {@link #labelStackPane}
+     */
     private void removePopup(TroopAmountPopup popup) {
         this.showingPopup.set(false);
         labelStackPane.getChildren().remove(popup);
     }
 
+    /**
+     * Creates a {@link Notification} with the properties passed. Plays a timeline showing the notification for 2 seconds.
+     *
+     * @param type Type of the notification. See {@link NotificationType}.
+     * @param text Text to be displayed in the notification.
+     */
     private void showNotification(NotificationType type, String text) {
         final double stackPaneWidth = scale * DEFAULT_STACK_PANE_WIDTH;
         Notification notification = new Notification(type, text, stackPaneWidth);
@@ -773,6 +884,10 @@ public class MapController {
         playAnimation(notificationTl, true);
     }
 
+    /**
+     * Sets the {@link #gameWon} property to true and shows a notification with the name of the winner.
+     * @param winnerName Name of the game winner.
+     */
     private void gameWon(String winnerName) {
         gameWon.set(true);
         showNotification(NotificationType.INFO, String.format(GAME_WINNER, winnerName));
