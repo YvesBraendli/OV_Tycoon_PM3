@@ -1,16 +1,13 @@
 package ch.zhaw.ovtycoon.model;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
+import ch.zhaw.ovtycoon.Config.PlayerColor;
+import ch.zhaw.ovtycoon.Config.RegionName;
 import org.junit.Before;
 import org.junit.Test;
 
-import ch.zhaw.ovtycoon.Config.PlayerColor;
-import ch.zhaw.ovtycoon.Config.RegionName;
-
 import java.util.ArrayList;
+
+import static org.junit.Assert.*;
 
 
 public class GameTest {
@@ -28,17 +25,23 @@ public class GameTest {
 	}
 	
 	private void initPlayer() {
+
 		a = new Player("a");
 		b = new Player("b");
 		c = new Player("c");
 		a.setColor(PlayerColor.BLACK);
 		b.setColor(PlayerColor.BLUE);
 		c.setColor(PlayerColor.RED);
-		players = new Player[3];
+		/*players = new Player[3];
 		players[0] = a;
 		players[1] = b;
 		players[2] = c;
-		testee.setPlayerList(players);
+		testee.setPlayerList(players);*/
+		ArrayList<PlayerColor> colors = new ArrayList<>();
+		colors.add(PlayerColor.BLACK);
+		colors.add(PlayerColor.BLUE);
+		colors.add(PlayerColor.RED);
+		testee.initPlayers(colors);
 	}
 
 	@Test
@@ -249,7 +252,7 @@ public class GameTest {
 		boolean retVal = testee.switchToNextPlayer();
 		
 		//Assert
-		assertEquals(testee.getCurrentPlayer(), b);
+		assertEquals(testee.getCurrentPlayer().getColor(), b.getColor());
 		assertTrue(retVal);
 		
 	}
@@ -257,13 +260,13 @@ public class GameTest {
 	@Test
 	public void switchToNextPlayer_nextPlayerInQueueEliminated() {
 		//Arrange
-		testee.tryEliminatePlayer(b);
+		testee.tryEliminatePlayer(testee.getPlayer(PlayerColor.BLUE));
 		
 		//Act
 		boolean retVal = testee.switchToNextPlayer();
 		
 		//Assert
-		assertEquals(testee.getCurrentPlayer(), c);
+		assertEquals(testee.getCurrentPlayer().getColor(), c.getColor());
 		assertTrue(retVal);
 	}
 	
@@ -279,8 +282,8 @@ public class GameTest {
 		boolean retVal = testee.switchToNextPlayer();
 		
 		//Assert
-		assertEquals(startPlayer, c);
-		assertEquals(testee.getCurrentPlayer(), a);	
+		assertEquals(startPlayer.getColor(), c.getColor());
+		assertEquals(testee.getCurrentPlayer().getColor(), a.getColor());
 		assertTrue(retVal);
 	}
 	
@@ -289,30 +292,30 @@ public class GameTest {
 		//Arrange
 		testee.switchToNextPlayer();
 		testee.switchToNextPlayer();
-		testee.tryEliminatePlayer(a);
+		testee.tryEliminatePlayer(testee.getPlayer(PlayerColor.BLACK));
 		Player startPlayer = testee.getCurrentPlayer();
 		
 		//Act
 		boolean retVal = testee.switchToNextPlayer();
 		
 		//Assert
-		assertEquals(startPlayer, c);
-		assertEquals(testee.getCurrentPlayer(), b);	
+		assertEquals(startPlayer.getColor(), c.getColor());
+		assertEquals(testee.getCurrentPlayer().getColor(), b.getColor());
 		assertTrue(retVal);
 	}
 	
 	@Test
 	public void switchToNextPlayer_allPlayerEliminated() {
 		//Arrange
-		testee.tryEliminatePlayer(a);
-		testee.tryEliminatePlayer(b);
-		testee.tryEliminatePlayer(c);
+		testee.tryEliminatePlayer(testee.getPlayer(PlayerColor.RED));
+		testee.tryEliminatePlayer(testee.getPlayer(PlayerColor.BLUE));
+		testee.tryEliminatePlayer(testee.getPlayer(PlayerColor.BLACK));
 		
 		//Act
 		boolean retVal = testee.switchToNextPlayer();
 		
 		//Assert
-		assertEquals(testee.getCurrentPlayer(), a);	
+		assertEquals(testee.getCurrentPlayer().getColor(), a.getColor());
 		assertFalse(retVal);
 		
 	}
@@ -636,7 +639,7 @@ public class GameTest {
 		Player returnVal = testee.getPlayer(PlayerColor.BLACK);
 		
 		//Assert
-		assertEquals(returnVal, a);
+		assertEquals(returnVal.getColor(), a.getColor());
 	}
 	
 	@Test

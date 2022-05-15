@@ -27,6 +27,22 @@ public class RisikoController{
     	game.initGame(numberOfPlayers);
 	}
 
+	/**
+	 * Initializes the players with the chosen colors.
+	 * The Number of Colors need to be the same as the number of players.
+	 * Otherwise, an IllegalArgumentException will be thrown.
+	 * @param colors
+	 * @throws IllegalArgumentException
+	 */
+	public void initPlayers(ArrayList<PlayerColor> colors){
+		 try {
+			 game.initPlayers(colors);
+		 }
+		 catch (IllegalArgumentException e){
+			 throw e;
+		 }
+	}
+
     /**
      * starts a fight, between two zones
      * After the fight a zone gets reassigned if the defender does not have any more troops stationed.

@@ -1,17 +1,16 @@
 package ch.zhaw.ovtycoon.model;
 
+import ch.zhaw.ovtycoon.Config;
+import ch.zhaw.ovtycoon.Config.PlayerColor;
+import ch.zhaw.ovtycoon.Config.RegionName;
+import ch.zhaw.ovtycoon.data.DiceRoll;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map.*;
-
-import ch.zhaw.ovtycoon.Config;
-
-import ch.zhaw.ovtycoon.data.DiceRoll;
-import ch.zhaw.ovtycoon.Config.PlayerColor;
-import ch.zhaw.ovtycoon.Config.RegionName;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.ObjectProperty;
+import java.util.Map.Entry;
 
 public class Game implements Serializable {
 	private HashMap<Config.RegionName, ArrayList<Zone>> gameMap;
@@ -43,9 +42,23 @@ public class Game implements Serializable {
 		troopHandler = new TroopHandler(playerAmount);
 		eliminatedPlayer = new SimpleObjectProperty<PlayerColor>(null);
 		newRegionOwner = new SimpleObjectProperty<PlayerColor>(null);
-		//TODO get player color
 	}
-	
+
+	/**
+	 * Initializes all selected Players with their colors. The Number of colors
+	 * need to be the same as the number of players.
+	 * If not, an IllegalArgumentException will be thorwn.
+	 * @param colors selected colors for the players
+	 * @throws IllegalArgumentException
+	 */
+	public void initPlayers(ArrayList<PlayerColor> colors){
+		if(colors.size() != players.length){
+			throw new IllegalArgumentException("Number of chosen colors musst be equal to numbers of players.");
+		}
+		for (int i = 0; i < colors.size(); i++){
+			players[i] = new Player(colors.get(i));
+		}
+	}
 	
     /**
      * starts a fight, between two zones
