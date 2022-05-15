@@ -53,7 +53,7 @@ public class Game implements Serializable {
 	 * @throws IllegalArgumentException
 	 */
 	public void initPlayers(ArrayList<PlayerColor> colors){
-		if(colors.size() != players.length){
+		if(colors == null || colors.size() != players.length){
 			throw new IllegalArgumentException("Number of chosen colors musst be equal to numbers of players.");
 		}
 		for (int i = 0; i < colors.size(); i++){

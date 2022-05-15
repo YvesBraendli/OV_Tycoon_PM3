@@ -10,7 +10,6 @@ import java.util.ArrayList;
 
 import static org.junit.Assert.*;
 
-
 public class GameTest {
 	private Game testee;
 	private Player a;
@@ -43,6 +42,50 @@ public class GameTest {
 		colors.add(PlayerColor.BLUE);
 		colors.add(PlayerColor.RED);
 		testee.initPlayers(colors);
+	}
+
+	@Test
+	public void initPlayers_twoColorButThreePlayersExpected(){
+		// Arrange
+		testee = new Game();
+		testee.initGame(3);
+
+		ArrayList<PlayerColor> colors = new ArrayList<>();
+		colors.add(PlayerColor.BLACK);
+		colors.add(PlayerColor.BLUE);
+
+		// Act + Assert
+		assertThrows(IllegalArgumentException.class, () -> testee.initPlayers(colors));
+	}
+
+	@Test
+	public void initPlayers_invalidArgument_null(){
+		// Arrange
+		testee = new Game();
+		testee.initGame(3);
+
+		// Act + Assert
+		assertThrows(IllegalArgumentException.class, () -> testee.initPlayers(null));
+	}
+
+	@Test
+	public void initPlayers_correctArguments(){
+		// Arrange
+		testee = new Game();
+		testee.initGame(3);
+
+		ArrayList<PlayerColor> colors = new ArrayList<>();
+		colors.add(PlayerColor.BLACK);
+		colors.add(PlayerColor.BLUE);
+		colors.add(PlayerColor.RED);
+
+		// Act
+		testee.initPlayers(colors);
+
+		// Arrange
+		assertEquals(PlayerColor.RED, testee.getPlayer(PlayerColor.RED).getColor());
+		assertEquals(PlayerColor.BLUE, testee.getPlayer(PlayerColor.BLUE).getColor());
+		assertEquals(PlayerColor.BLUE, testee.getPlayer(PlayerColor.BLUE).getColor());
 	}
 
 	@Test
