@@ -36,6 +36,10 @@ import static ch.zhaw.ovtycoon.Config.PlayerColor.BLUE;
 import static ch.zhaw.ovtycoon.Config.PlayerColor.GREEN;
 import static ch.zhaw.ovtycoon.Config.PlayerColor.RED;
 
+/**
+ * Model for the zone map and the main view.
+ * Has properties used by the {@link ch.zhaw.ovtycoon.gui.MapController} to update the view.
+ */
 public class MapModel {
     private final List<ZoneSquare> zoneSquares;
     private final MapLoaderService mapLoaderService;
@@ -63,17 +67,24 @@ public class MapModel {
     private final SimpleObjectProperty<ZoneTroopAmountInitDTO> initializeZoneTroopsText = new SimpleObjectProperty<>();
     private final SimpleObjectProperty<ZoneTroopAmountDTO> updateZoneTroopsText = new SimpleObjectProperty<>();
     private final Color overlayColor = new Color(0.0d, 0.0d, 0.0d, 0.25d);
+    private final TestBackend testBackend = new TestBackend();
+    private final Scenario scenarioToBeTested = Scenario.PLAYER_ELIMINATED; // Only for initializing the zones and players to test certain scenarios, e.g. win game
+    private final double scale;
     private boolean mapClickEnabled = true;
     private List<ZoneSquare> clickableZones = new ArrayList<>();
     private List<ZoneSquare> hoverableZones = new ArrayList<>();
     private ZoneSquare source = null;
     private ZoneSquare target = null;
     private TooltipDTO currHovered = null;
-    private final TestBackend testBackend = new TestBackend();
     private RisikoController risikoController = new RisikoController(3);
-    private final Scenario scenarioToBeTested = Scenario.PLAYER_ELIMINATED; // Only for initializing the zones and players to test certain scenarios, e.g. win game
-    private final double scale;
 
+    /**
+     * Creates an instance of the map model. Initializes {@link #zoneSquares} depending on the
+     * passed image and scale.
+     *
+     * @param mapImage Image to be used as the game map
+     * @param scale    for scaling the map for smaller screens
+     */
     public MapModel(Image mapImage, double scale) {
         this.scale = scale;
         mapLoaderService = new MapLoaderService(mapImage, scale);
@@ -82,24 +93,46 @@ public class MapModel {
         initPlayers();
     }
 
+    /**
+     * Sets {@link #highlightPlayer} to the player color of the player owning the {@link #target} zone.
+     * Used to notify the defending player in an attack.
+     */
     public void notifyDefender() {
         Config.PlayerColor defender = risikoController.getZoneOwner(target.getName());
         highlightPlayer.set(defender);
         highlightPlayer.set(null);
     }
 
+    /**
+     * Initializes an attack by getting the maximal available troops of the {@link #source} (attacking zone)
+     * and {@link #target} (defending zone).
+     *
+     * @return DTO containing data for the attack to proceed, null if either {@link #source} or {@link #target} is null
+     */
     public AttackDTO initializeAttack() {
-        if (source == null ||target == null) return null;
+        if (source == null || target == null) return null;
         int maxAttackerTroops = risikoController.getMaxTroopsForAttack(source.getName());
         int maxDefenderTroops = risikoController.getMaxTroopsForDefending(target.getName());
         return new AttackDTO(maxAttackerTroops, maxDefenderTroops);
     }
 
+    /**
+     * Starts the reinforcement phase.
+     *
+     * @return Amount of troops which can be placed during the reinforcement game phase.
+     */
     public int reinforcement() {
         testBackend.diceThrow();
         return testBackend.getTroopsToPlace();
     }
 
+    /**
+     * Method for placing an amount of troops on a certain zone. Proceeds to next action if all available troops got placed,
+     * else resets the map (resets darkening of background and highlighted zone). Updates the zones troop amount text with the passed amount.
+     *
+     * @param zoneSquareName Name of the zone on which the troops should be placed
+     * @param amount         Amount of troops to be placed
+     */
     public void placeTroops(String zoneSquareName, int amount) {
         ZoneSquare sqr = getZsqByName(zoneSquareName);
         if (sqr == null) return;
@@ -120,6 +153,15 @@ public class MapModel {
         }
     }
 
+    /**
+     * Generates a dto based on the passed x and y coordinate.
+     * Gets the zone at the passed x and y coordinate and sets it active if the zone can be clicked.
+     *
+     * @param x x coordinate
+     * @param y y coordinate
+     * @return DTO containing the clicked zone square and the amount of troops which can be placed. Null
+     * if no zone was found at the passed coordinates.
+     */
     public ReinforcementDTO reinforcementClick(int x, int y) {
         ZoneSquare sqr = getZoneAtCoordinates(x, y);
         if (sqr == null || !clickableZones.contains(sqr)) return null;
@@ -137,12 +179,26 @@ public class MapModel {
         return new ReinforcementDTO(sqr, testBackend.getTroopsToPlace());
     }
 
+    /**
+     * Initializes moving troops by signaling to open a new popup. Nothing happens if either
+     * {@link #source} or {@link #target} is null.
+     *
+     * @param minAmount Minimal amount of troops which can be placed
+     */
     public void initializeMovingTroops(int minAmount) {
         if (source == null || target == null) return;
         int maxMovableTroops = risikoController.getMaxMovableTroops(source.getName());
         openMoveTroopsPopup.set(new MoveTroopsDTO(minAmount, maxMovableTroops));
     }
 
+    /**
+     * Finishes moving troops by calling the moveUnits method of {@link #risikoController}.
+     * Updates the involved zone's troop count. Resets the map's state (clickable / hoverable zones,
+     * map click enabled, darkened background, overlaid pixels, source and target) to the values before
+     * the troop moving started.
+     *
+     * @param amountToMove Amount of troops which should be moved from the {@link #source} zone to the {@link #target} zone.
+     */
     public void finishMovingTroops(int amountToMove) {
         risikoController.moveUnits(source.getName(), target.getName(), amountToMove);
         int troopAmtNew = risikoController.getZoneTroops(target.getName());
@@ -159,11 +215,22 @@ public class MapModel {
         darkenBackground.set(false);
     }
 
+    /**
+     * Updates {@link #clickableZones} with the values from {@link #risikoController}.
+     */
     public void updateClickableZones() {
         clickableZones = risikoController.getValidSourceZoneNames().stream()
                 .map(zoneName -> getZsqByName(zoneName)).collect(Collectors.toList());
     }
 
+    /**
+     * Creates a {@link TooltipDTO} based on the zone at the passed coordinates.
+     * Updates {@link #removeTooltip} and {@link #showTooltip} based on the zone hovered
+     * and {@link #currHovered}.
+     *
+     * @param x x coordinate
+     * @param y y coordinate
+     */
     public void handleHover(int x, int y) {
         if (hoverableZones.isEmpty()) return;
         ZoneSquare hoveredZone = getZoneAtCoordinates(x, y);
@@ -175,8 +242,7 @@ public class MapModel {
             return;
         } else if (alreadyHovered) {
             return;
-        }
-        else if (currHovered != null) { // remove old tooltip
+        } else if (currHovered != null) { // remove old tooltip
             removeTooltip.set(currHovered);
             removeTooltip.set(null);
         }
@@ -188,13 +254,20 @@ public class MapModel {
         showTooltip.set(null);
     }
 
+    /**
+     * Starts the fight and collects the data from the fight to a {@link FightDTO}.
+     *
+     * @param attackerTroops amount of troops used by the attacker
+     * @param defenderTroops amount of troops used by the defender.
+     * @return {@link FightDTO} with the data of the fight for processing.
+     */
     public FightDTO handleFight(int attackerTroops, int defenderTroops) {
         FightDTO fightDTO = new FightDTO();
         Config.PlayerColor attacker = source.getColor();
         Config.PlayerColor defender = target.getColor();
         if (attacker == null || defender == null) return null;
 
-        final AtomicReference<Config.PlayerColor> fightWinner= new AtomicReference<>(null);
+        final AtomicReference<Config.PlayerColor> fightWinner = new AtomicReference<>(null);
         final AtomicBoolean zoneOvertaken = new AtomicBoolean(false);
 
         risikoController.getFightWinner().addListener((new ChangeListener<Config.PlayerColor>() {
@@ -231,15 +304,15 @@ public class MapModel {
         DiceRoll fightRes = risikoController.runFight(source.getName(), target.getName(), attackerTroops, defenderTroops);
         fightDTO.setAttackerDiceRoll(fightRes.getAttackerRoll());
         fightDTO.setDefenderDiceRoll(fightRes.getDefenderRoll());
-        boolean attackerWon =  fightWinner.get().equals(attacker);
-        String winner = attackerWon ? attacker.name().toLowerCase(): defender.name().toLowerCase();
-        String loser = attackerWon ? defender.name().toLowerCase(): attacker.name().toLowerCase();
+        boolean attackerWon = fightWinner.get().equals(attacker);
+        String winner = attackerWon ? attacker.name().toLowerCase() : defender.name().toLowerCase();
+        String loser = attackerWon ? defender.name().toLowerCase() : attacker.name().toLowerCase();
         fightDTO.setFightWinner(winner);
         fightDTO.setFightLoser(loser);
         fightDTO.setOvertookZone(zoneOvertaken.get());
         fightDTO.setOverTookRegion(overtookRegion.get());
         if (overtookRegion.get()) {
-            fightDTO.setOvertakenRegionName(risikoController.getRegionByOwner(target.getName()).toString());
+            fightDTO.setOvertakenRegionName(risikoController.getRegionOfZone(target.getName()).toString());
         }
         fightDTO.setAttacker(attacker.name().toLowerCase());
         fightDTO.setDefender(defender.name().toLowerCase());
@@ -248,6 +321,11 @@ public class MapModel {
         return fightDTO;
     }
 
+    /**
+     * Finishes fight by setting properties based on properties of the based dto.
+     *
+     * @param fightDTO dto containing data about the fight
+     */
     public void finishFight(FightDTO fightDTO) {
         if (fightDTO.isOvertookZone()) {
             Color attackerColor = colorService.getColor(source.getColor().getHexValue());
@@ -275,6 +353,12 @@ public class MapModel {
         }
     }
 
+    /**
+     * Sets {@link #gameWinner} to the name of the winner. Resets {@link #source}, {@link #target}, {@link #sourceOrTargetNull}
+     * {@link #hoverableZones}, {@link #darkenBackground} and removes the overlaid pixels. Sets {@link #mapClickEnabled} to false.
+     *
+     * @param winnerName Name of the winner
+     */
     private void gameWon(String winnerName) {
         mapClickEnabled = false;
         hoverableZones = new ArrayList<>(zoneSquares);
@@ -288,26 +372,28 @@ public class MapModel {
         gameWinner.set(winnerName);
     }
 
+    /**
+     * Gets the zone at the passed x and y coordinate and updates {@link #source}, {@link #target} and {@link #sourceOrTargetNull}
+     * based on the values of source and target. Sets properties for visual feedback of the click.
+     *
+     * @param x x coordinate
+     * @param y y coordinate
+     */
     public void handleMapClick(int x, int y) {
         if (source == null || (source != null && target != null)) {
             darkenBackground.set(false);
-
-            // todo clean up
             removeOverlaidPixelsProperty().set(true);
             removeOverlaidPixelsProperty().set(false);
-
             updateClickableZones();
             source = null;
             target = null;
             sourceOrTargetNull.set(source == null || target == null);
         }
-        // uncomment for testing
-        // long startTime = System.currentTimeMillis();
-
         ZoneSquare sqr = getZoneAtCoordinates(x, y);
         if (sqr != null && sqr.getBorder() != null && clickableZones.contains(sqr)) {
             stopAnimation.setValue(true);
             stopAnimation.set(false);
+
             removeOverlaidPixelsProperty().set(true);
             removeOverlaidPixelsProperty().set(false);
             if (source == null || sqr == source) {
@@ -356,10 +442,13 @@ public class MapModel {
 
             sourceOrTargetNull.set(source == null || target == null);
         }
-        // uncomment for testing
-        // System.out.println(String.format("Click handling took %d ms", System.currentTimeMillis() - startTime));
     }
 
+    /**
+     * Sets the initial values of {@link #hoverableZones}, {@link #currPlayer} and {@link #showActionChange}.
+     * Colors all zones in the player color of the player they are owned by. Sets the troop amount of all
+     * zones to the values provided by {@link #risikoController}.
+     */
     public void setInitialValues() {
         hoverableZones = new ArrayList<>(zoneSquares);
         addPlayerColorsToZones();
@@ -368,6 +457,11 @@ public class MapModel {
         showActionChange.set(risikoController.getAction().getActionName());
     }
 
+    /**
+     * Sets {@link #showActionChange} to the current action. Sets {@link #currPlayer} to the current player
+     * if the player switched after switching the action. Resets {@link #source}, {@link #target}, {@link #sourceOrTargetNull}
+     * and {@link #hoverableZones}. Sets {@link #actionButtonText} to the name of the current action.
+     */
     public void nextAction() {
         source = null;
         target = null;
@@ -386,6 +480,9 @@ public class MapModel {
         showActionChange.set(risikoController.getAction().getActionName());
     }
 
+    /**
+     * Sets {@link #hoverableZones} to a new array list containing {@link #zoneSquares}.
+     */
     public void resetHoverableZones() {
         hoverableZones = new ArrayList<>(zoneSquares);
     }
@@ -467,6 +564,10 @@ public class MapModel {
         return risikoController;
     }
 
+    public void setRisikoController(RisikoController risikoController) {
+        this.risikoController = risikoController;
+    }
+
     public SimpleObjectProperty<ActivateZoneDTO> setZoneActiveProperty() {
         return setZoneActive;
     }
@@ -503,12 +604,12 @@ public class MapModel {
         return source;
     }
 
-    public ZoneSquare getTarget() {
-        return target;
-    }
-
     public void setSource(ZoneSquare source) {
         this.source = source;
+    }
+
+    public ZoneSquare getTarget() {
+        return target;
     }
 
     public void setTarget(ZoneSquare target) {
@@ -519,16 +620,12 @@ public class MapModel {
         return currHovered;
     }
 
-    public void setHoverableZones(List<ZoneSquare> hoverableZones) {
-        this.hoverableZones = hoverableZones;
-    }
-
     public void setCurrHovered(TooltipDTO currHovered) {
         this.currHovered = currHovered;
     }
 
-    public void setRisikoController(RisikoController risikoController) {
-        this.risikoController = risikoController;
+    public void setHoverableZones(List<ZoneSquare> hoverableZones) {
+        this.hoverableZones = hoverableZones;
     }
 
     public SimpleObjectProperty<ZoneTroopAmountDTO> updateZoneTroopsTextProperty() {

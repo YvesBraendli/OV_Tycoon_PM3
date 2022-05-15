@@ -421,10 +421,9 @@ public class Game implements Serializable {
     	newRegionOwner.set(playerColor);
     }
 
-	// TODO doc for new methods -------------------------------------------------------------------------------------
-
 	/**
 	 * Gets the players array
+	 *
 	 * @return array of all players
 	 */
 	public Player[] getPlayers() {
@@ -433,7 +432,8 @@ public class Game implements Serializable {
 
 	/**
 	 * Sets the owner of a zone
-	 * @param owner Player which should become the owner of the zone
+	 *
+	 * @param owner    Player which should become the owner of the zone
 	 * @param zoneName name of the player which should be the owner of the passed zone
 	 */
 	public void setZoneOwner(Player owner, String zoneName) {
@@ -442,8 +442,9 @@ public class Game implements Serializable {
 
 	/**
 	 * Updates the amount of troops of a zone
+	 *
 	 * @param zoneName name of the zone of which the troops should be updated
-	 * @param troops amount of troops which should be added to the current troop amount
+	 * @param troops   amount of troops which should be added to the current troop amount
 	 */
 	public void updateZoneTroops(String zoneName, int troops) {
 		Zone zone = getZone(zoneName);
@@ -452,6 +453,7 @@ public class Game implements Serializable {
 
 	/**
 	 * Gets the current action
+	 *
 	 * @return current action
 	 */
 	public Action getCurrentAction() {
@@ -473,6 +475,7 @@ public class Game implements Serializable {
 
 	/**
 	 * Property indicating if a zone has been overtaken during an attack
+	 *
 	 * @return whether the zone has been overtaken or not
 	 */
 	public SimpleBooleanProperty getZoneOvertaken() {
@@ -481,20 +484,40 @@ public class Game implements Serializable {
 
 	/**
 	 * Gets the winner of a fight
+	 *
 	 * @return PlayerColor of the player who won the fight
 	 */
 	public SimpleObjectProperty<PlayerColor> getFightWinner() {
 		return fightWinner;
 	}
 
+	/**
+	 * Calculates the maximal amount of troops a zone can provide for an attack.
+	 *
+	 * @param zoneName Name of the zone
+	 * @return maximal available troop amount
+	 */
 	public int getMaxTroopsForAttack(String zoneName) {
 		return Math.min(getMaxMovableTroops(zoneName), 3);
 	}
 
+	/**
+	 * Calculates the maximal amount of troops a zone can provide for defending.
+	 *
+	 * @param zoneName Name of the zone
+	 * @return maximal available troop amount
+	 */
 	public int getMaxTroopsForDefending(String zoneName) {
 		return Math.min(getZone(zoneName).getTroops(), 2);
 	}
 
+	/**
+	 * Calculates the maximal amount of troops that can be moved away from the specified
+	 * zone to another zone.
+	 *
+	 * @param zoneName Name of the zone
+	 * @return maximal available troop amount
+	 */
 	public int getMaxMovableTroops(String zoneName) {
 		return getZone(zoneName).getTroops() - 1;
 	}
