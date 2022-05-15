@@ -1,0 +1,14 @@
+ch/zhaw/ovtycoon/model/Zone.java
+ ch.zhaw.ovtycoon.model.Zone
+OV_Tycoon/Library.java
+ OV_Tycoon.Library
+ch/zhaw/ovtycoon/Config.java
+ ch.zhaw.ovtycoon.Config
+ ch.zhaw.ovtycoon.Config$RegionName
+ ch.zhaw.ovtycoon.Config$ZoneName
+ch/zhaw/ovtycoon/model/Dice.java
+ ch.zhaw.ovtycoon.model.Dice
+ch/zhaw/ovtycoon/model/Region.java
+ ch.zhaw.ovtycoon.model.Region
+ch/zhaw/ovtycoon/model/Fight.java
+ ch.zhaw.ovtycoon.model.Fight

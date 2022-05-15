@@ -11,6 +11,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import ch.zhaw.ovtycoon.Config;
+import ch.zhaw.ovtycoon.data.Player;
 
 /**
  * The MapInitializer is used to initialize the regions and zones at the start of a game
@@ -75,7 +76,7 @@ public class MapInitializer {
      * Generates a Zone to Player HashMap, which can be used to determine ownership over a zone
      * @return HashMap<Zone,Player>
      */
-    public HashMap<Zone,Player> getOwnerList(){
+    public HashMap<Zone, Player> getOwnerList(){
         HashMap<Zone,Player> owner = new HashMap<Zone,Player>();
         for(Map.Entry<String, Zone> entry : zonesByName.entrySet()) {
             owner.put(entry.getValue(), null);

@@ -1,15 +1,16 @@
 package ch.zhaw.ovtycoon.model;
 
-import java.io.Serializable;
 import ch.zhaw.ovtycoon.Config;
 import ch.zhaw.ovtycoon.Config.PlayerColor;
 import ch.zhaw.ovtycoon.Config.RegionName;
 import ch.zhaw.ovtycoon.data.DiceRoll;
+import ch.zhaw.ovtycoon.data.Player;
 import ch.zhaw.ovtycoon.gui.model.Action;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
@@ -21,22 +22,13 @@ public class Game implements Serializable {
 	private final SimpleObjectProperty<Player> currentPlayerProperty = new SimpleObjectProperty<>(null);
 	private final SimpleObjectProperty<Region> regionOwnerChange = new SimpleObjectProperty<>(null);
 	private HashMap<Config.RegionName, ArrayList<Zone>> gameMap;
-	private HashMap<Zone, Player> zoneOwner = new HashMap<Zone, Player>();
+	private HashMap<Zone, Player> zoneOwner = new HashMap<Zone,Player>();
 	private Player[] players;
 	private int currentPlayerIndex;
 	private TroopHandler troopHandler;
 	private ObjectProperty<PlayerColor> eliminatedPlayer;
-	private SimpleObjectProperty<PlayerColor> newRegionOwner = new SimpleObjectProperty<>(null);
+	private ObjectProperty<PlayerColor> newRegionOwner;
 	private int currentActionIndex = 0;
-
-	/**
-	 * TODO REMOVE AFTER PLAYER INIT IMPLEMENTATION
-	 * Helperfunction for testing until player implementation is complete
-	 * @param players
-	 */
-	public void setPlayerList(Player[] players) {
-		this.players = players;
-	}
 
 	/**
 	 * Initializes the gameMap and creates players with their corresponding colors
@@ -48,11 +40,25 @@ public class Game implements Serializable {
 		zoneOwner = mapInit.getOwnerList();
 		players = new Player[playerAmount];
 		troopHandler = new TroopHandler(playerAmount);
-		eliminatedPlayer = new SimpleObjectProperty<>(null);
+		eliminatedPlayer = new SimpleObjectProperty<PlayerColor>(null);
 		newRegionOwner = new SimpleObjectProperty<PlayerColor>(null);
-		//TODO get player color
 	}
-	
+
+	/**
+	 * Initializes all selected Players with their colors. The Number of colors
+	 * need to be the same as the number of players.
+	 * If not, an IllegalArgumentException will be thorwn.
+	 * @param colors selected colors for the players
+	 * @throws IllegalArgumentException
+	 */
+	public void initPlayers(ArrayList<PlayerColor> colors){
+		if(colors == null || colors.size() != players.length){
+			throw new IllegalArgumentException("Number of chosen colors musst be equal to numbers of players.");
+		}
+		for (int i = 0; i < colors.size(); i++){
+			players[i] = new Player(colors.get(i));
+		}
+	}
 	
     /**
      * starts a fight, between two zones
