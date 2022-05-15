@@ -357,16 +357,19 @@ public class Game implements Serializable {
      * @param player The player instance of the current player.
      * @return A list, in which all the possible movement zones for a player and the specified origin zone are contained.
      */
-    public ArrayList<Zone> getPossibleMovementNeighbours(Zone originZone, Player player) {
-        ArrayList<Zone> movementNeighbours = new ArrayList<Zone>();
-        createNeighboursList(originZone, player, movementNeighbours);
-        for(int i=0; i<movementNeighbours.size();i++){
-            if(movementNeighbours.get(i)==originZone){
-                movementNeighbours.remove(i);
-            }
-        }
-        return movementNeighbours;
-    }
+	public ArrayList<Zone> getPossibleMovementNeighbours(Zone originZone, Player player) {
+		return getMovementNeighbours(originZone, originZone, player, new ArrayList<>());
+	}
+
+	private ArrayList<Zone> getMovementNeighbours(Zone initial, Zone originZone, Player player, ArrayList<Zone> neighbours) {
+		for (Zone zone : originZone.getNeighbours()) {
+			if (zoneOwner.get(zone) == player && !neighbours.contains(zone) && zone != initial) {
+				neighbours.add(zone);
+				getMovementNeighbours(initial, zone, player, neighbours);
+			}
+		}
+		return neighbours;
+	}
 
     private void createNeighboursList(Zone originZone, Player player, ArrayList<Zone> movementNeighbours) {
         originZone.setAlreadyVisited(true);
