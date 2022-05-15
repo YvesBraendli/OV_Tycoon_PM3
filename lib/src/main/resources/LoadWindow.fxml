@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane prefHeight="254.0" prefWidth="399.0" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.ov_tycoon_window.HelloController">
+   <children>
+      <ImageView fitHeight="311.0" fitWidth="428.0" layoutX="-4.0" onMouseClicked="#moveTram" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../../../Image/Loading.png" />
+         </image>
+      </ImageView>
+      <ImageView fx:id="tramImage" fitHeight="113.0" fitWidth="273.0" layoutX="-226.0" layoutY="162.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../../../Image/tram.png" />
+         </image>
+      </ImageView>
+      <ImageView fitHeight="250.0" fitWidth="467.0" layoutX="25.0" layoutY="13.0" onMouseClicked="#moveTram" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../../../Image/loading2.png" />
+         </image>
+      </ImageView>
+   </children>
+</AnchorPane>

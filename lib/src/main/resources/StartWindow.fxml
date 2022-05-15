@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
+
+<GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onMouseClicked="#moveFlugzeug" prefHeight="400.0" prefWidth="600.0" style="-fx-background-color: White;" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.ov_tycoon_window.HelloController">
+  <columnConstraints>
+      <ColumnConstraints />
+    <ColumnConstraints hgrow="SOMETIMES" maxWidth="195.333251953125" minWidth="10.0" prefWidth="16.6666259765625" />
+    <ColumnConstraints hgrow="SOMETIMES" maxWidth="518.0000000000001" minWidth="10.0" prefWidth="518.0000000000001" />
+      <ColumnConstraints hgrow="SOMETIMES" maxWidth="145.33337402343756" minWidth="10.0" prefWidth="16.0" />
+  </columnConstraints>
+  <rowConstraints>
+      <RowConstraints maxHeight="254.6666259765625" minHeight="10.0" prefHeight="188.66666666666666" vgrow="SOMETIMES" />
+    <RowConstraints maxHeight="102.66668701171872" minHeight="0.6666793823242188" prefHeight="57.333328247070284" vgrow="SOMETIMES" />
+    <RowConstraints maxHeight="97.33331807454425" minHeight="10.0" prefHeight="46.666646321614564" vgrow="SOMETIMES" />
+    <RowConstraints maxHeight="86.66670735677081" minHeight="10.0" prefHeight="58.666666666666686" vgrow="SOMETIMES" />
+      <RowConstraints maxHeight="52.0" minHeight="10.0" prefHeight="52.0" vgrow="SOMETIMES" />
+  </rowConstraints>
+   <children>
+      <ImageView fitHeight="274.0" fitWidth="603.0" pickOnBounds="true" preserveRatio="true" GridPane.columnIndex="1" GridPane.rowIndex="3" GridPane.rowSpan="2">
+         <image>
+            <Image url="@../../../Image/Zürich_Skizze.jpg" />
+         </image>
+      </ImageView>
+      <ImageView fitHeight="297.0" fitWidth="521.0" pickOnBounds="true" preserveRatio="true" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.valignment="CENTER">
+         <image>
+            <Image url="@../../../Image/logo.png" />
+         </image>
+      </ImageView>
+      <ImageView fx:id="ImageNewGame" fitHeight="50.0" fitWidth="98.0" pickOnBounds="true" preserveRatio="true" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER">
+         <image>
+            <Image url="@../../../Image/NewGameButton1.png" />
+         </image>
+      </ImageView>
+      <ImageView fx:id="ImageLoadGame" fitHeight="48.0" fitWidth="95.0" pickOnBounds="true" preserveRatio="true" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="2" GridPane.valignment="CENTER">
+         <image>
+            <Image url="@../../../Image/LoadGameButton1.png" />
+         </image>
+      </ImageView>
+      <ImageView fx:id="ImageClose" fitHeight="48.0" fitWidth="170.0" pickOnBounds="true" preserveRatio="true" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="3" GridPane.valignment="CENTER">
+         <image>
+            <Image url="@../../../Image/CloseButton1.png" />
+         </image>
+      </ImageView>
+      <ImageView fx:id="flugzeug" fitHeight="208.0" fitWidth="498.0" pickOnBounds="true" preserveRatio="true" GridPane.columnIndex="3" GridPane.halignment="LEFT" GridPane.valignment="CENTER">
+         <image>
+            <Image url="@../../../Image/flugzeug.png" />
+         </image>
+         <GridPane.margin>
+            <Insets left="50.0" top="20.0" />
+         </GridPane.margin>
+      </ImageView>
+   </children>
+</GridPane>
