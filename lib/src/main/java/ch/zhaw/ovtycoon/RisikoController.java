@@ -4,7 +4,7 @@ import ch.zhaw.ovtycoon.Config.PlayerColor;
 import ch.zhaw.ovtycoon.Config.RegionName;
 import ch.zhaw.ovtycoon.data.DiceRoll;
 import ch.zhaw.ovtycoon.model.Game;
-import ch.zhaw.ovtycoon.model.Player;
+import ch.zhaw.ovtycoon.data.Player;
 import ch.zhaw.ovtycoon.model.Zone;
 import javafx.beans.property.ObjectProperty;
 

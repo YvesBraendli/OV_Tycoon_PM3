@@ -4,6 +4,7 @@ import ch.zhaw.ovtycoon.Config;
 import ch.zhaw.ovtycoon.Config.PlayerColor;
 import ch.zhaw.ovtycoon.Config.RegionName;
 import ch.zhaw.ovtycoon.data.DiceRoll;
+import ch.zhaw.ovtycoon.data.Player;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
@@ -14,7 +15,7 @@ import java.util.Map.Entry;
 
 public class Game implements Serializable {
 	private HashMap<Config.RegionName, ArrayList<Zone>> gameMap;
-	private HashMap<Zone,Player> zoneOwner = new HashMap<Zone,Player>();
+	private HashMap<Zone, Player> zoneOwner = new HashMap<Zone,Player>();
 	private Player[] players;
 	private int currentPlayerIndex;
 	private TroopHandler troopHandler;

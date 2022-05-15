@@ -2,6 +2,7 @@ package ch.zhaw.ovtycoon.model;
 
 import ch.zhaw.ovtycoon.Config.PlayerColor;
 import ch.zhaw.ovtycoon.Config.RegionName;
+import ch.zhaw.ovtycoon.data.Player;
 import org.junit.Before;
 import org.junit.Test;
 

@@ -1,4 +1,4 @@
-package ch.zhaw.ovtycoon.model;
+package ch.zhaw.ovtycoon.data;
 
 import ch.zhaw.ovtycoon.Config;
 
