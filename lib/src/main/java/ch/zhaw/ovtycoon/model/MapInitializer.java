@@ -12,6 +12,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import ch.zhaw.ovtycoon.Config;
+import ch.zhaw.ovtycoon.Config.PlayerColor;
 import ch.zhaw.ovtycoon.data.Player;
 
 /**
@@ -77,12 +78,12 @@ public class MapInitializer {
      * Generates a Zone to Player HashMap, which can be used to determine ownership over a zone
      * @return HashMap<Zone,Player>
      */
-    public HashMap<Zone, Player> getOwnerList(){
+    public HashMap<Zone, Player> getOwnerList(Player[] players){
         HashMap<Zone,Player> owner = new HashMap<Zone,Player>();
         for(Map.Entry<String, Zone> entry : zonesByName.entrySet()) {
             owner.put(entry.getValue(), null);
         }
-        return owner;
+        return placetroopsForPlayerAmounts(players, owner);    
     }
 
     private File getRessource(String file) {
@@ -143,14 +144,46 @@ public class MapInitializer {
         }
     }
 
-    public void placetroopsForPlayerAmounts(int playerAmount) {
+    private HashMap<Zone, Player> placetroopsForPlayerAmounts(Player[] players, HashMap<Zone,Player> owner) {
+    	int playerAmount = players.length;
     	int numberOfTroopsPerPlayer = Config.TROOPS_PER_PLAYER_AMOUNT.get(playerAmount);
-    	ArrayList<Zone> zonesWithNoTroops = new ArrayList<>(zonesByName.values());
+    	int numberOfTotalTroops = numberOfTroopsPerPlayer*playerAmount;
+    	Zone settingZone;
+    	
+    	HashMap<Player, Integer> numberOfTroopsPerPlayerToPlace = new HashMap<Player, Integer>();
+    	for(Player player: players) {
+    		numberOfTroopsPerPlayerToPlace.put(player, numberOfTroopsPerPlayer);
+    	}
+    	
+    	
+    	ArrayList<Zone> zones = new ArrayList<>(zonesByName.values());
+    	
     	for(int i=0; i < Config.NUMBER_OF_ZONES;i++) {
     		int playerIndex = i%playerAmount;
-    		Zone settingZone = zonesWithNoTroops.get(new Random().nextInt(zonesWithNoTroops.size()));
-    		settingZone.setTroops(1);
-    		
+    		settingZone = zones.get(new Random().nextInt(zones.size()));
+    		owner.put(settingZone, players[playerIndex]);
+    		zones.remove(settingZone);
     	}
+    	
+    	zones = new ArrayList<>(zonesByName.values());
+    	while(numberOfTotalTroops>0) {
+    		settingZone = zones.get(new Random().nextInt(zones.size()));
+    		Player zoneOwner = owner.get(settingZone);
+    		if(numberOfTroopsPerPlayerToPlace.get(zoneOwner) == 0){
+    			ArrayList<Zone> zonesByEquipedPlayer = new ArrayList<Zone>();
+    			for(Zone zone: owner.keySet()) {
+    				if(owner.get(zone) == zoneOwner) {
+    					zonesByEquipedPlayer.add(zone);
+    				}
+    			}
+    			zones.removeAll(zonesByEquipedPlayer);
+    		}
+    		else {
+    			settingZone.setTroops(settingZone.getTroops()+1);
+    			numberOfTotalTroops = numberOfTotalTroops-1;
+    			numberOfTroopsPerPlayerToPlace.put(zoneOwner, numberOfTroopsPerPlayerToPlace.get(zoneOwner)-1);
+    		}
+    	}
+    	return owner;
     }
 }
