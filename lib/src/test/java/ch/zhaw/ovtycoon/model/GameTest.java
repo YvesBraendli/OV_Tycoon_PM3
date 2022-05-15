@@ -1,5 +1,6 @@
 package ch.zhaw.ovtycoon.model;
 
+import ch.zhaw.ovtycoon.Config;
 import ch.zhaw.ovtycoon.Config.PlayerColor;
 import ch.zhaw.ovtycoon.Config.RegionName;
 import ch.zhaw.ovtycoon.data.Player;
@@ -722,6 +723,30 @@ public class GameTest {
 		
 		//Assert
 		assertEquals(expected, actual);	
+	}
+	
+	@Test
+	public void initOwnerList() {
+		//Arrange
+		ArrayList<PlayerColor> colors = new ArrayList<>();
+		colors.add(PlayerColor.BLACK);
+		colors.add(PlayerColor.BLUE);
+		colors.add(PlayerColor.RED);
+		
+		int expectedTroupTotal = colors.size()* Config.TROOPS_PER_PLAYER_AMOUNT.get(colors.size());
+		int expectedTroupPerPlayer = Config.TROOPS_PER_PLAYER_AMOUNT.get(colors.size());
+		int minExpectedZoneAmountPerPlayer = 14;
+		int maxExpectedZoneAmountPerPlayer = 14;
+		
+		//Act
+		testee.initGame(colors);
+		
+		testee.getZonesOwnedbyPlayer(a).stream().;
+		
+		
+		//Assert
+		
+		
 	}
 	
 
