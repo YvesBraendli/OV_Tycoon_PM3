@@ -5,7 +5,7 @@ import ch.zhaw.ovtycoon.gui.model.Action;
 import ch.zhaw.ovtycoon.gui.model.CustomTimeline;
 import ch.zhaw.ovtycoon.gui.model.HorizontalStripe;
 import ch.zhaw.ovtycoon.gui.model.MapModel;
-import ch.zhaw.ovtycoon.gui.model.Notification;
+import ch.zhaw.ovtycoon.gui.model.customnodes.Notification;
 import ch.zhaw.ovtycoon.gui.model.NotificationType;
 import ch.zhaw.ovtycoon.gui.model.Pixel;
 import ch.zhaw.ovtycoon.gui.model.ZoneSquare;

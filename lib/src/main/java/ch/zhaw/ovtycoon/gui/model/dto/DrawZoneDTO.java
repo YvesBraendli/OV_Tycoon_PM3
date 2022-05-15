@@ -3,6 +3,9 @@ package ch.zhaw.ovtycoon.gui.model.dto;
 import ch.zhaw.ovtycoon.gui.model.ZoneSquare;
 import javafx.scene.paint.Color;
 
+/**
+ * DTO for drawing a certain zone in a certain color
+ */
 public class DrawZoneDTO {
     private final ZoneSquare zoneToDraw;
     private final Color color;

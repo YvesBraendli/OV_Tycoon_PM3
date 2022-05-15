@@ -1,5 +1,8 @@
 package ch.zhaw.ovtycoon.gui.model.dto;
 
+/**
+ * DTO for the initialization of a text node with the troop amount of a certain zone
+ */
 public class ZoneTroopAmountInitDTO extends ZoneTroopAmountDTO {
     private final int translateX;
     private final int translateY;

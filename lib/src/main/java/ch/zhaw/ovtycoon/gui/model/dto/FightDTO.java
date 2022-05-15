@@ -1,5 +1,9 @@
 package ch.zhaw.ovtycoon.gui.model.dto;
 
+/**
+ * DTO for passing information about a fight between {@link ch.zhaw.ovtycoon.gui.MapController}
+ * and {@link ch.zhaw.ovtycoon.gui.model.MapModel}
+ */
 public class FightDTO {
     private boolean attackerWon;
     private boolean overTookRegion;

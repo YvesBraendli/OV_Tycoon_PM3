@@ -1,5 +1,8 @@
 package ch.zhaw.ovtycoon.gui.model;
 
+/**
+ * Representation of a pixel with a x and y coordinate.
+ */
 public class Pixel {
     private final int x;
     private final int y;

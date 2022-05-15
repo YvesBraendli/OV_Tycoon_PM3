@@ -1,5 +1,8 @@
 package ch.zhaw.ovtycoon.gui.model.dto;
 
+/**
+ * DTO for the properties of a zone tooltip
+ */
 public class TooltipDTO {
     private final int translateX;
     private final int translateY;

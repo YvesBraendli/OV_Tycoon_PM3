@@ -5,12 +5,20 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Polygon;
 
+/**
+ * Tooltip for displaying the name of a zone.
+ * Extends {@link VBox}. Has a predefined width {@link #TOOLTIP_WIDTH},
+ * height {@link #TOOLTIP_HEIGHT} and triangle side length {@link #TRIANGLE_SIDE_LENGTH}.
+ */
 public class ZoneTooltip extends VBox {
     private static final double TOOLTIP_WIDTH = 60.0d;
     private static final double TOOLTIP_HEIGHT = 15.0d;
     private static final double TRIANGLE_SIDE_LENGTH = 10.0d;
 
-
+    /**
+     * Creates an instance of the zone tooltip and sets the text of its label to the passed value.
+     * @param text Text to be shown in the tooltip
+     */
     public ZoneTooltip(String text) {
         setWidth(TOOLTIP_WIDTH);
         setHeight(TOOLTIP_HEIGHT);

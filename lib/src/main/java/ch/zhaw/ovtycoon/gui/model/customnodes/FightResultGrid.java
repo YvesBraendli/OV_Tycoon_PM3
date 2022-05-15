@@ -7,14 +7,24 @@ import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 
-
+/**
+ * Grid displaying the result of a dice roll.
+ * Extends {@link GridPane}
+ */
 public class FightResultGrid extends GridPane {
+    private final int[] attackerDiceRolls;
+    private final int[] defenderDiceRolls;
     private double width = 500.0d;
     private double height = 200.0d;
     private double scale = 1.0d;
-    private final int[] attackerDiceRolls;
-    private final int[] defenderDiceRolls;
 
+    /**
+     * Creates an instance of the fight result grid. Scales the grid if necessary.
+     *
+     * @param attackerDiceRolls values of the dice rolled by the attacker
+     * @param defenderDiceRolls values of the dice rolled by the defender
+     * @param scale             factor to which the grid should be scaled.
+     */
     public FightResultGrid(int[] attackerDiceRolls, int[] defenderDiceRolls, double scale) {
         this.attackerDiceRolls = attackerDiceRolls;
         this.defenderDiceRolls = defenderDiceRolls;

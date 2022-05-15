@@ -2,6 +2,9 @@ package ch.zhaw.ovtycoon.gui.model.dto;
 
 import ch.zhaw.ovtycoon.gui.model.ZoneSquare;
 
+/**
+ * DTO for the reinforcement action
+ */
 public class ReinforcementDTO {
     private final ZoneSquare zoneSquare;
     private final int maxPlacableTroopAmount;
