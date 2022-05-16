@@ -83,15 +83,15 @@ public class StartWindowController {
     void openLoadWindow(){
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/LoadWindow.fxml"));
+            LoadWindowController loadWindowController = new LoadWindowController(true);
+            fxmlLoader.setController(loadWindowController);
             Pane rootPane = fxmlLoader.load();
 
-            LoadWindowController loadWindowController = new LoadWindowController(true);
             Scene scene = new Scene(rootPane);
             Stage selectPlayerWindow = new Stage();
 
-            LoadWindowController loaderController = fxmlLoader.getController();
-            loaderController.setParentSceneGraph(rootPane);
-            loaderController.setParentSceneGraph(parentSceneGraph);
+            loadWindowController.setParentSceneGraph(rootPane);
+            loadWindowController.setParentSceneGraph(parentSceneGraph);
 
             selectPlayerWindow.setScene(scene);
             selectPlayerWindow.setTitle("Loading...");

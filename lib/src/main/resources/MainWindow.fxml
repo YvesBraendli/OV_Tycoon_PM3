@@ -10,20 +10,20 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="969.0" prefWidth="1027.0" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ch.zhaw.ovtycoon.gui.controller.MainWindowController">
+<AnchorPane prefHeight="969.0" prefWidth="1027.0" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1">
    <children>
       <ImageView fitHeight="969.0" fitWidth="1027.0" pickOnBounds="true" preserveRatio="true">
          <image>
             <Image url="@Image/MainWindowBackground.png" />
          </image>
       </ImageView>
-      <Button fx:id="SaveButton" layoutX="135.0" layoutY="874.0" mnemonicParsing="false" onMouseClicked="#saveGame" prefHeight="46.0" prefWidth="45.0" text="Save" />
+      <Button fx:id="SaveButton" layoutX="135.0" layoutY="874.0" mnemonicParsing="false" prefHeight="46.0" prefWidth="45.0" text="Save" />
       <Button fx:id="actionBtn" layoutX="602.0" layoutY="884.0" mnemonicParsing="false" prefHeight="46.0" prefWidth="113.0" text="Action" textAlignment="CENTER" textOverrun="WORD_ELLIPSIS">
          <font>
             <Font name="System Bold" size="17.0" />
          </font>
       </Button>
-      <Button fx:id="nextMoveBtn" layoutX="474.0" layoutY="864.0" mnemonicParsing="false" onMouseClicked="#doAction" prefHeight="65.0" prefWidth="79.0" text="Action" textAlignment="CENTER" textOverrun="WORD_ELLIPSIS">
+      <Button fx:id="nextMoveBtn" layoutX="474.0" layoutY="864.0" mnemonicParsing="false" prefHeight="65.0" prefWidth="79.0" text="Action" textAlignment="CENTER" textOverrun="WORD_ELLIPSIS">
          <font>
             <Font name="System Bold" size="17.0" />
          </font>
@@ -49,6 +49,6 @@
             </StackPane>
          </children>
       </VBox>
-      <Button fx:id="CloseButton" layoutX="61.0" layoutY="874.0" mnemonicParsing="false" onMouseClicked="#closeGame" prefHeight="46.0" prefWidth="45.0" text="Close" />
+      <Button fx:id="CloseButton" layoutX="61.0" layoutY="874.0" mnemonicParsing="false" prefHeight="46.0" prefWidth="45.0" text="Close" />
    </children>
 </AnchorPane>

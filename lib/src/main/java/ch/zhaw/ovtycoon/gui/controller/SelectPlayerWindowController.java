@@ -73,9 +73,10 @@ public class SelectPlayerWindowController {
     private void openLoadWindow(){
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/LoadWindow.fxml"));
+            LoadWindowController loadWindowController = new LoadWindowController(listOfPlayer);
+            fxmlLoader.setController(loadWindowController);
             Pane rootPane = fxmlLoader.load();
 
-            LoadWindowController loadWindowController = new LoadWindowController(listOfPlayer);
             Scene scene = new Scene(rootPane);
             Stage loadWindow = new Stage();
 

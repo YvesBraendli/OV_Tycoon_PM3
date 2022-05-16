@@ -1,11 +1,12 @@
 package ch.zhaw.ovtycoon.model;
 
+import java.io.Serializable;
 import java.util.HashMap;
 
 import ch.zhaw.ovtycoon.Config;
 import jdk.jshell.spi.ExecutionControl;
 
-public class TroopHandler {
+public class TroopHandler implements Serializable {
     private int numberOfTroopsPerPlayer;
 
     public TroopHandler(int numberOfPlayers) {

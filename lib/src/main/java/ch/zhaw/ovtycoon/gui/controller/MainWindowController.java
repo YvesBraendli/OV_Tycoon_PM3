@@ -19,6 +19,8 @@ import ch.zhaw.ovtycoon.gui.model.dto.ReinforcementDTO;
 import ch.zhaw.ovtycoon.gui.model.dto.ZoneTroopAmountDTO;
 import ch.zhaw.ovtycoon.gui.model.dto.ZoneTroopAmountInitDTO;
 import ch.zhaw.ovtycoon.gui.service.ColorService;
+import ch.zhaw.ovtycoon.gui.service.GameStateService;
+import ch.zhaw.ovtycoon.model.Game;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
@@ -28,7 +30,6 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.Parent;
 import javafx.scene.Parent;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -110,13 +111,17 @@ public class MainWindowController {
     private HBox buttonHBox;
     @FXML
     private HBox upperHBox;
+    @FXML
+    private Button CloseButton;
+    @FXML
+    private Button SaveButton;
     private Timeline highlightClickableZonesTl = new Timeline();
     private PixelWriter pw;
     private PixelWriter mapPw;
     private Map<String, List<Pixel>> overlaidPixelsByZone = new HashMap<>();
     private ColorService colorService = new ColorService();
     private Parent parentSceneGraph;
-
+    private GameStateService gameStateService = new GameStateService();
 
     /**
      * Creates an instance of the controller with the passed model.
@@ -124,7 +129,12 @@ public class MainWindowController {
      *
      * @param mapModel MapModel to be used by the controller
      */
-    public MapController(MapModel mapModel) {
+    public MainWindowController(MapModel mapModel) {
+        this.mapModel = mapModel;
+        this.scale = mapModel.getScale();
+    }
+
+    public MainWindowController(MapModel mapModel, Game gameToLoad) {
         this.mapModel = mapModel;
         this.scale = mapModel.getScale();
     }
@@ -149,6 +159,8 @@ public class MainWindowController {
             mapModel.nextAction();
         });
         actionBtn.setOnMouseClicked(event -> onActionButtonClick());
+        SaveButton.setOnMouseClicked(event -> saveGame());
+        CloseButton.setOnMouseClicked(event -> closeGame());
         nextMoveBtn.disableProperty().bind(showingAnimation.or(showingPopup).or(gameWon));
         actionBtn.visibleProperty().bind(mapModel.actionButtonVisibleProperty().or(gameWon));
         actionBtn.disableProperty().bind(mapModel.actionButtonDisabledProperty().or(mapModel.sourceOrTargetNullProperty()).or(clickedActionButton));
@@ -276,8 +288,6 @@ public class MainWindowController {
      * Rescales the zones map view based on {@link #scale}
      */
     private void rescale() {
-        upperHBox.setPrefHeight(upperHBox.getPrefHeight() * scale);
-        upperHBox.setPrefWidth(upperHBox.getPrefWidth() * scale);
         mapVBox.setPrefHeight(mapVBox.getPrefHeight() * scale);
         mapVBox.setPrefWidth(mapVBox.getPrefWidth() * scale);
         imgView.setFitHeight(imgView.getFitHeight() * scale);
@@ -296,7 +306,6 @@ public class MainWindowController {
         labelStackPane.setMinWidth(labelStackPane.getMinWidth() * scale);
         playersVBox.setPrefHeight(playersVBox.getPrefHeight() * scale);
         playersVBox.setPrefWidth(playersVBox.getPrefWidth() * scale);
-        buttonHBox.setPrefWidth(buttonHBox.getPrefWidth() * scale);
     }
 
     /**
@@ -890,7 +899,7 @@ public class MainWindowController {
     }
 
     public void saveGame(){
-
+        this.gameStateService.saveGameState(mapModel.getRisikoController().getGame());
     }
 
     public void doAction(){

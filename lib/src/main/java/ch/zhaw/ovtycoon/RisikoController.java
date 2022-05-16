@@ -4,6 +4,7 @@ import ch.zhaw.ovtycoon.Config.PlayerColor;
 import ch.zhaw.ovtycoon.Config.RegionName;
 import ch.zhaw.ovtycoon.data.DiceRoll;
 import ch.zhaw.ovtycoon.gui.model.Action;
+import ch.zhaw.ovtycoon.gui.service.GameStateService;
 import ch.zhaw.ovtycoon.model.Game;
 import ch.zhaw.ovtycoon.data.Player;
 import ch.zhaw.ovtycoon.model.Zone;
@@ -12,6 +13,7 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,7 +25,8 @@ import java.util.List;
 public class RisikoController{
 
 	private Game game;
-	
+
+
 	/**
 	 * Constructor of Interface, instantiates game with number of Players
 	 * @param numberOfPlayers - amount of players that will play the game
@@ -31,6 +34,11 @@ public class RisikoController{
 	public RisikoController(ArrayList<PlayerColor> colors) {
 		game = new Game();
     	game.initGame(colors);
+	}
+
+	public RisikoController() {
+		this.game = new GameStateService().loadGameState();
+		this.game.initializeProperties();
 	}
 
 	/**
@@ -113,6 +121,8 @@ public class RisikoController{
 	 * @return the current player by color
 	 */
     public PlayerColor getCurrentPlayer() {
+		System.out.println(game);
+		System.out.println(game.getCurrentPlayer());
     	return game.getCurrentPlayer().getColor();
     }
     
@@ -365,6 +375,10 @@ public class RisikoController{
 	 */
 	public RegionName getRegionOfZone(String zoneName) {
 		return game.getRegionOfZone(game.getZone(zoneName));
+	}
+
+	public Game getGame() {
+		return game;
 	}
 
 	// ---------------------------------------------------------------------------------------------------------

@@ -4,9 +4,9 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane prefHeight="275.0" prefWidth="393.0" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ch.zhaw.ovtycoon.gui.controller.LoadWindowController">
+<AnchorPane prefHeight="275.0" prefWidth="393.0" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1">
    <children>
-      <ImageView fitHeight="311.0" fitWidth="428.0" layoutX="-4.0" onMouseClicked="#moveTram" pickOnBounds="true" preserveRatio="true">
+      <ImageView fitHeight="311.0" fitWidth="428.0" layoutX="-4.0" pickOnBounds="true" preserveRatio="true">
          <image>
             <Image url="@Image/Loading.png" />
          </image>

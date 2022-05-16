@@ -17,18 +17,27 @@ import java.util.Map.Entry;
 
 public class Game implements Serializable {
 	private final Action[] actions = {Action.DEFEND, Action.ATTACK, Action.MOVE};
-	private final SimpleObjectProperty<PlayerColor> fightWinner = new SimpleObjectProperty<>(null);
-	private final SimpleBooleanProperty zoneOvertaken = new SimpleBooleanProperty(false);
-	private final SimpleObjectProperty<Player> currentPlayerProperty = new SimpleObjectProperty<>(null);
-	private final SimpleObjectProperty<Region> regionOwnerChange = new SimpleObjectProperty<>(null);
+	private transient SimpleObjectProperty<PlayerColor> fightWinner = new SimpleObjectProperty<>(null);
+	private transient SimpleBooleanProperty zoneOvertaken = new SimpleBooleanProperty(false);
+	private transient SimpleObjectProperty<Player> currentPlayerProperty = new SimpleObjectProperty<>(null);
+	private transient SimpleObjectProperty<Region> regionOwnerChange = new SimpleObjectProperty<>(null);
 	private HashMap<Config.RegionName, ArrayList<Zone>> gameMap;
 	private HashMap<Zone, Player> zoneOwner = new HashMap<Zone,Player>();
 	private Player[] players;
 	private int currentPlayerIndex;
 	private TroopHandler troopHandler;
-	private ObjectProperty<PlayerColor> eliminatedPlayer;
-	private ObjectProperty<PlayerColor> newRegionOwner;
+	private transient ObjectProperty<PlayerColor> eliminatedPlayer;
+	private transient ObjectProperty<PlayerColor> newRegionOwner;
 	private int currentActionIndex = 0;
+
+	public void initializeProperties() {
+		fightWinner = new SimpleObjectProperty<>(null);
+		zoneOvertaken = new SimpleBooleanProperty(false);
+		currentPlayerProperty = new SimpleObjectProperty<>(null);
+		regionOwnerChange = new SimpleObjectProperty<>(null);
+		eliminatedPlayer = new SimpleObjectProperty<>(null);
+		newRegionOwner = new SimpleObjectProperty<>(null);
+	}
 
 	/**
 	 * Initializes the gameMap and creates players with their corresponding colors

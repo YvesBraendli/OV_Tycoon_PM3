@@ -1,14 +1,17 @@
 package ch.zhaw.ovtycoon.gui.controller;
 
 
+import ch.zhaw.ovtycoon.gui.model.MapModel;
 import javafx.animation.TranslateTransition;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import java.io.IOException;
@@ -24,16 +27,12 @@ public class LoadWindowController {
     @FXML
     private Button startButton;
 
+    private boolean loadGame = false;
 
-    public LoadWindowController(){
-    }
+
 
     public LoadWindowController(boolean isLoadingGame){
-        if(isLoadingGame){
-            System.out.println("LOADING");
-            //initRisikoControler //TODO
-            //loading
-        }
+        this.loadGame = isLoadingGame;
     }
     public LoadWindowController( ArrayList listOfPlayers){
             System.out.println(listOfPlayers.size());
@@ -60,17 +59,22 @@ public class LoadWindowController {
 
     private void openMainWindow(){
         try {
+
+            double scale = Screen.getPrimary().getBounds().getHeight() < 1000.0d ? 0.7d : 1.0d;
+            Image mapImage = new Image(getClass().getClassLoader().getResource("zvv_zones_v11.png").toExternalForm());
+            MapModel mapModel = loadGame ? new MapModel(mapImage, scale, true) : new MapModel(mapImage, scale);
+            MainWindowController mainWindowController = new MainWindowController(mapModel);
+
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/MainWindow.fxml"));
+            fxmlLoader.setController(mainWindowController);
             Pane rootPane = fxmlLoader.load();
+            mainWindowController.setParentSceneGraph(rootPane);
+            mainWindowController.setParentSceneGraph(parentSceneGraph);
 
             Scene scene = new Scene(rootPane);
             scene.getStylesheets().add(getClass().getClassLoader().getResource("map-styles.css").toExternalForm());
 
             Stage mainWindow = new Stage();
-
-            MainWindowController mainWindowController = fxmlLoader.getController();
-            mainWindowController.setParentSceneGraph(rootPane);
-            mainWindowController.setParentSceneGraph(parentSceneGraph);
 
             mainWindow.setScene(scene);
             mainWindow.setTitle("OV-Tycoon");
