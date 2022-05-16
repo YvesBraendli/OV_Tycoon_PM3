@@ -21,15 +21,31 @@ public class GameTest {
 	@Before
 	public void init() {
 		testee = new Game();
-		testee.initGame(3);
-		initPlayer();
+		ArrayList<PlayerColor> colors = new ArrayList<>();
+		colors.add(PlayerColor.BLACK);
+		colors.add(PlayerColor.BLUE);
+		colors.add(PlayerColor.RED);
+
+		testee.initGame(colors);
+
+		a = testee.getPlayer(PlayerColor.BLACK);
+		b = testee.getPlayer(PlayerColor.BLUE);
+		c = testee.getPlayer(PlayerColor.RED);
+		clearBoard(colors);
+		//initPlayer();
+	}
+
+	private void clearBoard(ArrayList<PlayerColor> colors) {
+		for(PlayerColor c : colors)
+		for(Zone zone: testee.getZonesOwnedbyPlayer(testee.getPlayer(c))) {
+			zone.setTroops(0);
+			testee.setZoneOwner(null, zone);
+		}
 	}
 	
 	private void initPlayer() {
 
-		a = new Player("a");
-		b = new Player("b");
-		c = new Player("c");
+
 		a.setColor(PlayerColor.BLACK);
 		b.setColor(PlayerColor.BLUE);
 		c.setColor(PlayerColor.RED);
@@ -45,35 +61,35 @@ public class GameTest {
 		testee.initPlayers(colors);
 	}
 
-	@Test
-	public void initPlayers_twoColorButThreePlayersExpected(){
-		// Arrange
-		testee = new Game();
-		testee.initGame(3);
-
-		ArrayList<PlayerColor> colors = new ArrayList<>();
-		colors.add(PlayerColor.BLACK);
-		colors.add(PlayerColor.BLUE);
-
-		// Act + Assert
-		assertThrows(IllegalArgumentException.class, () -> testee.initPlayers(colors));
-	}
+//	@Test redundant because of change to game init
+//	public void initPlayers_twoColorButThreePlayersExpected(){
+//		// Arrange
+//		testee = new Game();
+//
+//
+//		ArrayList<PlayerColor> colors = new ArrayList<>();
+//		colors.add(PlayerColor.BLACK);
+//		colors.add(PlayerColor.BLUE);
+//
+//		// Act + Assert
+//		assertThrows(IllegalArgumentException.class, () -> testee.initGame(colors));
+//	}
 
 	@Test
 	public void initPlayers_invalidArgument_null(){
 		// Arrange
 		testee = new Game();
-		testee.initGame(3);
+
 
 		// Act + Assert
-		assertThrows(IllegalArgumentException.class, () -> testee.initPlayers(null));
+		assertThrows(IllegalArgumentException.class, () -> testee.initGame(null));
 	}
 
 	@Test
 	public void initPlayers_correctArguments(){
 		// Arrange
 		testee = new Game();
-		testee.initGame(3);
+
 
 		ArrayList<PlayerColor> colors = new ArrayList<>();
 		colors.add(PlayerColor.BLACK);
@@ -81,7 +97,7 @@ public class GameTest {
 		colors.add(PlayerColor.RED);
 
 		// Act
-		testee.initPlayers(colors);
+		testee.initGame(colors);
 
 		// Arrange
 		assertEquals(PlayerColor.RED, testee.getPlayer(PlayerColor.RED).getColor());
@@ -706,6 +722,50 @@ public class GameTest {
 		//Assert
 		assertEquals(expected, actual);	
 	}
+
+	@Test
+	public void initOwnerList() {
+		//Arrange
+		ArrayList<PlayerColor> colors = new ArrayList<>();
+		colors.add(PlayerColor.BLACK);
+		colors.add(PlayerColor.BLUE);
+		colors.add(PlayerColor.RED);
+
+		int expectedTroupTotal = colors.size()* Config.TROOPS_PER_PLAYER_AMOUNT.get(colors.size());
+		int expectedTroupPerPlayer = Config.TROOPS_PER_PLAYER_AMOUNT.get(colors.size());
+		int minExpectedZoneAmountPerPlayer = 14;
+		int maxExpectedZoneAmountPerPlayer = 15;
+
+		//Act
+		testee.initGame(colors);
+		a = testee.getPlayer(PlayerColor.BLACK);
+		b = testee.getPlayer(PlayerColor.BLUE);
+		c = testee.getPlayer(PlayerColor.RED);
+		int actualTroupPlayera = 0;
+		int actualTroupPlayerb = 0;
+		int actualTroupPlayerc = 0;
+		int actualNumZonesa = 0;
+		int actualNumZonesb = 0;
+		int actualNumZonesc = 0;
+
+		for(Zone zone : testee.getZonesOwnedbyPlayer(a)) {actualTroupPlayera += zone.getTroops(); actualNumZonesa += 1; }
+		for(Zone zone : testee.getZonesOwnedbyPlayer(b)) {actualTroupPlayerb += zone.getTroops(); actualNumZonesb += 1;}
+		for(Zone zone : testee.getZonesOwnedbyPlayer(c)) {actualTroupPlayerc += zone.getTroops(); actualNumZonesc += 1;}
+
+		int actualTroupTotal = actualTroupPlayera + actualTroupPlayerb + actualTroupPlayerc;
+
+
+		//Assert
+		assertEquals(expectedTroupTotal, actualTroupTotal);
+		assertTrue(expectedTroupPerPlayer == actualTroupPlayera);
+		assertTrue(expectedTroupPerPlayer == actualTroupPlayerb);
+		assertTrue(expectedTroupPerPlayer == actualTroupPlayerc);
+
+		assertTrue(minExpectedZoneAmountPerPlayer <= actualNumZonesa && actualNumZonesa <= maxExpectedZoneAmountPerPlayer);
+		assertTrue(minExpectedZoneAmountPerPlayer <= actualNumZonesb && actualNumZonesb <= maxExpectedZoneAmountPerPlayer);
+		assertTrue(minExpectedZoneAmountPerPlayer <= actualNumZonesc && actualNumZonesc <= maxExpectedZoneAmountPerPlayer);
+	}
+
 
 	private ArrayList<Zone> createNeighboursManually(){
 		ArrayList<Zone> neighbours = new ArrayList<>();

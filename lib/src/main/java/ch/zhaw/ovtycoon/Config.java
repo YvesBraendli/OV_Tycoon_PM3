@@ -1,6 +1,9 @@
 package ch.zhaw.ovtycoon;
 
 import java.io.Serializable;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class Config  implements Serializable {
@@ -11,11 +14,21 @@ public class Config  implements Serializable {
 	public static final int REGION_BONUS = 2;
 	public static final int MAX_PLAYERS = 6;
 	public static final int MIN_PLAYERS = 2;
-	public static final int NUMBER_OF_ZONES = 42;
+	public static final int NUMBER_OF_ZONES = 43;
 	public static final int NUMBER_OF_REGIONS = 5;
 	public static final int NUMBER_OF_TROOPS_TOTAL_IN_GAME = 80;
 	public static final int MIN_NUMBER_OF_TROOPS_IN_ZONE = 1;
 	public static final int MIN_NUMBER_OF_REINFORCEMENTS = 3;
+	
+	public static final Map<Integer, Integer> TROOPS_PER_PLAYER_AMOUNT;
+	static {
+		Map<Integer, Integer> m = new HashMap<Integer, Integer>();
+		m.put(2, 55);
+		m.put(3, 35);
+		m.put(4, 30);
+		m.put(5, 25);
+		TROOPS_PER_PLAYER_AMOUNT = Collections.unmodifiableMap(m);
+	}
 	
 	public enum RegionName{
 		Unterland("Unterland"),

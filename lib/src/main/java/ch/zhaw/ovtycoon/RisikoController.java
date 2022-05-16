@@ -27,9 +27,9 @@ public class RisikoController{
 	 * Constructor of Interface, instantiates game with number of Players
 	 * @param numberOfPlayers - amount of players that will play the game
 	 */
-	public RisikoController(int numberOfPlayers) {
+	public RisikoController(ArrayList<PlayerColor> colors) {
 		game = new Game();
-    	game.initGame(numberOfPlayers);
+    	game.initGame(colors);
 	}
 
 	/**
