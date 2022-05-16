@@ -124,7 +124,7 @@ public class MainWindowController {
      *
      * @param mapModel MapModel to be used by the controller
      */
-    public MapController(MapModel mapModel) {
+    public MainWindowController(MapModel mapModel) {
         this.mapModel = mapModel;
         this.scale = mapModel.getScale();
     }

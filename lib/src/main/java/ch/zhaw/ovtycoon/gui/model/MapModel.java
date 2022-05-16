@@ -38,13 +38,13 @@ import static ch.zhaw.ovtycoon.Config.PlayerColor.RED;
 
 /**
  * Model for the zone map and the main view.
- * Has properties used by the {@link ch.zhaw.ovtycoon.gui.MapController} to update the view.
+ * Has properties used by the {@link ch.zhaw.ovtycoon.gui.controller.MainWindowController} to update the view.
  */
 public class MapModel {
     private final List<ZoneSquare> zoneSquares;
     private final MapLoaderService mapLoaderService;
     private final ColorService colorService;
-    private final RisikoController risikoController;
+    private RisikoController risikoController;
     private final SimpleBooleanProperty sourceOrTargetNull = new SimpleBooleanProperty(true);
     private final SimpleBooleanProperty actionButtonVisible = new SimpleBooleanProperty(false);
     private final SimpleObjectProperty<Config.PlayerColor> currPlayer; // TODO remove default value after player init view merged
@@ -77,8 +77,6 @@ public class MapModel {
     private ZoneSquare source = null;
     private ZoneSquare target = null;
     private TooltipDTO currHovered = null;
-    private final TestBackend testBackend = new TestBackend();
-    private final Scenario scenarioToBeTested = Scenario.PLAYER_ELIMINATED; // Only for initializing the zones and players to test certain scenarios, e.g. win game
 
     /**
      * Creates an instance of the map model. Initializes {@link #zoneSquares} depending on the
@@ -101,6 +99,11 @@ public class MapModel {
         risikoController = new RisikoController(playersForTesting);
     }
 
+    /**
+     * Sets the initial values of {@link #currPlayer} and {@link #showActionChange}.
+     * Colors all zones in the player color of the player they are owned by. Sets the troop amount of all
+     * zones to the values provided by {@link #risikoController}.
+     */
     public void setInitialValues() {
         hoverableZones = new ArrayList<>(zoneSquares);
         drawZonesInPlayerColors();
@@ -465,18 +468,6 @@ public class MapModel {
 
             sourceOrTargetNull.set(source == null || target == null);
         }
-    }
-
-    /**
-     * Sets the initial values of {@link #currPlayer} and {@link #showActionChange}.
-     * Colors all zones in the player color of the player they are owned by. Sets the troop amount of all
-     * zones to the values provided by {@link #risikoController}.
-     */
-    public void setInitialValues() {
-        addPlayerColorsToZones();
-        initTroopAmountText();
-        currPlayer.set(risikoController.getCurrentPlayer());
-        showActionChange.set(risikoController.getAction().getActionName());
     }
 
     /**
