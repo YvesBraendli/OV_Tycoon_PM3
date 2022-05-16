@@ -1,6 +1,6 @@
 package ch.zhaw.ovtycoon.model;
 
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -20,12 +20,14 @@ public class TroopHandlerTest {
     private int troopUnitsToMove;
     private int oddBigPlayerNumber;
     private int evenBigPlayerNumber;
+    private int reinforcements;
 
     @Before
     public void init() {
         troopUnitsToMove = 5;
         oddBigPlayerNumber = 15;
         evenBigPlayerNumber = 16;
+        reinforcements = 5;
         troopHandlerTestOnePlayer = new TroopHandler(1);
         gameInstance = new Game();
         ArrayList<PlayerColor> colors = new ArrayList<>();
@@ -47,7 +49,7 @@ public class TroopHandlerTest {
 	}
 
     @Test
-    public void movedRigthAmountsOfUnits() {
+    public void movedRightAmountsOfUnits() {
         //Arrange
         int troopsUnitsAfterMovementInOriginZone = gameInstance.getZone("Zone140").getTroops() - troopUnitsToMove;
         int troopsUnitsAfterMovementInTargetZone = gameInstance.getZone("Zone141").getTroops() + troopUnitsToMove;
@@ -84,8 +86,6 @@ public class TroopHandlerTest {
     }
 
     @Test
-
-
     public void unitDistributionWithOddBigPlayerNumberRight() {
         //Arrange
         int numberOfTroopsPerPlayer = Config.NUMBER_OF_TROOPS_TOTAL_IN_GAME / oddBigPlayerNumber;
@@ -105,5 +105,18 @@ public class TroopHandlerTest {
 
     private void fillTroopUnitsInZone(Zone zone) {
         zone.setTroops(numberOfTroopsInZone);
+    }
+
+    @Test
+    public void reinforcedCorrectly() {
+        Zone zone = gameInstance.getZone("Zone140");
+        int troopsBeforeReinforcement = zone.getTroops();
+
+        gameInstance.reinforce(reinforcements, zone);
+
+        int expectedResult = troopsBeforeReinforcement + reinforcements;
+        int actualResult = zone.getTroops();
+
+        assertEquals(expectedResult, actualResult);
     }
 }
