@@ -17,6 +17,10 @@ public class Zone implements Serializable {
 		alreadyVisited = false;
 	}
 
+	public void addTroops(int amount){
+		this.troops += amount;
+	}
+
 	public boolean getAlreadyVisited(){
 		return alreadyVisited;
 	}
