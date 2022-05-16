@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane fx:id="SelectPlayerPane" prefHeight="350.0" prefWidth="1024.0" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ch.zhaw.ovtycoon.gui.controller.SelectPlayerWindowController">
+   <children>
+      <ImageView fitHeight="350.0" fitWidth="1024.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@Image/choose_player.png" />
+         </image>
+      </ImageView>
+      <ImageView fx:id="playerBlack" fitHeight="150.0" fitWidth="100.0" layoutX="80.0" layoutY="55.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@player_black.png" />
+         </image>
+      </ImageView>
+      <ImageView fx:id="playerBlue" fitHeight="150.0" fitWidth="100.0" layoutX="234.0" layoutY="204.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@player_blue.png" />
+         </image>
+      </ImageView>
+      <ImageView fx:id="playerGreen" fitHeight="150.0" fitWidth="100.0" layoutX="380.0" layoutY="215.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@player_green.png" />
+         </image>
+      </ImageView>
+      <ImageView fx:id="playerRed" fitHeight="150.0" fitWidth="100.0" layoutX="519.0" layoutY="215.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@player_red.png" />
+         </image>
+      </ImageView>
+      <ImageView fx:id="playerBrown" fitHeight="150.0" fitWidth="100.0" layoutX="678.0" layoutY="215.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@player_brown.png" />
+         </image>
+      </ImageView>
+      <ImageView fx:id="playerViolet" fitHeight="150.0" fitWidth="100.0" layoutX="850.0" layoutY="62.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@player_violet.png" />
+         </image>
+      </ImageView>
+      <Button fx:id="NextButton" layoutX="868.0" layoutY="272.0" mnemonicParsing="false" onMouseClicked="#doNext" prefHeight="47.0" prefWidth="83.0" text="Next" />
+      <TextField fx:id="infoText" editable="false" layoutX="395.0" layoutY="99.0" prefHeight="25.0" prefWidth="234.0" text="Click on the Player you want to play with!" />
+   </children>
+</AnchorPane>

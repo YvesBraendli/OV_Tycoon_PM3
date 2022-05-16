@@ -2,7 +2,9 @@ package ch.zhaw.ovtycoon.model;
 
 import ch.zhaw.ovtycoon.Config;
 
-public class TroopHandler {
+import java.io.Serializable;
+
+public class TroopHandler implements Serializable {
     private int numberOfTroopsPerPlayer;
 
     public TroopHandler(int numberOfPlayers) {
@@ -17,8 +19,8 @@ public class TroopHandler {
      * @param numberOfTroopUnitsToMove The number of troops, the player desires to move to another zone.
      */
     public void moveUnits(Zone zoneToRemoveUnitsFrom, Zone zoneToMoveUnitsTo,int numberOfTroopUnitsToMove) {
-            zoneToMoveUnitsTo.addTroops(numberOfTroopUnitsToMove);
-            zoneToRemoveUnitsFrom.decreaseZone(numberOfTroopUnitsToMove);
+        zoneToMoveUnitsTo.addTroops(numberOfTroopUnitsToMove);
+        zoneToRemoveUnitsFrom.decreaseZone(numberOfTroopUnitsToMove);
     }
 
     /**

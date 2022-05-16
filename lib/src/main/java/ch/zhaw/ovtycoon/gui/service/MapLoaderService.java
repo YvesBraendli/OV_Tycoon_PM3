@@ -16,6 +16,10 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Provides methods to load all {@link ZoneSquare}'s from the zones.txt configuration file
+ * and the passed image. Calculates the zone square's borders based on the passed scale.
+ */
 public class MapLoaderService {
     // startX, offsetX, startY, offsetY, color, name
     private static final Pattern ZONE_SQUARE_DATA_PATTERN = Pattern.compile("sX=([0-9]+), oX=([0-9]+), sY=([0-9]+), oY=([0-9]+), color=([^,]+), name=([^,]+), center=\\(([0-9]+,[0-9]+)\\);");
@@ -31,6 +35,11 @@ public class MapLoaderService {
         this.scale = scale;
     }
 
+    /**
+     * Reads data from the zones.txt file, calculates the exact borders of the zone squares
+     * and returns a list of zone squares. Takes 1 - 2 seconds to finish.
+     * @return Initialized list with zone squares.
+     */
     public List<ZoneSquare> initZoneSquaresFromConfig() {
         long start = System.currentTimeMillis();
         List<ZoneSquare> zoneSquares = new ArrayList<>();
@@ -69,7 +78,6 @@ public class MapLoaderService {
         return zoneSquares;
     }
 
-    // TODO check if slower bc of scaling
     private List<HorizontalStripe> getXBorderStripes(ZoneConfigDTO zoneConfigDTO) {
         ZoneColor zoneColor = zoneConfigDTO.getColor();
         List<HorizontalStripe> stripes = new ArrayList<>();

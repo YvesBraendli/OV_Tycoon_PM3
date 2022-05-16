@@ -1,5 +1,8 @@
 package ch.zhaw.ovtycoon.gui.model.dto;
 
+/**
+ * DTO for an attack
+ */
 public class AttackDTO {
     private final int maxAttackerTroops;
     private final int maxDefenderTroops;

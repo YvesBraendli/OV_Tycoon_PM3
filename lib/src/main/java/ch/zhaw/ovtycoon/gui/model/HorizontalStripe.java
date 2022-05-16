@@ -1,5 +1,9 @@
 package ch.zhaw.ovtycoon.gui.model;
 
+/**
+ * Representation of a stripe with pixels at a certain y coordinate, starting at
+ * {@link #startX} and ending at {@link #endX}
+ */
 public class HorizontalStripe {
     private int startX;
     private int endX;
