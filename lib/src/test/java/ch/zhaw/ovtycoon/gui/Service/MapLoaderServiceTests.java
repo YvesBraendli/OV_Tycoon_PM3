@@ -71,9 +71,11 @@ public class MapLoaderServiceTests {
         for (ZoneSquare zS: result) {
             List<HorizontalStripe> borders = zS.getBorder();
             for (HorizontalStripe  hS : borders) {
-                int xDiff = Math.abs(hS.getStartX() - hS.getEndX());
-                boolean xIsSet = xDiff >= 0;
-                assertTrue(xIsSet);
+                assertTrue(hS.getStartX() > 0);
+                assertTrue(hS.getEndX() > 0);
+                assertTrue(hS.getY() > 0);
+                int total = hS.getStartX() + hS.getEndX() + hS.getY();
+                assertTrue( total > 5);
             }
         }
     }
