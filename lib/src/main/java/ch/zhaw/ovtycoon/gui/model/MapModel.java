@@ -44,7 +44,7 @@ public class MapModel {
     private final List<ZoneSquare> zoneSquares;
     private final MapLoaderService mapLoaderService;
     private final ColorService colorService;
-    private final RisikoController risikoController;
+    private RisikoController risikoController;
     private final SimpleBooleanProperty sourceOrTargetNull = new SimpleBooleanProperty(true);
     private final SimpleBooleanProperty actionButtonVisible = new SimpleBooleanProperty(false);
     private final SimpleObjectProperty<Config.PlayerColor> currPlayer; // TODO remove default value after player init view merged
@@ -474,48 +474,6 @@ public class MapModel {
         // System.out.println(String.format("Click handling took %d ms", System.currentTimeMillis() - startTime));
     }
 
-    private List<ZoneSquare> getTargets(ZoneSquare sqr) {
-        return risikoController.getValidTargetZoneNames(sqr.getName()).stream()
-                .map(zoneName -> getZsqByName(zoneName)).collect(Collectors.toList());
-    }
-
-    private ZoneSquare getZsqByName(String name) {
-        return zoneSquares.stream().filter(zsq -> name.equals(zsq.getName())).findFirst().orElse(null);
-    }
-
-    public List<ZoneSquare> getClickableZones() {
-        return clickableZones;
-    }
-
-    public SimpleObjectProperty<TooltipDTO> showTooltipProperty() {
-        return showTooltip;
-    }
-
-    public SimpleObjectProperty<Config.PlayerColor> highlightPlayerProperty() {
-        return highlightPlayer;
-    }
-
-    // TODO check if can be omitted
-    public SimpleObjectProperty<TooltipDTO> removeTooltipProperty() {
-        return removeTooltip;
-    }
-
-    public SimpleIntegerProperty moveTroopsProperty() {
-        return moveTroops;
-    }
-
-    public SimpleObjectProperty<DrawZoneDTO> drawZoneProperty() {
-        return drawZone;
-    }
-
-    public SimpleStringProperty gameWinnerProperty() {
-        return gameWinner;
-    }
-
-    public SimpleObjectProperty<MoveTroopsDTO> openMoveTroopsPopupProperty() {
-        return openMoveTroopsPopup;
-    }
-
     /**
      * Sets {@link #showActionChange} to the current action. Sets {@link #currPlayer} to the current player
      * if the player switched after switching the action. Resets {@link #source}, {@link #target}, {@link #sourceOrTargetNull}
@@ -542,26 +500,15 @@ public class MapModel {
         showActionChange.set(risikoController.getAction().getActionName());
     }
 
-    private ZoneSquare getZoneAtCoordinates(int x, int y) {
-        List<ZoneSquare> containsY = this.zoneSquares.stream()
-                .filter(zone ->
-                        zone.getBorder().stream().map(str -> str.getY()).collect(Collectors.toList()).contains(y)
-                ).collect(Collectors.toList());
-        return containsY.stream()
-                .filter(zone -> zone.getBorder().stream()
-                        .anyMatch(st -> st.getY() == y && st.getStartX() <= x && st.getEndX() >= x))
-                .findFirst().orElse(null);
-    }
-
-    private void resetReinforcementDTO() {
-        currentReinforcement = null;
-    }
-
     /**
      * Sets {@link #hoverableZones} to a new array list containing {@link #zoneSquares}.
      */
     public void resetHoverableZones() {
         hoverableZones = new ArrayList<>(zoneSquares);
+    }
+
+    private void resetReinforcementDTO() {
+        currentReinforcement = null;
     }
 
     public List<ZoneSquare> getClickableZones() {
