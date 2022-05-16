@@ -309,7 +309,7 @@ public class Game implements Serializable {
 		if (zone.getTroops()<=1) return neighbourZones; // TODO can ev be removed
 		Player player = getZoneOwner(zone);
 		ArrayList<Zone> zonesOwnedByPlayer = getZonesOwnedbyPlayer(player);
-		neighbourZones = zone.getNeighbours();
+		neighbourZones = new ArrayList<>(zone.getNeighbours());
 		neighbourZones.removeAll(zonesOwnedByPlayer);
 		neighbourZones.trimToSize();
 		return neighbourZones;
