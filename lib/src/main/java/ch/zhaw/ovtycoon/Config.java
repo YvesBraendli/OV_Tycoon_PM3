@@ -1,7 +1,7 @@
 package ch.zhaw.ovtycoon;
 
 import java.io.Serializable;
-import ch.zhaw.ovtycoon.model.Player;
+
 
 public class Config  implements Serializable {
 	public static final int MAX_DICE_VALUE = 6;

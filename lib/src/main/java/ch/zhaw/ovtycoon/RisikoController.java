@@ -5,16 +5,16 @@ import ch.zhaw.ovtycoon.Config.RegionName;
 import ch.zhaw.ovtycoon.data.DiceRoll;
 import ch.zhaw.ovtycoon.gui.model.Action;
 import ch.zhaw.ovtycoon.model.Game;
-import ch.zhaw.ovtycoon.model.Player;
+import ch.zhaw.ovtycoon.data.Player;
 import ch.zhaw.ovtycoon.model.Zone;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.scene.Parent;
+
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+
 
 /**
  * Interface between ÖVTycoon front- and backend
@@ -34,6 +34,22 @@ public class RisikoController{
     	game.initGame(numberOfPlayers);
 	}
 
+
+	/**
+	 * Initializes the players with the chosen colors.
+	 * The Number of Colors need to be the same as the number of players.
+	 * Otherwise, an IllegalArgumentException will be thrown.
+	 * @param colors
+	 * @throws IllegalArgumentException
+	 */
+	public void initPlayers(ArrayList<PlayerColor> colors){
+		 try {
+			 game.initPlayers(colors);
+		 }
+		 catch (IllegalArgumentException e){
+			 throw e;
+		 }
+	}
 
     /**
      * starts a fight, between two zones
