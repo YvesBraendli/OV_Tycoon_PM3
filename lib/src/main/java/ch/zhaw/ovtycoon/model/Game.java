@@ -34,12 +34,20 @@ public class Game implements Serializable {
 	 * Initializes the gameMap and creates players with their corresponding colors
 	 * @param playerAmount number of players
 	 */
-	public void initGame(int playerAmount) {
+	public void initGame(ArrayList<PlayerColor> colors) {
+		if(colors == null){
+			throw new IllegalArgumentException("Number of chosen colors musst be equal to numbers of players.");
+		}
+		
 		MapInitializer mapInit = new MapInitializer();
+
+		players = new Player[colors.size()];
+		initPlayers(colors);
+		
 		gameMap = mapInit.getGameMap();	
-		zoneOwner = mapInit.getOwnerList();
-		players = new Player[playerAmount];
-		troopHandler = new TroopHandler(playerAmount);
+		zoneOwner = mapInit.getOwnerList(players);
+		
+		troopHandler = new TroopHandler(colors.size());
 		eliminatedPlayer = new SimpleObjectProperty<PlayerColor>(null);
 		newRegionOwner = new SimpleObjectProperty<PlayerColor>(null);
 	}
@@ -52,9 +60,6 @@ public class Game implements Serializable {
 	 * @throws IllegalArgumentException
 	 */
 	public void initPlayers(ArrayList<PlayerColor> colors){
-		if(colors == null || colors.size() != players.length){
-			throw new IllegalArgumentException("Number of chosen colors musst be equal to numbers of players.");
-		}
 		for (int i = 0; i < colors.size(); i++){
 			players[i] = new Player(colors.get(i));
 		}
@@ -106,7 +111,38 @@ public class Game implements Serializable {
 	public void moveUnits(Zone from, Zone to, int numberOfTroops) {
 		troopHandler.moveUnits(from, to, numberOfTroops);
 	}
-	
+
+	/**
+	 * calculates the amount of reinforcements a player gets
+	 * amount of reinforcements is defined as follows:
+	 * 	 (#ofZones/3) + (#ofRegions * 2) = #newTroops
+	 *
+	 * min. amount of reinforcement is 3
+	 *
+	 * @return amount of reinforcement
+	 */
+	public int getAmountOfReinforcements(){
+		Player player = players[currentPlayerIndex];
+		int reinforcements = (getZonesOwnedbyPlayer(player).size() / 3)
+				+ (getRegionsOwnedByPlayer(player).size() * 2);
+
+		if(reinforcements >= 3){
+			return reinforcements;
+		}
+		else{
+			return Config.MIN_NUMBER_OF_REINFORCEMENTS;
+		}
+	}
+
+	/**
+	 * Allows current player to add an amount of troops to an owned zone
+	 * @param amount number of troops to add to zone
+	 * @param zone zone to reinforce
+	 */
+	public void reinforce(int amount, Zone zone) {
+		troopHandler.reinforce(amount, zone);
+	}
+
 	/**
 	 * This method is responsible for the initial troop setting, which starts at the beginning of the game.
 	 * It sets one troop of the player in the zone, afterwards it has to be called again for the next player.
@@ -156,6 +192,17 @@ public class Game implements Serializable {
 				return null;
 		}
 		return regionOwner;
+	}
+
+	public ArrayList<RegionName> getRegionsOwnedByPlayer(Player player){
+		ArrayList<RegionName> regionsOwnedByPlayer = new ArrayList<RegionName>();
+		for(RegionName region : gameMap.keySet()){
+			if(getRegionOwner(region) == player){
+				regionsOwnedByPlayer.add(region);
+			}
+		}
+
+		return regionsOwnedByPlayer;
 	}
 	
 	/**
@@ -227,7 +274,7 @@ public class Game implements Serializable {
 	}
 	
 	/**
-	 * Searches for all zones which are oned by a specific player
+	 * Searches for all zones which are owned by a specific player
 	 * @param player to search zones for
 	 * @return ArrayList of the zones owned by the player
 	 */

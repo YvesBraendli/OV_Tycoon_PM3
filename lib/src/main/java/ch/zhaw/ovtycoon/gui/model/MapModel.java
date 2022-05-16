@@ -2,7 +2,6 @@ package ch.zhaw.ovtycoon.gui.model;
 
 import ch.zhaw.ovtycoon.Config;
 import ch.zhaw.ovtycoon.RisikoController;
-import ch.zhaw.ovtycoon.TestBackend;
 import ch.zhaw.ovtycoon.data.DiceRoll;
 import ch.zhaw.ovtycoon.data.Player;
 import ch.zhaw.ovtycoon.gui.model.dto.ActivateZoneDTO;
@@ -10,6 +9,7 @@ import ch.zhaw.ovtycoon.gui.model.dto.AttackDTO;
 import ch.zhaw.ovtycoon.gui.model.dto.DrawZoneDTO;
 import ch.zhaw.ovtycoon.gui.model.dto.FightDTO;
 import ch.zhaw.ovtycoon.gui.model.dto.MoveTroopsDTO;
+import ch.zhaw.ovtycoon.gui.model.dto.ReinforcementAmountDTO;
 import ch.zhaw.ovtycoon.gui.model.dto.ReinforcementDTO;
 import ch.zhaw.ovtycoon.gui.model.dto.TooltipDTO;
 import ch.zhaw.ovtycoon.gui.model.dto.ZoneTroopAmountDTO;
@@ -44,9 +44,10 @@ public class MapModel {
     private final List<ZoneSquare> zoneSquares;
     private final MapLoaderService mapLoaderService;
     private final ColorService colorService;
+    private final RisikoController risikoController;
     private final SimpleBooleanProperty sourceOrTargetNull = new SimpleBooleanProperty(true);
     private final SimpleBooleanProperty actionButtonVisible = new SimpleBooleanProperty(false);
-    private final SimpleObjectProperty<Config.PlayerColor> currPlayer = new SimpleObjectProperty<>(BLUE);
+    private final SimpleObjectProperty<Config.PlayerColor> currPlayer; // TODO remove default value after player init view merged
     private final SimpleStringProperty actionButtonText = new SimpleStringProperty();
     private final SimpleStringProperty showActionChange = new SimpleStringProperty();
     private final SimpleBooleanProperty darkenBackground = new SimpleBooleanProperty();
@@ -67,16 +68,15 @@ public class MapModel {
     private final SimpleObjectProperty<ZoneTroopAmountInitDTO> initializeZoneTroopsText = new SimpleObjectProperty<>();
     private final SimpleObjectProperty<ZoneTroopAmountDTO> updateZoneTroopsText = new SimpleObjectProperty<>();
     private final Color overlayColor = new Color(0.0d, 0.0d, 0.0d, 0.25d);
-    private final TestBackend testBackend = new TestBackend();
-    private final Scenario scenarioToBeTested = Scenario.PLAYER_ELIMINATED; // Only for initializing the zones and players to test certain scenarios, e.g. win game
-    private final double scale;
     private boolean mapClickEnabled = true;
     private List<ZoneSquare> clickableZones = new ArrayList<>();
     private List<ZoneSquare> hoverableZones = new ArrayList<>();
     private ZoneSquare source = null;
     private ZoneSquare target = null;
     private TooltipDTO currHovered = null;
-    private RisikoController risikoController = new RisikoController(3);
+    private final double scale;
+    private final Scenario scenarioToBeTested = Scenario.PLAYER_ELIMINATED; // Only for initializing the zones and players to test certain scenarios, e.g. win game
+    private ReinforcementAmountDTO currentReinforcement = null;
 
     /**
      * Creates an instance of the map model. Initializes {@link #zoneSquares} depending on the
@@ -90,7 +90,33 @@ public class MapModel {
         mapLoaderService = new MapLoaderService(mapImage, scale);
         colorService = new ColorService();
         zoneSquares = mapLoaderService.initZoneSquaresFromConfig();
-        initPlayers();
+        // TODO remove after player init view merged
+        ArrayList<Config.PlayerColor> playersForTesting = new ArrayList<>();
+        playersForTesting.add(RED);
+        playersForTesting.add(BLUE);
+        playersForTesting.add(GREEN);
+        currPlayer = new SimpleObjectProperty<>(playersForTesting.get(playersForTesting.size() - 1));
+        risikoController = new RisikoController(playersForTesting);
+    }
+
+    /**
+     * Sets the initial values of {@link #currPlayer} and {@link #showActionChange}.
+     * Colors all zones in the player color of the player they are owned by. Sets the troop amount of all
+     * zones to the values provided by {@link #risikoController}.
+     */
+    public void setInitialValues() {
+        hoverableZones = new ArrayList<>(zoneSquares);
+        drawZonesInPlayerColors();
+        initTroopAmountText();
+        currPlayer.set(risikoController.getCurrentPlayer());
+        showActionChange.set(risikoController.getAction().getActionName());
+    }
+
+    private void drawZonesInPlayerColors() {
+        zoneSquares.forEach(zone -> {
+            Color zoneColor = colorService.getColor(risikoController.getZoneOwner(zone.getName()).getHexValue());
+            drawZone.set(new DrawZoneDTO(zone, zoneColor));
+        });
     }
 
     /**
@@ -121,9 +147,10 @@ public class MapModel {
      *
      * @return Amount of troops which can be placed during the reinforcement game phase.
      */
-    public int reinforcement() {
-        testBackend.diceThrow();
-        return testBackend.getTroopsToPlace();
+    public int initializeReinforcement() {
+        int reinforcementsReceived = risikoController.getAmountOfReinforcements();
+        currentReinforcement = new ReinforcementAmountDTO(reinforcementsReceived, 0);
+        return reinforcementsReceived;
     }
 
     /**
@@ -133,13 +160,14 @@ public class MapModel {
      * @param zoneSquareName Name of the zone on which the troops should be placed
      * @param amount         Amount of troops to be placed
      */
-    public void placeTroops(String zoneSquareName, int amount) {
+    public void placeReinforcementTroops(String zoneSquareName, int amount) {
         ZoneSquare sqr = getZsqByName(zoneSquareName);
-        if (sqr == null) return;
-        risikoController.updateZoneTroops(zoneSquareName, amount);
+        if (sqr == null || currentReinforcement == null) return;
+        risikoController.reinforce(amount, zoneSquareName);
+        currentReinforcement.addToAmountAlreadyPlaced(amount);
         updateZoneTroopsText.set(new ZoneTroopAmountDTO(zoneSquareName, risikoController.getZoneTroops(zoneSquareName)));
-        testBackend.placeTroops(amount);
-        if (testBackend.finishedPlacingTroops().get()) {
+        if (currentReinforcement.getAmountAlreadyPlaced() == currentReinforcement.getTotalAmount()) {
+            resetReinforcementDTO();
             mapClickEnabled = false;
             hoverableZones = new ArrayList<>();
             nextAction();
@@ -176,7 +204,7 @@ public class MapModel {
         darkenBackground.set(true);
         setZoneActive.set(new ActivateZoneDTO(sqr, overlayColor, false));
         removeTooltip.set(currHovered);
-        return new ReinforcementDTO(sqr, testBackend.getTroopsToPlace());
+        return new ReinforcementDTO(sqr, getPlacableTroopsForReinforcement());
     }
 
     /**
@@ -442,18 +470,50 @@ public class MapModel {
 
             sourceOrTargetNull.set(source == null || target == null);
         }
+        // uncomment for testing
+        // System.out.println(String.format("Click handling took %d ms", System.currentTimeMillis() - startTime));
     }
 
-    /**
-     * Sets the initial values of {@link #currPlayer} and {@link #showActionChange}.
-     * Colors all zones in the player color of the player they are owned by. Sets the troop amount of all
-     * zones to the values provided by {@link #risikoController}.
-     */
-    public void setInitialValues() {
-        addPlayerColorsToZones();
-        initTroopAmountText();
-        currPlayer.set(risikoController.getCurrentPlayer());
-        showActionChange.set(risikoController.getAction().getActionName());
+    private List<ZoneSquare> getTargets(ZoneSquare sqr) {
+        return risikoController.getValidTargetZoneNames(sqr.getName()).stream()
+                .map(zoneName -> getZsqByName(zoneName)).collect(Collectors.toList());
+    }
+
+    private ZoneSquare getZsqByName(String name) {
+        return zoneSquares.stream().filter(zsq -> name.equals(zsq.getName())).findFirst().orElse(null);
+    }
+
+    public List<ZoneSquare> getClickableZones() {
+        return clickableZones;
+    }
+
+    public SimpleObjectProperty<TooltipDTO> showTooltipProperty() {
+        return showTooltip;
+    }
+
+    public SimpleObjectProperty<Config.PlayerColor> highlightPlayerProperty() {
+        return highlightPlayer;
+    }
+
+    // TODO check if can be omitted
+    public SimpleObjectProperty<TooltipDTO> removeTooltipProperty() {
+        return removeTooltip;
+    }
+
+    public SimpleIntegerProperty moveTroopsProperty() {
+        return moveTroops;
+    }
+
+    public SimpleObjectProperty<DrawZoneDTO> drawZoneProperty() {
+        return drawZone;
+    }
+
+    public SimpleStringProperty gameWinnerProperty() {
+        return gameWinner;
+    }
+
+    public SimpleObjectProperty<MoveTroopsDTO> openMoveTroopsPopupProperty() {
+        return openMoveTroopsPopup;
     }
 
     /**
@@ -466,6 +526,9 @@ public class MapModel {
         target = null;
         sourceOrTargetNull.set(true);
         Config.PlayerColor currentPlayerBeforeActionSwitch = risikoController.getCurrentPlayer();
+        if (risikoController.getAction() == Action.DEFEND) {
+            resetReinforcementDTO();
+        }
         risikoController.nextAction();
         Config.PlayerColor playerAfterActionSwitch = risikoController.getCurrentPlayer();
         if (currentPlayerBeforeActionSwitch != playerAfterActionSwitch) {
@@ -477,6 +540,21 @@ public class MapModel {
         mapClickEnabled = false;
         hoverableZones = new ArrayList<>();
         showActionChange.set(risikoController.getAction().getActionName());
+    }
+
+    private ZoneSquare getZoneAtCoordinates(int x, int y) {
+        List<ZoneSquare> containsY = this.zoneSquares.stream()
+                .filter(zone ->
+                        zone.getBorder().stream().map(str -> str.getY()).collect(Collectors.toList()).contains(y)
+                ).collect(Collectors.toList());
+        return containsY.stream()
+                .filter(zone -> zone.getBorder().stream()
+                        .anyMatch(st -> st.getY() == y && st.getStartX() <= x && st.getEndX() >= x))
+                .findFirst().orElse(null);
+    }
+
+    private void resetReinforcementDTO() {
+        currentReinforcement = null;
     }
 
     /**
@@ -631,6 +709,11 @@ public class MapModel {
         return updateZoneTroopsText;
     }
 
+    private int getPlacableTroopsForReinforcement() {
+        if (currentReinforcement == null) return 0;
+        return currentReinforcement.getTotalAmount() - currentReinforcement.getAmountAlreadyPlaced();
+    }
+
     public double getScale() {
         return scale;
     }
@@ -669,15 +752,6 @@ public class MapModel {
     }
 
     // TODO Should happen in backend: methods below will be removed as soon as player initialization is implemented in the backend -------------------------------
-
-    private void initPlayers() {
-        risikoController.getPlayers()[0] = new Player("Player a");
-        risikoController.getPlayers()[0].setColor(RED);
-        risikoController.getPlayers()[1] = new Player("Player b");
-        risikoController.getPlayers()[1].setColor(BLUE);
-        risikoController.getPlayers()[2] = new Player("Player c");
-        risikoController.getPlayers()[2].setColor(GREEN);
-    }
 
     private void addPlayerColorsToZones() {
         Random random = new Random();
