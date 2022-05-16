@@ -19,6 +19,8 @@ public class Main extends Application{
                 startWindowController.setParentSceneGraph(rootPane);
 
                 Scene scene = new Scene(rootPane);
+                scene.getStylesheets().add(getClass().getClassLoader().getResource("start-window-styles.css").toExternalForm());
+
                 primaryStage.setScene(scene);
 
                 primaryStage.setTitle("ÖV-Tycoon");

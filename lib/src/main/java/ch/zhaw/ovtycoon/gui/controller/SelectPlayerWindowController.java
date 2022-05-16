@@ -61,7 +61,6 @@ public class SelectPlayerWindowController {
 
     public void amountOfPlayers(String id) {
         String colour = id.substring(6);
-        infoText.setText("Player " + colour);
         if(listOfPlayer.indexOf(colour) == -1){
             listOfPlayer.add(colour);
             infoText.setText("Player " + colour + " is ready");
@@ -76,6 +75,7 @@ public class SelectPlayerWindowController {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/LoadWindow.fxml"));
             Pane rootPane = fxmlLoader.load();
 
+            LoadWindowController loadWindowController = new LoadWindowController(listOfPlayer);
             Scene scene = new Scene(rootPane);
             Stage loadWindow = new Stage();
 

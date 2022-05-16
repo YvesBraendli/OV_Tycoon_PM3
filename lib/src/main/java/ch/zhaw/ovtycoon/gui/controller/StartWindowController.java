@@ -34,6 +34,7 @@ public class StartWindowController {
     @FXML
     private void initialize(){
         moveFlugzeug();
+        newGameButton.getStyleClass().add("buttonClass");
     }
 
     public void setParentSceneGraph(Parent parentSceneGraph) {
@@ -84,6 +85,7 @@ public class StartWindowController {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/LoadWindow.fxml"));
             Pane rootPane = fxmlLoader.load();
 
+            LoadWindowController loadWindowController = new LoadWindowController(true);
             Scene scene = new Scene(rootPane);
             Stage selectPlayerWindow = new Stage();
 

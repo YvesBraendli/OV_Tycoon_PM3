@@ -12,6 +12,7 @@ import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import java.io.IOException;
+import java.util.ArrayList;
 
 
 public class LoadWindowController {
@@ -24,14 +25,25 @@ public class LoadWindowController {
     private Button startButton;
 
 
+    public LoadWindowController(){
+    }
+
+    public LoadWindowController(boolean isLoadingGame){
+        if(isLoadingGame){
+            System.out.println("LOADING");
+            //initRisikoControler //TODO
+            //loading
+        }
+    }
+    public LoadWindowController( ArrayList listOfPlayers){
+            System.out.println(listOfPlayers.size());
+           //initRisikoControler //TODO
+    }
+
     @FXML
     public void initialize() {
         moveTram();
     }
-
-
-
-
 
     public void setParentSceneGraph(Parent parentSceneGraph) {
         this.parentSceneGraph = parentSceneGraph;
@@ -52,6 +64,8 @@ public class LoadWindowController {
             Pane rootPane = fxmlLoader.load();
 
             Scene scene = new Scene(rootPane);
+            scene.getStylesheets().add(getClass().getClassLoader().getResource("map-styles.css").toExternalForm());
+
             Stage mainWindow = new Stage();
 
             MainWindowController mainWindowController = fxmlLoader.getController();
