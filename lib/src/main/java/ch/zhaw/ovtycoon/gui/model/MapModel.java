@@ -2,7 +2,6 @@ package ch.zhaw.ovtycoon.gui.model;
 
 import ch.zhaw.ovtycoon.Config;
 import ch.zhaw.ovtycoon.RisikoController;
-import ch.zhaw.ovtycoon.TestBackend;
 import ch.zhaw.ovtycoon.data.DiceRoll;
 import ch.zhaw.ovtycoon.data.Player;
 import ch.zhaw.ovtycoon.gui.model.dto.ActivateZoneDTO;
@@ -10,6 +9,7 @@ import ch.zhaw.ovtycoon.gui.model.dto.AttackDTO;
 import ch.zhaw.ovtycoon.gui.model.dto.DrawZoneDTO;
 import ch.zhaw.ovtycoon.gui.model.dto.FightDTO;
 import ch.zhaw.ovtycoon.gui.model.dto.MoveTroopsDTO;
+import ch.zhaw.ovtycoon.gui.model.dto.ReinforcementAmountDTO;
 import ch.zhaw.ovtycoon.gui.model.dto.ReinforcementDTO;
 import ch.zhaw.ovtycoon.gui.model.dto.TooltipDTO;
 import ch.zhaw.ovtycoon.gui.model.dto.ZoneTroopAmountDTO;
@@ -70,8 +70,8 @@ public class MapModel {
     private ZoneSquare source = null;
     private ZoneSquare target = null;
     private TooltipDTO currHovered = null;
-    private final TestBackend testBackend = new TestBackend();
     private final Scenario scenarioToBeTested = Scenario.PLAYER_ELIMINATED; // Only for initializing the zones and players to test certain scenarios, e.g. win game
+    private ReinforcementAmountDTO currentReinforcement = null;
 
     public MapModel(Image mapImage, double scale) {
         mapLoaderService = new MapLoaderService(mapImage, scale);
@@ -93,18 +93,20 @@ public class MapModel {
         return new AttackDTO(maxAttackerTroops, maxDefenderTroops);
     }
 
-    public int reinforcement() {
-        testBackend.diceThrow();
-        return testBackend.getTroopsToPlace();
+    public int initializeReinforcement() {
+        int reinforcementsReceived = risikoController.getAmountOfReinforcements();
+        currentReinforcement = new ReinforcementAmountDTO(reinforcementsReceived, 0);
+        return reinforcementsReceived;
     }
 
-    public void placeTroops(String zoneSquareName, int amount) {
+    public void placeReinforcementTroops(String zoneSquareName, int amount) {
         ZoneSquare sqr = getZsqByName(zoneSquareName);
-        if (sqr == null) return;
-        risikoController.updateZoneTroops(zoneSquareName, amount);
+        if (sqr == null || currentReinforcement == null) return;
+        risikoController.reinforce(amount, zoneSquareName);
+        currentReinforcement.addToAmountAlreadyPlaced(amount);
         updateZoneTroopsText.set(new ZoneTroopAmountDTO(zoneSquareName, risikoController.getZoneTroops(zoneSquareName)));
-        testBackend.placeTroops(amount);
-        if (testBackend.finishedPlacingTroops().get()) {
+        if (currentReinforcement.getAmountAlreadyPlaced() == currentReinforcement.getTotalAmount()) {
+            resetReinforcementDTO();
             mapClickEnabled = false;
             hoverableZones = new ArrayList<>();
             nextAction();
@@ -132,7 +134,7 @@ public class MapModel {
         darkenBackground.set(true);
         setZoneActive.set(new ActivateZoneDTO(sqr, overlayColor, false));
         removeTooltip.set(currHovered);
-        return new ReinforcementDTO(sqr, testBackend.getTroopsToPlace());
+        return new ReinforcementDTO(sqr, getPlacableTroopsForReinforcement());
     }
 
     public void initializeMovingTroops(int minAmount) {
@@ -415,6 +417,9 @@ public class MapModel {
         target = null;
         sourceOrTargetNull.set(true);
         Config.PlayerColor currentPlayerBeforeActionSwitch = risikoController.getCurrentPlayer();
+        if (risikoController.getAction() == Action.DEFEND) {
+            resetReinforcementDTO();
+        }
         risikoController.nextAction();
         Config.PlayerColor playerAfterActionSwitch = risikoController.getCurrentPlayer();
         if (currentPlayerBeforeActionSwitch != playerAfterActionSwitch) {
@@ -426,6 +431,10 @@ public class MapModel {
         mapClickEnabled = false;
         hoverableZones = new ArrayList<>();
         showActionChange.set(risikoController.getAction().getActionName());
+    }
+
+    private void resetReinforcementDTO() {
+        currentReinforcement = null;
     }
 
     private ZoneSquare getZoneAtCoordinates(int x, int y) {
@@ -521,6 +530,11 @@ public class MapModel {
 
     public SimpleObjectProperty<ZoneTroopAmountDTO> updateZoneTroopsTextProperty() {
         return updateZoneTroopsText;
+    }
+
+    private int getPlacableTroopsForReinforcement() {
+        if (currentReinforcement == null) return 0;
+        return currentReinforcement.getTotalAmount() - currentReinforcement.getAmountAlreadyPlaced();
     }
 
     private void initTroopAmountText() {

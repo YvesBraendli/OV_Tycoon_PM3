@@ -79,7 +79,7 @@ public class RisikoController{
 	 * @param amount amount of troops to add
 	 * @param zone name of the zone to add troops to
 	 */
-	public void reinforce(int amount, String zone) throws Exception {
+	public void reinforce(int amount, String zone) {
 		game.reinforce(amount, game.getZone(zone));
 	}
     
