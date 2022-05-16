@@ -44,9 +44,10 @@ public class MapModel {
     private final List<ZoneSquare> zoneSquares;
     private final MapLoaderService mapLoaderService;
     private final ColorService colorService;
+    private final RisikoController risikoController;
     private final SimpleBooleanProperty sourceOrTargetNull = new SimpleBooleanProperty(true);
     private final SimpleBooleanProperty actionButtonVisible = new SimpleBooleanProperty(false);
-    private final SimpleObjectProperty<Config.PlayerColor> currPlayer = new SimpleObjectProperty<>(BLUE);
+    private final SimpleObjectProperty<Config.PlayerColor> currPlayer; // TODO remove default value after player init view merged
     private final SimpleStringProperty actionButtonText = new SimpleStringProperty();
     private final SimpleStringProperty showActionChange = new SimpleStringProperty();
     private final SimpleBooleanProperty darkenBackground = new SimpleBooleanProperty();
@@ -76,7 +77,8 @@ public class MapModel {
     private ZoneSquare source = null;
     private ZoneSquare target = null;
     private TooltipDTO currHovered = null;
-    private RisikoController risikoController = new RisikoController(3);
+    private final TestBackend testBackend = new TestBackend();
+    private final Scenario scenarioToBeTested = Scenario.PLAYER_ELIMINATED; // Only for initializing the zones and players to test certain scenarios, e.g. win game
 
     /**
      * Creates an instance of the map model. Initializes {@link #zoneSquares} depending on the
@@ -90,7 +92,28 @@ public class MapModel {
         mapLoaderService = new MapLoaderService(mapImage, scale);
         colorService = new ColorService();
         zoneSquares = mapLoaderService.initZoneSquaresFromConfig();
-        initPlayers();
+        // TODO remove after player init view merged
+        ArrayList<Config.PlayerColor> playersForTesting = new ArrayList<>();
+        playersForTesting.add(RED);
+        playersForTesting.add(BLUE);
+        playersForTesting.add(GREEN);
+        currPlayer = new SimpleObjectProperty<>(playersForTesting.get(playersForTesting.size() - 1));
+        risikoController = new RisikoController(playersForTesting);
+    }
+
+    public void setInitialValues() {
+        hoverableZones = new ArrayList<>(zoneSquares);
+        drawZonesInPlayerColors();
+        initTroopAmountText();
+        currPlayer.set(risikoController.getCurrentPlayer());
+        showActionChange.set(risikoController.getAction().getActionName());
+    }
+
+    private void drawZonesInPlayerColors() {
+        zoneSquares.forEach(zone -> {
+            Color zoneColor = colorService.getColor(risikoController.getZoneOwner(zone.getName()).getHexValue());
+            drawZone.set(new DrawZoneDTO(zone, zoneColor));
+        });
     }
 
     /**
@@ -669,15 +692,6 @@ public class MapModel {
     }
 
     // TODO Should happen in backend: methods below will be removed as soon as player initialization is implemented in the backend -------------------------------
-
-    private void initPlayers() {
-        risikoController.getPlayers()[0] = new Player("Player a");
-        risikoController.getPlayers()[0].setColor(RED);
-        risikoController.getPlayers()[1] = new Player("Player b");
-        risikoController.getPlayers()[1].setColor(BLUE);
-        risikoController.getPlayers()[2] = new Player("Player c");
-        risikoController.getPlayers()[2].setColor(GREEN);
-    }
 
     private void addPlayerColorsToZones() {
         Random random = new Random();

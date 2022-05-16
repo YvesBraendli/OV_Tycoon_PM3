@@ -34,12 +34,20 @@ public class Game implements Serializable {
 	 * Initializes the gameMap and creates players with their corresponding colors
 	 * @param playerAmount number of players
 	 */
-	public void initGame(int playerAmount) {
+	public void initGame(ArrayList<PlayerColor> colors) {
+		if(colors == null){
+			throw new IllegalArgumentException("Number of chosen colors musst be equal to numbers of players.");
+		}
+		
 		MapInitializer mapInit = new MapInitializer();
+
+		players = new Player[colors.size()];
+		initPlayers(colors);
+		
 		gameMap = mapInit.getGameMap();	
-		zoneOwner = mapInit.getOwnerList();
-		players = new Player[playerAmount];
-		troopHandler = new TroopHandler(playerAmount);
+		zoneOwner = mapInit.getOwnerList(players);
+		
+		troopHandler = new TroopHandler(colors.size());
 		eliminatedPlayer = new SimpleObjectProperty<PlayerColor>(null);
 		newRegionOwner = new SimpleObjectProperty<PlayerColor>(null);
 	}
@@ -52,9 +60,6 @@ public class Game implements Serializable {
 	 * @throws IllegalArgumentException
 	 */
 	public void initPlayers(ArrayList<PlayerColor> colors){
-		if(colors == null || colors.size() != players.length){
-			throw new IllegalArgumentException("Number of chosen colors musst be equal to numbers of players.");
-		}
 		for (int i = 0; i < colors.size(); i++){
 			players[i] = new Player(colors.get(i));
 		}
