@@ -1,11 +1,23 @@
 package ch.zhaw.ovtycoon.gui.controller;
 
 import ch.zhaw.ovtycoon.Config;
-import ch.zhaw.ovtycoon.gui.model.*;
+import ch.zhaw.ovtycoon.gui.model.Action;
+import ch.zhaw.ovtycoon.gui.model.CustomTimeline;
+import ch.zhaw.ovtycoon.gui.model.HorizontalStripe;
+import ch.zhaw.ovtycoon.gui.model.MapModel;
+import ch.zhaw.ovtycoon.gui.model.customnodes.Notification;
+import ch.zhaw.ovtycoon.gui.model.NotificationType;
+import ch.zhaw.ovtycoon.gui.model.Pixel;
+import ch.zhaw.ovtycoon.gui.model.ZoneSquare;
 import ch.zhaw.ovtycoon.gui.model.customnodes.FightResultGrid;
 import ch.zhaw.ovtycoon.gui.model.customnodes.TroopAmountPopup;
 import ch.zhaw.ovtycoon.gui.model.customnodes.ZoneTooltip;
-import ch.zhaw.ovtycoon.gui.model.dto.*;
+import ch.zhaw.ovtycoon.gui.model.dto.AttackDTO;
+import ch.zhaw.ovtycoon.gui.model.dto.FightDTO;
+import ch.zhaw.ovtycoon.gui.model.dto.MoveTroopsDTO;
+import ch.zhaw.ovtycoon.gui.model.dto.ReinforcementDTO;
+import ch.zhaw.ovtycoon.gui.model.dto.ZoneTroopAmountDTO;
+import ch.zhaw.ovtycoon.gui.model.dto.ZoneTroopAmountInitDTO;
 import ch.zhaw.ovtycoon.gui.service.ColorService;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -17,6 +29,7 @@ import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Parent;
+import javafx.scene.Parent;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
@@ -25,16 +38,27 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.*;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
-import javafx.stage.Screen;
 import javafx.util.Duration;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * Controller for the zones-map-view.
+ */
 public class MainWindowController {
     private static final String PLAYER_ELIMINATED = "%s wurde eliminiert!";
     private static final String PLAYER_IMAGE_PREFIX = "player_";
@@ -58,7 +82,8 @@ public class MainWindowController {
     private final SimpleBooleanProperty gameWon = new SimpleBooleanProperty(false);
     private final Queue<CustomTimeline> waitingTimelines = new LinkedList<>();
     private final SimpleBooleanProperty clickedActionButton = new SimpleBooleanProperty();
-
+    private final double scale;
+    private final MapModel mapModel;
     @FXML
     private StackPane stackPane;
     @FXML
@@ -90,19 +115,30 @@ public class MainWindowController {
     private PixelWriter mapPw;
     private Map<String, List<Pixel>> overlaidPixelsByZone = new HashMap<>();
     private ColorService colorService = new ColorService();
-    private double scale = 1.0d;
-    private MapModel mapModel;
-
     private Parent parentSceneGraph;
 
+
+    /**
+     * Creates an instance of the controller with the passed model.
+     * Sets {@link #scale} to the value provided by the passed model.
+     *
+     * @param mapModel MapModel to be used by the controller
+     */
+    public MapController(MapModel mapModel) {
+        this.mapModel = mapModel;
+        this.scale = mapModel.getScale();
+    }
+
+    /**
+     * Initializes the zones map view. Rescales boxes and panes based on {@link #scale}.
+     * Adds event handlers and binds nodes to properties provided by this class itself
+     * or by {@link #mapModel}.
+     */
     @FXML
     public void initialize() {
-        scale = Screen.getPrimary().getBounds().getHeight() < 1000.0d ? 0.7d : 1.0d;
         if (scale != 1.0d) {
             rescale();
         }
-        // TODO should not be initialized in map controller
-        mapModel = new MapModel(mapImage, scale);
         GraphicsContext gc = mapCanvas.getGraphicsContext2D();
         GraphicsContext overlayGc = mapCanvasOverlay.getGraphicsContext2D();
         pw = overlayGc.getPixelWriter();
@@ -118,7 +154,6 @@ public class MainWindowController {
         actionBtn.disableProperty().bind(mapModel.actionButtonDisabledProperty().or(mapModel.sourceOrTargetNullProperty()).or(clickedActionButton));
         actionBtn.textProperty().bind(mapModel.actionButtonTextProperty());
         addPlayers();
-        mapModel.showActionChangeProperty().addListener(((observable, oldValue, newValue) -> showActionChange(newValue)));
         eliminatePlayer();
         initMapListeners();
         mapModel.setInitialValues(); // TODO ev clean up
@@ -128,6 +163,12 @@ public class MainWindowController {
         this.parentSceneGraph = parentSceneGraph;
     }
 
+    /**
+     * Creates an instance of the javafx text node and adds it to the {@link #labelStackPane} at the position
+     * provided by the passed dto and with the text string from the dto.
+     *
+     * @param zoneTroopAmountInitDTO dto containing properties to be set on the text node created by the method
+     */
     private void initTroopAmountText(ZoneTroopAmountInitDTO zoneTroopAmountInitDTO) {
         Text troopAmountText = new Text();
         troopAmountText.setId(zoneTroopAmountInitDTO.getZoneName());
@@ -138,6 +179,12 @@ public class MainWindowController {
         labelStackPane.getChildren().add(troopAmountText);
     }
 
+    /**
+     * Updates the text property of the text node with the id equal to the zoneName property of the passed dto.
+     *
+     * @param zoneTroopAmountDTO dto containing the updated troop amount and the name of the zone of which the troop
+     *                           amount should be updated.
+     */
     private void updateTroopAmountText(ZoneTroopAmountDTO zoneTroopAmountDTO) {
         Text toUpdate = (Text) labelStackPane.getChildren().stream()
                 .filter(node -> node instanceof Text && node.getId() != null && node.getId().equals(zoneTroopAmountDTO.getZoneName()))
@@ -147,7 +194,11 @@ public class MainWindowController {
         toUpdate.setText(Integer.toString(zoneTroopAmountDTO.getTroopAmount()));
     }
 
+    /**
+     * Adds change listeners to properties provided by {@link #mapModel}
+     */
     private void initMapListeners() {
+        mapModel.showActionChangeProperty().addListener(((observable, oldValue, newValue) -> showActionChange(newValue)));
         mapModel.initializeZoneTroopsTextProperty().addListener(((observable, oldValue, newValue) -> initTroopAmountText(newValue)));
         mapModel.updateZoneTroopsTextProperty().addListener(((observable, oldValue, newValue) -> updateTroopAmountText(newValue)));
         mapModel.darkenBackgroundProperty().addListener(((observable, oldValue, newValue) -> {
@@ -209,6 +260,10 @@ public class MainWindowController {
     }
 
     // TODO get current player from map model
+
+    /**
+     * Adds a change listener to the eliminated player property provided by {@link #mapModel}
+     */
     private void eliminatePlayer() {
         mapModel.getRisikoController().getEliminatedPlayerProperty().addListener(((observable, oldValue, newValue) -> {
             showNotification(NotificationType.WARNING, String.format(PLAYER_ELIMINATED, newValue.name().toLowerCase()));
@@ -217,6 +272,9 @@ public class MainWindowController {
         }));
     }
 
+    /**
+     * Rescales the zones map view based on {@link #scale}
+     */
     private void rescale() {
         upperHBox.setPrefHeight(upperHBox.getPrefHeight() * scale);
         upperHBox.setPrefWidth(upperHBox.getPrefWidth() * scale);
@@ -241,6 +299,12 @@ public class MainWindowController {
         buttonHBox.setPrefWidth(buttonHBox.getPrefWidth() * scale);
     }
 
+    /**
+     * Adds a HBox to the {@link #labelStackPane} with information about the passed player.
+     * Removes the HBox after 3 seconds.
+     *
+     * @param currPlayer player about whom the information should be displayed
+     */
     private void highlightCurrPlayerLarge(Config.PlayerColor currPlayer) {
         ImageView playerBoxLarge = buildAndGetPlayerHBoxBig(currPlayer);
         playerBoxLarge.setTranslateX((labelStackPane.getMaxWidth() - playerBoxLarge.getFitWidth()) / 2.0d);
@@ -251,10 +315,21 @@ public class MainWindowController {
         playAnimation(highlightPlayerTl, true);
     }
 
+    /**
+     * Stops the {@link #highlightClickableZonesTl} timeline.
+     */
     private void stopHighlightClickableZonesAnimation() {
         highlightClickableZonesTl.stop();
     }
 
+    /**
+     * Plays the passed timeline. If a blocking timeline is already playing, the passed timeline
+     * gets played as soon as the currently playing timeline finishes playing.
+     *
+     * @param tlToPlay   timeline to be played
+     * @param isBlocking whether the passed timeline should block other later passed timelines
+     *                   from being played until itself finished playing or not.
+     */
     private void playAnimation(Timeline tlToPlay, boolean isBlocking) {
         final EventHandler<ActionEvent> handler = new EventHandler<ActionEvent>() {
             @Override
@@ -291,6 +366,11 @@ public class MainWindowController {
         }
     }
 
+    /**
+     * Adds HBoxes representing the player colors provided by the {@link #mapModel} to the {@link #playersListItems} - list
+     * abd the {@link #playersVBox}. Adds an action listener to the currPlayerProperty provided by the {@link #mapModel},
+     * highlighting the set player when it changes.
+     */
     private void addPlayers() {
         for (Config.PlayerColor playerColor : mapModel.getRisikoController().getPlayerColors()) {
             HBox playerHBox = buildAndGetPlayerHBox(playerColor);
@@ -304,13 +384,12 @@ public class MainWindowController {
         });
     }
 
-    private void highlightPlayerTile(String id) {
-        HBox toBeHighlighted = playersListItems.stream().filter(box -> id.equals(box.getId())).findFirst().orElse(null);
-        if (toBeHighlighted == null) return;
-        toBeHighlighted.setPrefWidth(175.0d * scale);
-        toBeHighlighted.setPrefHeight(35.0d * scale);
-    }
-
+    /**
+     * Highlights the HBox with the passed idNew and unhighlights (resets its size) of the HBox with the id equal to idOld.
+     *
+     * @param idOld id of the HBox to be unhighlighted
+     * @param idNew id of the HBox to be highlighted
+     */
     private void highlightCurrPlayerTile(String idOld, String idNew) {
         HBox toBeUnHighlighted = playersListItems.stream().filter(box -> idOld.equals(box.getId())).findFirst().orElse(null);
         highlightPlayerTile(idNew);
@@ -319,6 +398,24 @@ public class MainWindowController {
         toBeUnHighlighted.setPrefHeight(25.0d * scale);
     }
 
+    /**
+     * Highlights the HBox with the passed id representing a player color by enlarging it.
+     *
+     * @param id id of the HBox to be highlighted
+     */
+    private void highlightPlayerTile(String id) {
+        HBox toBeHighlighted = playersListItems.stream().filter(box -> id.equals(box.getId())).findFirst().orElse(null);
+        if (toBeHighlighted == null) return;
+        toBeHighlighted.setPrefWidth(175.0d * scale);
+        toBeHighlighted.setPrefHeight(35.0d * scale);
+    }
+
+    /**
+     * Creates a HBox representing the passed player color, then returns it.
+     *
+     * @param player player color
+     * @return HBox created
+     */
     private HBox buildAndGetPlayerHBox(Config.PlayerColor player) {
         String playerColor = player.getHexValue().substring(0, 8).replace("0x", "#");
         HBox playerBox = new HBox();
@@ -346,6 +443,13 @@ public class MainWindowController {
         return playerBox;
     }
 
+
+    /**
+     * Creates a big ImageView representing the passed player color, then returns it.
+     *
+     * @param player player color
+     * @return Big ImageView created
+     */
     private ImageView buildAndGetPlayerHBoxBig(Config.PlayerColor player) {
         String colorName = player.name().toLowerCase();
         Image playerImage = new Image(getClass().getClassLoader().getResource(PLAYER_IMAGE_PREFIX + colorName + ".png").toExternalForm());
@@ -357,6 +461,12 @@ public class MainWindowController {
         return playerImageView;
     }
 
+    /**
+     * Displays a label with the name of the newly set current action for 3 seconds.
+     * Updates the click handler of {@link #labelStackPane} based on the newly set current action.
+     *
+     * @param text Name of the action after the action changed
+     */
     private void showActionChange(String text) {
         Label label = new Label();
         label.setText(text);
@@ -388,12 +498,22 @@ public class MainWindowController {
         playAnimation(actionChangeTl, true);
     }
 
+    /**
+     * Handler for the mouse move event. Passes the coordinates of the mouseEvent parameter casted to integers
+     * to the handleHover - method of {@link #mapModel}
+     *
+     * @param mouseEvent MouseEvent to be handled
+     */
     private void handleMapHover(MouseEvent mouseEvent) {
         int x = (int) mouseEvent.getX();
         int y = (int) mouseEvent.getY();
         mapModel.handleHover(x, y);
     }
 
+    /**
+     * Click handler for the {@link #actionBtn}. Calls the initAttack or initMoveTroops - method based on
+     * the current action provided by the {@link #mapModel}
+     */
     private void onActionButtonClick() {
         clickedActionButton.set(true);
         mapModel.setMapClickEnabled(false);
@@ -409,10 +529,21 @@ public class MainWindowController {
         }
     }
 
+    /**
+     * Redirects the handling of initializing move troops to the initializeMovingTroops - method of {@link #mapModel}.
+     *
+     * @param minAmount Minimal amount of troops which can be moved
+     */
     private void initMoveTroops(int minAmount) {
         mapModel.initializeMovingTroops(minAmount);
     }
 
+    /**
+     * Adds a {@link TroopAmountPopup} to the {@link #labelStackPane} with data from the passed dto.
+     * Adds a mouse click handler to the confirm button of the popup.
+     *
+     * @param moveTroopsDTO dto containing the data for the popup.
+     */
     private void moveTroops(MoveTroopsDTO moveTroopsDTO) {
         TroopAmountPopup troopAmountPopup = new TroopAmountPopup(moveTroopsDTO.getMinAmount(), moveTroopsDTO.getMaxMovableTroops(), MOVE_TROOPS_TEXT);
         centerJavaFXRegion(labelStackPane, troopAmountPopup);
@@ -425,6 +556,11 @@ public class MainWindowController {
         });
     }
 
+    /**
+     * Highlights all zones on which a mouse click is allowed during the current action.
+     * Plays a timeline changing the color of the clickable zones on the {@link #mapCanvasOverlay} for 1 second.
+     * The timeline stops after 30 cycles.
+     */
     private void highLightClickableZones() {
         stopHighlightClickableZonesAnimation();
         Config.PlayerColor currPlayerColor = mapModel.getCurrPlayer();
@@ -437,6 +573,11 @@ public class MainWindowController {
         playAnimation(highlightClickableZonesTl, false);
     }
 
+    /**
+     * Method for the reinforcement action.
+     * Displays a label with the amount of troops received provided by the {@link #mapModel} for 2 seconds.
+     * Displays an info label for 2 seconds.
+     */
     private void reinforcement() {
         int troopsToPlace = mapModel.reinforcement();
         Label label = new Label();
@@ -464,6 +605,13 @@ public class MainWindowController {
         playAnimation(reinforcementTl, true);
     }
 
+    /**
+     * Click handler for a click on the {@link #labelStackPane} during the reinforcement action.
+     * Gets a dto from the @{@link #mapModel}, adds a {@link TroopAmountPopup} to the {@link #labelStackPane}
+     * and adds a click handler to the popup's confirm button, removing the popup as soon as the button gets clicked.
+     *
+     * @param mouseEvent MouseEvent to be handled
+     */
     private void reinforcementClickHandler(MouseEvent mouseEvent) {
         if (!mapModel.isMapClickEnabled()) return;
         int x = (int) mouseEvent.getX();
@@ -480,6 +628,12 @@ public class MainWindowController {
         });
     }
 
+    /**
+     * Initialized an attack based on the dto received by the {@link #mapModel}.
+     * Prompts the attacker and defender for the troop amount to be used in the fight.
+     * Notifies the defender. Performs the attack as soon as the attacker and defender
+     * both confirmed the amount of troops to be used.
+     */
     private void initAttack() {
         AttackDTO attackDTO = mapModel.initializeAttack();
         if (attackDTO == null) return;
@@ -506,6 +660,13 @@ public class MainWindowController {
         });
     }
 
+    /**
+     * Displays an attack based on a dto received from the {@link #mapModel}.
+     * Plays a timeline with the fight result.
+     *
+     * @param attackerTroops amount of troops used by the attacker
+     * @param defenderTroops amount of troops used by the defender
+     */
     private void performAttack(int attackerTroops, int defenderTroops) {
         Label label = new Label();
         label.setPrefWidth(400.0d);
@@ -549,6 +710,13 @@ public class MainWindowController {
         playAnimation(fightTl, true);
     }
 
+    /**
+     * Handles a click on the {@link #labelStackPane} during the move and attack action.
+     * Casts the x and y coordinate from the mouseEvent parameter to integers and passes
+     * those values to the handleMapClick - method from the {@link #mapModel}.
+     *
+     * @param mouseEvent MouseEvent to be handled
+     */
     private void onMapClick(MouseEvent mouseEvent) {
         if (!mapModel.isMapClickEnabled()) return;
         int x = (int) mouseEvent.getX();
@@ -556,6 +724,12 @@ public class MainWindowController {
         mapModel.handleMapClick(x, y);
     }
 
+    /**
+     * Marks the pixels of each {@link ZoneSquare} by setting their color on the {@link #mapCanvasOverlay}
+     * to a mix of their own color with the {@link #neighbourOverlayColor}.
+     *
+     * @param neighbours list of {@link ZoneSquare} to be marked
+     */
     private void markNeighbours(List<ZoneSquare> neighbours) {
         neighbours.forEach(n -> {
             Color nOverLay = colorService.mixColors(neighbourOverlayColor, colorService.getColor(n.getColor().getHexValue()));
@@ -563,11 +737,21 @@ public class MainWindowController {
         });
     }
 
+    /**
+     * Clears the {@link #mapCanvasOverlay} by setting the color of each pixel in the {@link #overlaidPixelsByZone} - map
+     * to {@link #transparentColor}. Clears the {@link #overlaidPixelsByZone} - map afterwards.
+     */
     private void removeAllOverlaidPixels() {
         overlaidPixelsByZone.values().forEach(zone -> zone.forEach(pixel -> pw.setColor(pixel.getX(), pixel.getY(), transparentColor)));
         overlaidPixelsByZone.clear();
     }
 
+    /**
+     * "Inactivates" the zone with the passed name by setting the drawn pixels on the {@link #mapCanvasOverlay} belonging to the
+     * zone to {@link #transparentColor}. Removes the value of the passed zoneName from the {@link #overlaidPixelsByZone} - map afterwards.
+     *
+     * @param zoneName
+     */
     private void inactivateZone(String zoneName) {
         List<Pixel> overlaidPixelsToRemove = overlaidPixelsByZone.get(zoneName);
         if (overlaidPixelsToRemove == null) return;
@@ -575,6 +759,17 @@ public class MainWindowController {
         overlaidPixelsByZone.remove(zoneName);
     }
 
+    /**
+     * Sets a zone active by drawing the pixels belonging to the zone on the {@link #mapCanvasOverlay}.
+     * All drawn pixels get added to the {@link #overlaidPixelsByZone} - map with the name of the zone as key.
+     * If the shift parameter is true, the zones pixels get drawn shifted by {@link #OVERLAY_EFFECT_SHIFT_PIXELS},
+     * and the pixels between the zone pixel and the shifted pixel get drawn in a color mixed from the zone color
+     * and the passed overlay color, creating a 3D like effect.
+     *
+     * @param sqr          Zone which should be set active
+     * @param overlayColor Color for the overlay shift effect.
+     * @param shift        If zone activated should get shifted (highlighted with a 3D - like effect or not)
+     */
     private void setZoneActive(ZoneSquare sqr, Color overlayColor, boolean shift) {
         Color currColor = colorService.getColor(sqr.getColor().getHexValue());
         if (currColor == null) return;
@@ -586,7 +781,7 @@ public class MainWindowController {
                 overlaidPixels.add(new Pixel(x, y));
                 pw.setColor(x, y, overlayColor);
                 if (shift) {
-                    for (int k = 1; k < OVERLAY_EFFECT_SHIFT_PIXELS; k++) {
+                    for (int k = 1; k < OVERLAY_EFFECT_SHIFT_PIXELS; k++) { // TODO check for index out of bounds
                         pw.setColor(x - k, y - k, mix);
                         overlaidPixels.add(new Pixel(x - k, y - k));
                     }
@@ -599,6 +794,13 @@ public class MainWindowController {
         overlaidPixelsByZone.put(sqr.getName(), overlaidPixels);
     }
 
+    /**
+     * Draws the pixels of a {@link ZoneSquare} in the passed color on the {@link #mapCanvas}, then sets the color
+     * of the passed zone to the passed color.
+     *
+     * @param sqr Zone to be drawn
+     * @param c   Color in which the passed zone should be drawn
+     */
     private void drawZone(ZoneSquare sqr, Color c) {
         for (HorizontalStripe str : sqr.getBorder()) {
             int y = str.getY();
@@ -609,6 +811,14 @@ public class MainWindowController {
         sqr.setColor(colorService.getPlayerColor(c.toString()));
     }
 
+    /**
+     * Adds a {@link TroopAmountPopup} to the {@link #labelStackPane} with the properties passed to the method
+     * prompting the user to enter an amount of troops. The minimal amount of troops is set to 1.
+     *
+     * @param maxAmt maximal amount of troops which can be set
+     * @param text   Text to be displayed on the popup.
+     * @return created troop amount popup
+     */
     private TroopAmountPopup promptUserForTroopAmount(int maxAmt, String text) {
         TroopAmountPopup popup = new TroopAmountPopup(1, maxAmt, text);
         centerJavaFXRegion(labelStackPane, popup);
@@ -616,21 +826,46 @@ public class MainWindowController {
         return popup;
     }
 
+    /**
+     * Sets the translateX and translateY properties to a certain value
+     * so the passed JavaFX region will be centered on the passed JavaFX pane when its added to it.
+     *
+     * @param pane   JavaFX pane on which the region should be centered
+     * @param region JavaFX region to be centered
+     */
     private void centerJavaFXRegion(Pane pane, Region region) {
         region.setTranslateX((pane.getMaxWidth() - region.getPrefWidth()) / 2.0d);
         region.setTranslateY((pane.getMaxHeight() - region.getPrefHeight()) / 2.0d);
     }
 
+    /**
+     * Sets the {@link #showingPopup} property to true and adds the passed {@link TroopAmountPopup}
+     * to the {@link #labelStackPane}
+     *
+     * @param popup troop amount popup to be added to the {@link #labelStackPane}
+     */
     private void addPopup(TroopAmountPopup popup) {
         this.showingPopup.set(true);
         labelStackPane.getChildren().add(popup);
     }
 
+    /**
+     * Sets the {@link #showingPopup} property to false and removes the passed {@link TroopAmountPopup}
+     * from the {@link #labelStackPane}
+     *
+     * @param popup troop amount popup to be removed from the {@link #labelStackPane}
+     */
     private void removePopup(TroopAmountPopup popup) {
         this.showingPopup.set(false);
         labelStackPane.getChildren().remove(popup);
     }
 
+    /**
+     * Creates a {@link Notification} with the properties passed. Plays a timeline showing the notification for 2 seconds.
+     *
+     * @param type Type of the notification. See {@link NotificationType}.
+     * @param text Text to be displayed in the notification.
+     */
     private void showNotification(NotificationType type, String text) {
         final double stackPaneWidth = scale * DEFAULT_STACK_PANE_WIDTH;
         Notification notification = new Notification(type, text, stackPaneWidth);
@@ -640,6 +875,10 @@ public class MainWindowController {
         playAnimation(notificationTl, true);
     }
 
+    /**
+     * Sets the {@link #gameWon} property to true and shows a notification with the name of the winner.
+     * @param winnerName Name of the game winner.
+     */
     private void gameWon(String winnerName) {
         gameWon.set(true);
         showNotification(NotificationType.INFO, String.format(GAME_WINNER, winnerName));

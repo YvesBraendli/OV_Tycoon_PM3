@@ -1,5 +1,8 @@
 package ch.zhaw.ovtycoon.gui.model.dto;
 
+/**
+ * DTO for the amount of troops which can be moved
+ */
 public class MoveTroopsDTO {
     private final int minAmount;
     private final int maxMovableTroops;

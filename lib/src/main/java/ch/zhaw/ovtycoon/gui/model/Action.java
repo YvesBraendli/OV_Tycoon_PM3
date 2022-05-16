@@ -1,5 +1,8 @@
 package ch.zhaw.ovtycoon.gui.model;
 
+/**
+ * Enum representing the actions of the risiko game.
+ */
 public enum Action {
     ATTACK("Angriff"), MOVE("Bewegung"), DEFEND("Verteidigung");
 

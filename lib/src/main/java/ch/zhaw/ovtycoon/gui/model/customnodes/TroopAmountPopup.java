@@ -7,20 +7,28 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 
 /**
- * Popup for moving troops with label, text field and confirm button
+ * Popup for getting an amount of troops with label, text field and confirm button.
+ * Extends {@link VBox}
  */
 public class TroopAmountPopup extends VBox {
     public static final double TROOP_AMOUNT_POPUP_PREF_WIDTH = 200.0d;
     public static final double TROOP_AMOUNT_POPUP_PREF_HEIGHT = 150.0d;
-    private int minTrpAmt;
     private final SimpleIntegerProperty maxTrpAmt = new SimpleIntegerProperty();
-    private Integer troopAmount;
     private final Label troopAmountLabel = new Label();
     private final TextField troopAmountTextField = new TextField();
     private final Button confirmBtn = new Button();
+    private int minTrpAmt;
+    private Integer troopAmount;
     private String labelText;
-    
-    
+
+    /**
+     * Creates an instance of the popup. Adds an action listener to the {@link #troopAmountTextField}'s text property.
+     * Disables the {@link #confirmBtn} based on the value of the text property.
+     *
+     * @param minTrpAmt Minimal amount of troops which can be entered
+     * @param maxTrpAmt Maximal amount of troops which can be entered
+     * @param labelText Text of the popup's label
+     */
     public TroopAmountPopup(int minTrpAmt, int maxTrpAmt, String labelText) {
         setPrefWidth(TROOP_AMOUNT_POPUP_PREF_WIDTH);
         setPrefHeight(TROOP_AMOUNT_POPUP_PREF_HEIGHT);
@@ -50,6 +58,12 @@ public class TroopAmountPopup extends VBox {
         getChildren().addAll(troopAmountLabel, troopAmountTextField, confirmBtn);
     }
 
+    /**
+     * Reconfigure the popup by updating the max troop amount and the label text.
+     *
+     * @param maxTrpAmt Maximal amount of troops which can be entered
+     * @param labelText Text of the label
+     */
     public void reconfigure(int maxTrpAmt, String labelText) {
         this.maxTrpAmt.setValue(maxTrpAmt);
         this.labelText = labelText;

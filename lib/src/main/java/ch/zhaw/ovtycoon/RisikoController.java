@@ -22,9 +22,8 @@ import java.util.List;
  */
 public class RisikoController{
 
-
 	private Game game;
-
+	
 	/**
 	 * Constructor of Interface, instantiates game with number of Players
 	 * @param numberOfPlayers - amount of players that will play the game
@@ -33,7 +32,6 @@ public class RisikoController{
 		game = new Game();
     	game.initGame(numberOfPlayers);
 	}
-
 
 	/**
 	 * Initializes the players with the chosen colors.
@@ -238,16 +236,33 @@ public class RisikoController{
     	return game.getNewRegionOwnerProperty(); // TODO doc
     }
 
-	// TODO doc for new methods -------------------------------------------------------------------------------------
-
+	/**
+	 * Gets maximal amount of troops a zone can provide for an attack.
+	 *
+	 * @param zoneName Name of the zone
+	 * @return maximal available troop amount
+	 */
 	public int getMaxTroopsForAttack(String zoneName) {
 		return game.getMaxTroopsForAttack(zoneName);
 	}
 
+	/**
+	 * Gets the maximal amount of troops a zone can provide for defending.
+	 *
+	 * @param zoneName Name of the zone
+	 * @return maximal available troop amount
+	 */
 	public int getMaxTroopsForDefending(String zoneName) {
 		return game.getMaxTroopsForDefending(zoneName);
 	}
 
+	/**
+	 * Gets the maximal amount of troops that can be moved away from the specified
+	 * zone to another zone.
+	 *
+	 * @param zoneName Name of the zone
+	 * @return maximal available troop amount
+	 */
 	public int getMaxMovableTroops(String zoneName) {
 		return game.getMaxMovableTroops(zoneName);
 	}
@@ -257,6 +272,10 @@ public class RisikoController{
 		return game.getPlayers();
 	}
 
+	/**
+	 * Gets the player colors of the players of {@link #game}
+	 * @return array with player colors
+	 */
 	public PlayerColor[] getPlayerColors() {
 		PlayerColor[] playerColors = new PlayerColor[game.getPlayers().length];
 		for (int i = 0; i < game.getPlayers().length; i++) {
@@ -265,26 +284,52 @@ public class RisikoController{
 		return playerColors;
 	}
 
+	/**
+	 * Updates the owner of a zone
+	 * @param owner new owner of the zone
+	 * @param zoneName name of the zone
+	 */
 	public void setZoneOwner(Player owner, String zoneName) {
 		game.setZoneOwner(owner, zoneName);
 	}
 
+	/**
+	 * Updates the amount of troops on a zone.
+	 * @param zone Name of the zone
+	 * @param troops updated amount of troops
+	 */
 	public void updateZoneTroops(String zone, int troops) {
 		game.updateZoneTroops(zone, troops);
 	}
 
+	/**
+	 * Switches to the next action.
+	 */
 	public void nextAction() {
 		game.nextAction();
 	}
 
+	/**
+	 * Gets the current action
+	 * @return current action
+	 */
 	public Action getAction() {
 		return game.getCurrentAction();
 	}
 
+	/**
+	 * Generates a list of names of possible target zones depending on the current action.
+	 * @param sourceZoneName name of the source zone (attacking zone or zone from which troops should be moved)
+	 * @return list with names of valid target zones
+	 */
 	public List<String> getValidTargetZoneNames(String sourceZoneName) {
 		return getAction() == Action.ATTACK ? getAttackableZones(sourceZoneName) : getPossibleMovementNeighbours(sourceZoneName, getCurrentPlayer());
 	}
 
+	/**
+	 * Gets a list with names of possible source zones depending on the current action.
+	 * @return list with names of valid source zones
+	 */
 	public List<String> getValidSourceZoneNames() {
 		switch(getAction()) {
 			case ATTACK: return getPossibleAttackerZones(getCurrentPlayer());
@@ -293,15 +338,32 @@ public class RisikoController{
 		}
 	}
 
+	/**
+	 * Gets the winner of a fight
+	 *
+	 * @return PlayerColor of the player who won the fight
+	 */
 	public SimpleObjectProperty<PlayerColor> getFightWinner() {
 		return game.getFightWinner();
 	}
 
+	/**
+	 * Property indicating if a zone has been overtaken during an attack
+	 *
+	 * @return whether the zone has been overtaken or not
+	 */
 	public SimpleBooleanProperty getZoneOvertaken() {
 		return game.getZoneOvertaken();
 	}
 
-	public RegionName getRegionByOwner(String zoneName) {
+	/**
+	 * Gets the name of the region to which the zone with the passed
+	 * name belongs to.
+	 *
+	 * @param zoneName Name of the zone
+	 * @return name of the region to which the zone with the passed name belongs to.
+	 */
+	public RegionName getRegionOfZone(String zoneName) {
 		return game.getRegionOfZone(game.getZone(zoneName));
 	}
 
