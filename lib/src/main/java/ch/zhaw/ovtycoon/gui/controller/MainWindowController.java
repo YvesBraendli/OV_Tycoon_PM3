@@ -110,6 +110,10 @@ public class MainWindowController {
     private HBox buttonHBox;
     @FXML
     private HBox upperHBox;
+    @FXML
+    private Button SaveButton;
+    @FXML
+    private Button CloseButton;
     private Timeline highlightClickableZonesTl = new Timeline();
     private PixelWriter pw;
     private PixelWriter mapPw;
@@ -149,6 +153,8 @@ public class MainWindowController {
             mapModel.nextAction();
         });
         actionBtn.setOnMouseClicked(event -> onActionButtonClick());
+        SaveButton.setOnMouseClicked(event -> saveGame());
+        CloseButton.setOnMouseClicked(event -> closeGame());
         nextMoveBtn.disableProperty().bind(showingAnimation.or(showingPopup).or(gameWon));
         actionBtn.visibleProperty().bind(mapModel.actionButtonVisibleProperty().or(gameWon));
         actionBtn.disableProperty().bind(mapModel.actionButtonDisabledProperty().or(mapModel.sourceOrTargetNullProperty()).or(clickedActionButton));

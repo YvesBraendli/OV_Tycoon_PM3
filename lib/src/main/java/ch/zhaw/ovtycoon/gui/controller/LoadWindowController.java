@@ -1,14 +1,17 @@
 package ch.zhaw.ovtycoon.gui.controller;
 
 
+import ch.zhaw.ovtycoon.gui.model.MapModel;
 import javafx.animation.TranslateTransition;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import java.io.IOException;
@@ -61,6 +64,11 @@ public class LoadWindowController {
     private void openMainWindow(){
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/MainWindow.fxml"));
+            final Image mapImage = new Image(getClass().getResource("/zvv_zones_v11.png").toExternalForm());
+            final double scale = Screen.getPrimary().getBounds().getHeight() < 1000.0d ? 0.7d : 1.0d;
+            final MapModel mapModel = new MapModel(mapImage, scale);
+            MainWindowController mainWindowController = new MainWindowController(mapModel);
+            fxmlLoader.setController(mainWindowController);
             Pane rootPane = fxmlLoader.load();
 
             Scene scene = new Scene(rootPane);
@@ -68,7 +76,6 @@ public class LoadWindowController {
 
             Stage mainWindow = new Stage();
 
-            MainWindowController mainWindowController = fxmlLoader.getController();
             mainWindowController.setParentSceneGraph(rootPane);
             mainWindowController.setParentSceneGraph(parentSceneGraph);
 
