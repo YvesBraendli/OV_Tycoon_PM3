@@ -588,7 +588,7 @@ public class MainWindowController {
      * Displays an info label for 2 seconds.
      */
     private void reinforcement() {
-        int troopsToPlace = mapModel.reinforcement();
+        int troopsToPlace = mapModel.initializeReinforcement();
         Label label = new Label();
         label.setPrefWidth(400.0d);
         label.setPrefHeight(100.0d);
@@ -632,7 +632,7 @@ public class MainWindowController {
         centerJavaFXRegion(labelStackPane, troopAmountPopup);
         addPopup(troopAmountPopup);
         troopAmountPopup.getConfirmBtn().setOnMouseClicked(click -> {
-            mapModel.placeTroops(sqr.getName(), troopAmountPopup.getTroopAmount());
+            mapModel.placeReinforcementTroops(sqr.getName(), troopAmountPopup.getTroopAmount());
             removePopup(troopAmountPopup);
         });
     }
