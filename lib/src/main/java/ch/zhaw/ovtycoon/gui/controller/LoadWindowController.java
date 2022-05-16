@@ -4,6 +4,7 @@ package ch.zhaw.ovtycoon.gui.controller;
 import ch.zhaw.ovtycoon.Config;
 import ch.zhaw.ovtycoon.RisikoController;
 import ch.zhaw.ovtycoon.gui.model.MapModel;
+import com.google.common.base.Strings;
 import javafx.animation.TranslateTransition;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -32,15 +33,19 @@ public class LoadWindowController {
     private Button startButton;
 
     private boolean loadGame = false;
+    private ArrayList<Config.PlayerColor> listOfColours = new ArrayList<>();
 
 
 
     public LoadWindowController(boolean isLoadingGame){
         this.loadGame = isLoadingGame;
     }
-    public LoadWindowController( ArrayList listOfPlayers){
-            System.out.println(listOfPlayers.size());
-           //initRisikoControler //TODO
+
+    public LoadWindowController( ArrayList<String> listOfPlayers){
+        for (String colour : listOfPlayers) {
+            listOfColours.add(Config.PlayerColor.valueOf(colour.toUpperCase()));
+        }
+
     }
 
     @FXML
@@ -65,13 +70,9 @@ public class LoadWindowController {
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/MainWindow.fxml"));
             final Image mapImage = new Image(getClass().getResource("/zvv_zones_v11.png").toExternalForm());
-            final double scale = Screen.getPrimary().getBounds().getHeight() < 1000.0d ? 0.7d : 1.0d;
+            double  scale = Screen.getPrimary().getBounds().getHeight() < 1000.0d ? 0.7d : 1.0d; //TODO set final
             // TODO remove after player init view merged
-            ArrayList<Config.PlayerColor> playersForTesting = new ArrayList<>();
-            playersForTesting.add(RED);
-            playersForTesting.add(BLUE);
-            playersForTesting.add(GREEN);
-            RisikoController risikoController = loadGame ? new RisikoController() : new RisikoController(playersForTesting);
+            RisikoController risikoController = loadGame ? new RisikoController() : new RisikoController(listOfColours);
             final MapModel mapModel = new MapModel(mapImage, scale, risikoController);
             MainWindowController mainWindowController = new MainWindowController(mapModel);
             fxmlLoader.setController(mainWindowController);
@@ -80,7 +81,12 @@ public class LoadWindowController {
             Scene scene = new Scene(rootPane);
             scene.getStylesheets().add(getClass().getClassLoader().getResource("map-styles.css").toExternalForm());
 
+            double stageWidth = scale * 1027.0d;
+            double stageHeight = scale * 969.0d;
+
             Stage mainWindow = new Stage();
+            mainWindow.setWidth(stageWidth);
+            mainWindow.setHeight(stageHeight);
 
             mainWindowController.setParentSceneGraph(rootPane);
             mainWindowController.setParentSceneGraph(parentSceneGraph);

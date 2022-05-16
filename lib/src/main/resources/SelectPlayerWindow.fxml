@@ -6,7 +6,7 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane fx:id="SelectPlayerPane" prefHeight="350.0" prefWidth="1024.0" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ch.zhaw.ovtycoon.gui.controller.SelectPlayerWindowController">
+<AnchorPane fx:id="selectPlayerPane" prefHeight="350.0" prefWidth="1024.0" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ch.zhaw.ovtycoon.gui.controller.SelectPlayerWindowController">
    <children>
       <ImageView fitHeight="350.0" fitWidth="1024.0" pickOnBounds="true" preserveRatio="true">
          <image>
@@ -43,7 +43,7 @@
             <Image url="@player_violet.png" />
          </image>
       </ImageView>
-      <Button fx:id="NextButton" layoutX="868.0" layoutY="272.0" mnemonicParsing="false" onMouseClicked="#doNext" prefHeight="47.0" prefWidth="83.0" text="Next" />
+      <Button fx:id="nextButton" layoutX="868.0" layoutY="272.0" mnemonicParsing="false" onMouseClicked="#doNext" prefHeight="47.0" prefWidth="83.0" text="Next" />
       <TextField fx:id="infoText" editable="false" layoutX="395.0" layoutY="99.0" prefHeight="25.0" prefWidth="234.0" text="Click on the Player you want to play with!" />
    </children>
 </AnchorPane>

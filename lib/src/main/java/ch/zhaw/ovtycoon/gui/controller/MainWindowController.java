@@ -39,15 +39,13 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -56,6 +54,8 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static java.awt.Font.BOLD;
 
 /**
  * Controller for the zones-map-view.
@@ -86,6 +86,10 @@ public class MainWindowController {
     private final double scale;
     private final MapModel mapModel;
     @FXML
+    private ImageView background;
+    @FXML
+    private AnchorPane anchorPane;
+    @FXML
     private StackPane stackPane;
     @FXML
     private Image mapImage;
@@ -112,9 +116,9 @@ public class MainWindowController {
     @FXML
     private HBox upperHBox;
     @FXML
-    private Button CloseButton;
+    private Button closeButton;
     @FXML
-    private Button SaveButton;
+    private Button saveButton;
     private Timeline highlightClickableZonesTl = new Timeline();
     private PixelWriter pw;
     private PixelWriter mapPw;
@@ -159,8 +163,8 @@ public class MainWindowController {
             mapModel.nextAction();
         });
         actionBtn.setOnMouseClicked(event -> onActionButtonClick());
-        SaveButton.setOnMouseClicked(event -> saveGame());
-        CloseButton.setOnMouseClicked(event -> closeGame());
+        saveButton.setOnMouseClicked(event -> saveGame());
+        closeButton.setOnMouseClicked(event -> closeGame());
         nextMoveBtn.disableProperty().bind(showingAnimation.or(showingPopup).or(gameWon));
         actionBtn.visibleProperty().bind(mapModel.actionButtonVisibleProperty().or(gameWon));
         actionBtn.disableProperty().bind(mapModel.actionButtonDisabledProperty().or(mapModel.sourceOrTargetNullProperty()).or(clickedActionButton));
@@ -169,6 +173,7 @@ public class MainWindowController {
         eliminatePlayer();
         initMapListeners();
         mapModel.setInitialValues(); // TODO ev clean up
+        actionBtn.getStyleClass().add("buttonClass");
     }
 
     public void setParentSceneGraph(Parent parentSceneGraph) {
@@ -306,6 +311,38 @@ public class MainWindowController {
         labelStackPane.setMinWidth(labelStackPane.getMinWidth() * scale);
         playersVBox.setPrefHeight(playersVBox.getPrefHeight() * scale);
         playersVBox.setPrefWidth(playersVBox.getPrefWidth() * scale);
+
+        background.setFitHeight(background.getFitHeight() * scale);
+        background.setFitWidth(background.getFitWidth() * scale);
+
+        nextMoveBtn.setLayoutX(nextMoveBtn.getLayoutX() * scale);
+        nextMoveBtn.setLayoutY(nextMoveBtn.getLayoutY() * scale);
+        nextMoveBtn.setPrefHeight(actionBtn.getPrefHeight() * scale);
+        nextMoveBtn.setPrefWidth(actionBtn.getPrefWidth() * scale);
+        nextMoveBtn.setStyle("-fx-font-family: Arial; -fx-font-weight: bold; -fx-font-size: 10px;");
+
+        actionBtn.setLayoutX(actionBtn.getLayoutX() * scale);
+        actionBtn.setLayoutY(actionBtn.getLayoutY() * scale);
+        actionBtn.setPrefHeight(actionBtn.getPrefHeight() * scale);
+        actionBtn.setPrefWidth(actionBtn.getPrefWidth() * scale);
+        actionBtn.setStyle("-fx-font-family: Arial; -fx-font-weight: bold; -fx-font-size: 10px;");
+
+
+        closeButton.setLayoutX(closeButton.getLayoutX() * scale);
+        closeButton.setLayoutY(closeButton.getLayoutY() * scale);
+        closeButton.setPrefHeight(closeButton.getPrefHeight() * scale);
+        closeButton.setPrefWidth(closeButton.getPrefWidth() * scale);
+        closeButton.setStyle("-fx-font-family: Arial; -fx-font-weight: bold; -fx-font-size: 7px;");
+
+        saveButton.setLayoutX(saveButton.getLayoutX() * scale);
+        saveButton.setLayoutY(saveButton.getLayoutY() * scale);
+        saveButton.setPrefHeight(saveButton.getPrefHeight() * scale);
+        saveButton.setPrefWidth(saveButton.getPrefWidth() * scale);
+        saveButton.setStyle("-fx-font-family: Arial; -fx-font-weight: bold; -fx-font-size: 8px;");
+
+        playersVBox.setLayoutX(playersVBox.getLayoutX() * scale);
+        playersVBox.setLayoutY(playersVBox.getLayoutY() * scale);
+
     }
 
     /**
