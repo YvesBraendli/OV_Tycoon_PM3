@@ -18,12 +18,12 @@
          </image>
       </ImageView>
       <Button fx:id="SaveButton" layoutX="135.0" layoutY="874.0" mnemonicParsing="false" prefHeight="46.0" prefWidth="45.0" text="Save" />
-      <Button fx:id="actionBtn" layoutX="602.0" layoutY="884.0" mnemonicParsing="false" prefHeight="46.0" prefWidth="113.0" text="Action" textAlignment="CENTER" textOverrun="WORD_ELLIPSIS">
+      <Button fx:id="actionBtn" layoutX="261.0" layoutY="864.0" mnemonicParsing="false" prefHeight="65.0" prefWidth="138.0" text="Action" textAlignment="CENTER" textOverrun="WORD_ELLIPSIS">
          <font>
             <Font name="System Bold" size="17.0" />
          </font>
       </Button>
-      <Button fx:id="nextMoveBtn" layoutX="474.0" layoutY="864.0" mnemonicParsing="false" prefHeight="65.0" prefWidth="79.0" text="Action" textAlignment="CENTER" textOverrun="WORD_ELLIPSIS">
+      <Button fx:id="nextMoveBtn" layoutX="474.0" layoutY="864.0" mnemonicParsing="false" prefHeight="65.0" prefWidth="226.0" text="Naechste Phase" textAlignment="CENTER" textOverrun="WORD_ELLIPSIS">
          <font>
             <Font name="System Bold" size="17.0" />
          </font>
