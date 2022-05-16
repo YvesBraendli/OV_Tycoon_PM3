@@ -11,6 +11,7 @@ import ch.zhaw.ovtycoon.gui.model.dto.ReinforcementAmountDTO;
 import ch.zhaw.ovtycoon.gui.model.dto.ReinforcementDTO;
 import ch.zhaw.ovtycoon.gui.model.dto.TooltipDTO;
 import ch.zhaw.ovtycoon.gui.model.dto.ZoneTroopAmountDTO;
+import ch.zhaw.ovtycoon.model.Zone;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.image.Image;
@@ -20,6 +21,7 @@ import org.mockito.Mock;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
@@ -221,7 +223,176 @@ public class MapModelTest {
 
     public void testFightAttackerWinsGame() {}
 
-    public void testClickOnZone(){
+    @Test
+    public void testClickOnZoneSetSource(){
+        initializeUUTWithDefaultScale();
+        assertNull(uut.getSource());
+        ZoneSquare toClick = uut.getZoneSquares().stream().filter(zone -> zone.getName().equals("Zone110")).findFirst().orElse(null);
+        ZoneSquare validTarget = uut.getZoneSquares().stream().filter(zone -> zone.getName().equals("Zone154")).findFirst().orElse(null);
+        AtomicInteger sourceOrTargetPropertyUpdateCount = new AtomicInteger(0);
+        AtomicInteger darkenBackgroundPropertyUpdateCount = new AtomicInteger(0);
+        assertNotNull(toClick);
+        assertNotNull(validTarget);
+
+        int toClickX = toClick.getCenter().getX();
+        int toClickY = toClick.getCenter().getY();
+        final List<String> clickableZonesNames = new ArrayList<>();
+        clickableZonesNames.add(toClick.getName());
+        RisikoController mockRisikoController = mock(RisikoController.class);
+        uut.setRisikoController(mockRisikoController);
+        when(mockRisikoController.getValidSourceZoneNames()).thenReturn(clickableZonesNames);
+        when(mockRisikoController.getValidTargetZoneNames(toClick.getName())).thenReturn(List.of(validTarget.getName()));
+
+        uut.handleMapClick(toClickX, toClickY);
+
+        uut.darkenBackgroundProperty().addListener((new ChangeListener<Boolean>() {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+                if (darkenBackgroundPropertyUpdateCount.get() == 0) {
+                    assertFalse(newValue);
+                    darkenBackgroundPropertyUpdateCount.set(1);
+                } else {
+                    assertTrue(newValue);
+                    uut.darkenBackgroundProperty().removeListener(this);
+                }
+            }
+        }));
+        uut.removeOverlaidPixelsProperty().addListener((new ChangeListener<Boolean>() {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+                assertTrue(newValue);
+                uut.removeOverlaidPixelsProperty().removeListener(this);
+            }
+        }));
+        uut.sourceOrTargetNullProperty().addListener((new ChangeListener<Boolean>() {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+                if (sourceOrTargetPropertyUpdateCount.get() == 0) {
+                    assertTrue(newValue);
+                    sourceOrTargetPropertyUpdateCount.set(1);
+                } else {
+                    assertFalse(newValue);
+                    uut.sourceOrTargetNullProperty().removeListener(this);
+                }
+            }
+        }));
+        uut.highlightNeighboursProperty().addListener((new ChangeListener<List<ZoneSquare>>() {
+            @Override
+            public void changed(ObservableValue<? extends List<ZoneSquare>> observable, List<ZoneSquare> oldValue, List<ZoneSquare> newValue) {
+                assertTrue(newValue.size() > 0);
+                assertEquals(validTarget, newValue.get(0));
+                uut.highlightNeighboursProperty().removeListener(this);
+            }
+        }));
+        uut.setZoneActiveProperty().addListener((new ChangeListener<ActivateZoneDTO>() {
+            @Override
+            public void changed(ObservableValue<? extends ActivateZoneDTO> observable, ActivateZoneDTO oldValue, ActivateZoneDTO newValue) {
+                assertEquals(toClick, newValue.getZoneSquare());
+                assertTrue(newValue.isShift());
+                uut.setZoneActiveProperty().removeListener(this);
+            }
+        }));
+        uut.stopAnimationProperty().addListener((new ChangeListener<Boolean>() {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+                assertTrue(newValue);
+                uut.stopAnimationProperty().removeListener(this);
+            }
+        }));
+        assertEquals(toClick, uut.getSource());
+        assertTrue(uut.getHoverableZones().contains(toClick));
+        assertTrue(uut.getHoverableZones().contains(validTarget));
+        assertTrue(uut.getClickableZones().contains(validTarget));
+        assertTrue(uut.getClickableZones().contains(validTarget));
+    }
+
+    public void testClickShouldUpdateTarget() {
+        initializeUUTWithDefaultScale();
+        assertNull(uut.getSource());
+        ZoneSquare source = uut.getZoneSquares().stream().filter(zone -> zone.getName().equals("Zone110")).findFirst().orElse(null);
+        ZoneSquare target = uut.getZoneSquares().stream().filter(zone -> zone.getName().equals("Zone154")).findFirst().orElse(null);
+        AtomicInteger sourceOrTargetPropertyUpdateCount = new AtomicInteger(0);
+        AtomicInteger darkenBackgroundPropertyUpdateCount = new AtomicInteger(0);
+        assertNotNull(source);
+        assertNotNull(target);
+
+        int toClickX = target.getCenter().getX();
+        int toClickY = target.getCenter().getY();
+        final List<String> clickableZonesNames = new ArrayList<>();
+        clickableZonesNames.add(target.getName());
+        RisikoController mockRisikoController = mock(RisikoController.class);
+        uut.setRisikoController(mockRisikoController);
+        when(mockRisikoController.getValidTargetZoneNames(toClick.getName())).thenReturn(List.of(validTarget.getName()));
+
+        uut.handleMapClick(toClickX, toClickY);
+
+        uut.darkenBackgroundProperty().addListener((new ChangeListener<Boolean>() {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+                if (darkenBackgroundPropertyUpdateCount.get() == 0) {
+                    assertFalse(newValue);
+                    darkenBackgroundPropertyUpdateCount.set(1);
+                } else {
+                    assertTrue(newValue);
+                    uut.darkenBackgroundProperty().removeListener(this);
+                }
+            }
+        }));
+        uut.removeOverlaidPixelsProperty().addListener((new ChangeListener<Boolean>() {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+                assertTrue(newValue);
+                uut.removeOverlaidPixelsProperty().removeListener(this);
+            }
+        }));
+        uut.sourceOrTargetNullProperty().addListener((new ChangeListener<Boolean>() {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+                if (sourceOrTargetPropertyUpdateCount.get() == 0) {
+                    assertTrue(newValue);
+                    sourceOrTargetPropertyUpdateCount.set(1);
+                } else {
+                    assertFalse(newValue);
+                    uut.sourceOrTargetNullProperty().removeListener(this);
+                }
+            }
+        }));
+        uut.highlightNeighboursProperty().addListener((new ChangeListener<List<ZoneSquare>>() {
+            @Override
+            public void changed(ObservableValue<? extends List<ZoneSquare>> observable, List<ZoneSquare> oldValue, List<ZoneSquare> newValue) {
+                assertTrue(newValue.size() > 0);
+                assertEquals(validTarget, newValue.get(0));
+                uut.highlightNeighboursProperty().removeListener(this);
+            }
+        }));
+        uut.setZoneActiveProperty().addListener((new ChangeListener<ActivateZoneDTO>() {
+            @Override
+            public void changed(ObservableValue<? extends ActivateZoneDTO> observable, ActivateZoneDTO oldValue, ActivateZoneDTO newValue) {
+                assertEquals(toClick, newValue.getZoneSquare());
+                assertTrue(newValue.isShift());
+                uut.setZoneActiveProperty().removeListener(this);
+            }
+        }));
+        uut.stopAnimationProperty().addListener((new ChangeListener<Boolean>() {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+                assertTrue(newValue);
+                uut.stopAnimationProperty().removeListener(this);
+            }
+        }));
+        assertEquals(toClick, uut.getSource());
+        assertTrue(uut.getHoverableZones().contains(toClick));
+        assertTrue(uut.getHoverableZones().contains(validTarget));
+        assertTrue(uut.getClickableZones().contains(validTarget));
+        assertTrue(uut.getClickableZones().contains(validTarget));
+
+    }
+
+    public void testClickShouldUnsetTarget() {
+
+    }
+
+    public void testClickShouldUnsetSourceAndTarget() {
 
     }
 
