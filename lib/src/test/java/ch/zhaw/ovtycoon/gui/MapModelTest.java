@@ -5,8 +5,12 @@ import ch.zhaw.ovtycoon.RisikoController;
 import ch.zhaw.ovtycoon.gui.model.Action;
 import ch.zhaw.ovtycoon.gui.model.MapModel;
 import ch.zhaw.ovtycoon.gui.model.ZoneSquare;
+import ch.zhaw.ovtycoon.gui.model.dto.ActivateZoneDTO;
 import ch.zhaw.ovtycoon.gui.model.dto.FightDTO;
+import ch.zhaw.ovtycoon.gui.model.dto.ReinforcementAmountDTO;
+import ch.zhaw.ovtycoon.gui.model.dto.ReinforcementDTO;
 import ch.zhaw.ovtycoon.gui.model.dto.TooltipDTO;
+import ch.zhaw.ovtycoon.gui.model.dto.ZoneTroopAmountDTO;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.image.Image;
@@ -15,6 +19,7 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
@@ -277,17 +282,146 @@ public class MapModelTest {
         assertEquals(amountOfHoverableZonesAfterReset, uut.getHoverableZones().size());
     }
 
-    public void testUpdateClickableZones() {}
+    @Test
+    public void testReinforcementClickOnZone() {
+        initializeUUTWithDefaultScale();
+        ZoneSquare toReinforce = uut.getZoneSquares().stream().filter(zone -> zone.getName().equals("Zone110")).findFirst().orElse(null);
+        assertNotNull(toReinforce);
+        final int clickableZonesAmountAfterReinforcementClick = 0;
+        final int hoverableZonesAmountAfterReinforcementClick = 0;
+        final List<ZoneSquare> clickableZones = new ArrayList<>();
+        clickableZones.add(toReinforce);
+        uut.setClickableZones(clickableZones);
+        int toReinforceX = toReinforce.getCenter().getX();
+        int toReinforceY = toReinforce.getCenter().getY();
+        uut.stopAnimationProperty().addListener(new ChangeListener<Boolean>() {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+                assertTrue(newValue);
+                uut.stopAnimationProperty().removeListener(this);
+            }
+        });
+        uut.removeOverlaidPixelsProperty().addListener(new ChangeListener<Boolean>() {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+                assertTrue(newValue);
+                uut.removeOverlaidPixelsProperty().removeListener(this);
+            }
+        });
+        uut.darkenBackgroundProperty().addListener((new ChangeListener<Boolean>() {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+                assertTrue(newValue);
+                uut.darkenBackgroundProperty().removeListener(this);
+            }
+        }));
+        uut.setZoneActiveProperty().addListener((new ChangeListener<ActivateZoneDTO>() {
+            @Override
+            public void changed(ObservableValue<? extends ActivateZoneDTO> observable, ActivateZoneDTO oldValue, ActivateZoneDTO newValue) {
+                assertEquals(newValue.getZoneSquare(), toReinforce);
+                assertFalse(newValue.isShift());
+                uut.setZoneActiveProperty().removeListener(this);
+            }
+        }));
+        uut.removeTooltipProperty().addListener((new ChangeListener<TooltipDTO>() {
+            @Override
+            public void changed(ObservableValue<? extends TooltipDTO> observable, TooltipDTO oldValue, TooltipDTO newValue) {
+                assertEquals(uut.getCurrHovered(), newValue);
+                uut.removeTooltipProperty().removeListener(this);
+            }
+        }));
+        ReinforcementDTO dto = uut.reinforcementClick(toReinforceX, toReinforceY);
+        assertEquals(toReinforce, dto.getZoneSquare());
+        assertFalse(uut.stopAnimationProperty().get());
+        assertFalse(uut.removeOverlaidPixelsProperty().get());
+        assertFalse(uut.isMapClickEnabled());
+        assertEquals(clickableZonesAmountAfterReinforcementClick, uut.getClickableZones().size());
+        assertEquals(hoverableZonesAmountAfterReinforcementClick, uut.getHoverableZones().size());
 
-    public void testReinforcement() {}
+    }
 
-    public void testReinforcementClickOnZone() {}
+    @Test
+    public void testReinforcementClickOnInvalidZone() {
+        initializeUUTWithDefaultScale();
+        ZoneSquare clickableZone = uut.getZoneSquares().stream().filter(zone -> zone.getName().equals("Zone154")).findFirst().orElse(null);
+        ZoneSquare toReinforce = uut.getZoneSquares().stream().filter(zone -> zone.getName().equals("Zone110")).findFirst().orElse(null);
+        assertNotNull(toReinforce);
+        final List<ZoneSquare> clickableZones = new ArrayList<>();
+        clickableZones.add(clickableZone);
+        uut.setClickableZones(clickableZones);
+        int toReinforceX = toReinforce.getCenter().getX();
+        int toReinforceY = toReinforce.getCenter().getY();
+        assertNull(uut.reinforcementClick(toReinforceX, toReinforceY));
+    }
 
-    public void testReinforcementClickOnInvalidZone() {}
+    @Test
+    public void testReinforcementClickWithNoClickableZones() {
+        initializeUUTWithDefaultScale();
+        ZoneSquare toReinforce = uut.getZoneSquares().stream().filter(zone -> zone.getName().equals("Zone110")).findFirst().orElse(null);
+        assertNotNull(toReinforce);
+        final List<ZoneSquare> clickableZones = new ArrayList<>();
+        uut.setClickableZones(clickableZones);
+        int toReinforceX = toReinforce.getCenter().getX();
+        int toReinforceY = toReinforce.getCenter().getY();
+        assertNull(uut.reinforcementClick(toReinforceX, toReinforceY));
+    }
 
-    public void testReinforcementClickWithNoClickableZones() {}
+    @Test
+    public void testReinforcementPlaceTroops() {
+        initializeUUTWithDefaultScale();
+        final String zoneToReinforceName = "Zone110";
+        final int troopAmountReceived = 5;
+        final int troopAmountAlreadyPlaced = 0;
+        final ReinforcementAmountDTO reinforcementAmountDTO = new ReinforcementAmountDTO(troopAmountReceived, troopAmountAlreadyPlaced);
+        final int previousTroopAmount = 2;
+        final int troopAmountAddedWithReinforcement = 3;
+        final RisikoController mockRisikoController = mock(RisikoController.class);
+        uut.setRisikoController(mockRisikoController);
+        uut.setCurrentReinforcement(reinforcementAmountDTO);
+        when(mockRisikoController.getZoneTroops(zoneToReinforceName)).thenReturn(previousTroopAmount + troopAmountAddedWithReinforcement);
+        uut.updateZoneTroopsTextProperty().addListener((new ChangeListener<ZoneTroopAmountDTO>() {
+            @Override
+            public void changed(ObservableValue<? extends ZoneTroopAmountDTO> observable, ZoneTroopAmountDTO oldValue, ZoneTroopAmountDTO newValue) {
+                assertEquals(zoneToReinforceName, newValue.getZoneName());
+                assertEquals(previousTroopAmount + troopAmountAddedWithReinforcement, newValue.getTroopAmount());
+                uut.updateZoneTroopsTextProperty().removeListener(this);
+            }
+        }));
+        uut.removeOverlaidPixelsProperty().addListener((new ChangeListener<Boolean>() {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+                assertTrue(newValue);
+                uut.removeOverlaidPixelsProperty().removeListener(this);
+            }
+        }));
+        uut.darkenBackgroundProperty().addListener((new ChangeListener<Boolean>() {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+                assertFalse(newValue);
+            }
+        }));
+        uut.placeReinforcementTroops(zoneToReinforceName, troopAmountAddedWithReinforcement);
+        assertTrue(uut.isMapClickEnabled());
+        assertFalse(uut.removeOverlaidPixelsProperty().get());
+        assertEquals(zonesAmount, uut.getHoverableZones().size());
+        assertEquals(troopAmountAddedWithReinforcement, uut.getCurrentReinforcement().getAmountAlreadyPlaced());
 
-    public void testPlaceTroops() {
+    }
+
+    @Test
+    public void testReinforcementPlaceTroopsReinforcementFinished() {
+        initializeUUTWithDefaultScale();
+        final String zoneToReinforceName = "Zone110";
+        final int troopAmountReceived = 5;
+        final int troopAmountAlreadyPlaced = 2;
+        final int hoverableZonesAfterTroopPlacingFinished = 0;
+        final int troopAmountAddedWithReinforcement = 3;
+        final ReinforcementAmountDTO reinforcementAmountDTO = new ReinforcementAmountDTO(troopAmountReceived, troopAmountAlreadyPlaced);
+        uut.setCurrentReinforcement(reinforcementAmountDTO);
+        uut.placeReinforcementTroops(zoneToReinforceName, troopAmountAddedWithReinforcement);
+        assertNull(uut.getCurrentReinforcement());
+        assertFalse(uut.isMapClickEnabled());
+        assertEquals(hoverableZonesAfterTroopPlacingFinished, uut.getHoverableZones().size());
     }
 
     @Test

@@ -470,8 +470,6 @@ public class MapModel {
 
             sourceOrTargetNull.set(source == null || target == null);
         }
-        // uncomment for testing
-        // System.out.println(String.format("Click handling took %d ms", System.currentTimeMillis() - startTime));
     }
 
     /**
@@ -665,8 +663,20 @@ public class MapModel {
         return scale;
     }
 
+    public void setClickableZones(List<ZoneSquare> clickableZones) {
+        this.clickableZones = clickableZones;
+    }
+
+    public void setCurrentReinforcement(ReinforcementAmountDTO currentReinforcement) {
+        this.currentReinforcement = currentReinforcement;
+    }
+
     public List<ZoneSquare> getHoverableZones() {
         return hoverableZones;
+    }
+
+    public ReinforcementAmountDTO getCurrentReinforcement() {
+        return currentReinforcement;
     }
 
     private ZoneSquare getZoneAtCoordinates(int x, int y) {
