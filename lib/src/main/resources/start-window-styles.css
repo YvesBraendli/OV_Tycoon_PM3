@@ -1,0 +1,23 @@
+<a href="#" class="buttonClass">Action</a>
+
+.buttonClass {
+  font-size:18px;
+  font-family:Arial;
+  width:140px;
+  height:80px;
+  border-width:5px;
+  color:rgba(87, 87, 87, 1);
+  border-color:rgba(5, 5, 5, 1);
+  font-weight:bold;
+  border-top-left-radius:12px;
+  border-top-right-radius:12px;
+  border-bottom-left-radius:12px;
+  border-bottom-right-radius:12px;
+  box-shadow:inset 0px 0px 0px 0px #ffffff;
+  background:linear-gradient(rgba(255, 255, 255, 1), rgba(33, 140, 207, 1));
+}
+
+.buttonClass:hover {
+  background: linear-gradient(rgba(33, 140, 207, 1), rgba(255, 255, 255, 1));
+}
+
