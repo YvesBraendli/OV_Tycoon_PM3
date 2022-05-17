@@ -228,7 +228,7 @@ public class GameTest {
 		testee.setZoneOwner(a, testee.getZone("Zone160"));
 		testee.setZoneOwner(a, testee.getZone("Zone161"));
 		testee.setZoneOwner(a, testee.getZone("Zone162"));
-		//name=Unterland,zones=Zone114,Zone113,Zone112,Zone121,Zone111,Zone117,Zone154,Zone184,Zone118
+		//name=Unterland,zones=Zone114,Zone113,Zone112,Zone121,Zone111,Zone117,Zone154,Zone118
 		testee.setZoneOwner(a, testee.getZone("Zone114"));
 		testee.setZoneOwner(a, testee.getZone("Zone113"));
 		testee.setZoneOwner(a, testee.getZone("Zone112"));
@@ -236,9 +236,8 @@ public class GameTest {
 		testee.setZoneOwner(a, testee.getZone("Zone111"));
 		testee.setZoneOwner(a, testee.getZone("Zone117"));
 		testee.setZoneOwner(a, testee.getZone("Zone154"));
-		testee.setZoneOwner(a, testee.getZone("Zone118"));
 		
-		testee.setZoneOwner(b, testee.getZone("Zone184"));
+		testee.setZoneOwner(b, testee.getZone("Zone118"));
 
 		//Act
 		Player winner = testee.getWinner();
@@ -289,7 +288,7 @@ public class GameTest {
 		testee.setZoneOwner(a, testee.getZone("Zone160"));
 		testee.setZoneOwner(a, testee.getZone("Zone161"));
 		testee.setZoneOwner(a, testee.getZone("Zone162"));
-		//name=Unterland,zones=Zone114,Zone113,Zone112,Zone121,Zone111,Zone117,Zone154,Zone184,Zone118
+		//name=Unterland,zones=Zone114,Zone113,Zone112,Zone121,Zone111,Zone117,Zone154,Zone118
 		testee.setZoneOwner(a, testee.getZone("Zone114"));
 		testee.setZoneOwner(a, testee.getZone("Zone113"));
 		testee.setZoneOwner(a, testee.getZone("Zone112"));
@@ -297,7 +296,6 @@ public class GameTest {
 		testee.setZoneOwner(a, testee.getZone("Zone111"));
 		testee.setZoneOwner(a, testee.getZone("Zone117"));
 		testee.setZoneOwner(a, testee.getZone("Zone154"));
-		testee.setZoneOwner(a, testee.getZone("Zone184"));
 		testee.setZoneOwner(a, testee.getZone("Zone118"));
 
 		//Act
@@ -862,10 +860,9 @@ public class GameTest {
 		testee.setZoneOwner(a, testee.getZone("Zone111"));
 		testee.setZoneOwner(a, testee.getZone("Zone117"));
 		testee.setZoneOwner(a, testee.getZone("Zone154"));
-		testee.setZoneOwner(a, testee.getZone("Zone184"));
 		testee.setZoneOwner(a, testee.getZone("Zone118"));
 
-		int expected = 5; // Magic number because formula already used in tested method
+		int expected = 4; // Magic number because formula already used in tested method
 		int actual = testee.getAmountOfReinforcements();
 
 		assertEquals(expected, actual);
@@ -880,7 +877,6 @@ public class GameTest {
 		testee.setZoneOwner(a, testee.getZone("Zone111"));
 		testee.setZoneOwner(a, testee.getZone("Zone117"));
 		testee.setZoneOwner(a, testee.getZone("Zone154"));
-		testee.setZoneOwner(a, testee.getZone("Zone184"));
 		testee.setZoneOwner(a, testee.getZone("Zone118"));
 		testee.setZoneOwner(a, testee.getZone("Zone115"));
 		testee.setZoneOwner(a, testee.getZone("Zone124"));
@@ -903,7 +899,6 @@ public class GameTest {
 		testee.setZoneOwner(a, testee.getZone("Zone111"));
 		testee.setZoneOwner(a, testee.getZone("Zone117"));
 		testee.setZoneOwner(a, testee.getZone("Zone154"));
-		testee.setZoneOwner(a, testee.getZone("Zone184"));
 		testee.setZoneOwner(a, testee.getZone("Zone118"));
 		testee.setZoneOwner(a, testee.getZone("Zone115"));
 		testee.setZoneOwner(a, testee.getZone("Zone124"));
@@ -922,7 +917,7 @@ public class GameTest {
 		testee.setZoneOwner(a, testee.getZone("Zone131"));
 		testee.setZoneOwner(a, testee.getZone("Zone130"));
 
-		int expected = 12; // Magic number because formula already used in tested method
+		int expected = 11; // Magic number because formula already used in tested method
 		int actual = testee.getAmountOfReinforcements();
 
 		assertEquals(expected, actual);

@@ -409,7 +409,8 @@ public class MainWindowController {
         }
 
         mapModel.currPlayerProperty().addListener((obs, oldVal, newVal) -> {
-            highlightCurrPlayerTile(oldVal.name().toLowerCase(), newVal.name().toLowerCase());
+            String oldId = oldVal == null ? null : oldVal.name().toLowerCase();
+            highlightCurrPlayerTile(oldId, newVal.name().toLowerCase());
             highlightCurrPlayerLarge(newVal);
         });
     }
@@ -421,7 +422,7 @@ public class MainWindowController {
      * @param idNew id of the HBox to be highlighted
      */
     private void highlightCurrPlayerTile(String idOld, String idNew) {
-        ImageView toBeUnHighlighted = playersListItems.stream().filter(box -> idOld.equals(box.getId())).findFirst().orElse(null);
+        ImageView toBeUnHighlighted = idOld == null ? null : playersListItems.stream().filter(box -> idOld.equals(box.getId())).findFirst().orElse(null);
         highlightPlayerTile(idNew);
         if (toBeUnHighlighted == null) return;
         toBeUnHighlighted.setFitWidth(70.0d * scale);
