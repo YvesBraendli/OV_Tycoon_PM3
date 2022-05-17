@@ -47,13 +47,27 @@ Show below is the current class diagramm of the project.
 
 #### Test Protocol
 The protocoll with all the negativ and positive Tests is shown below. You will also see the actual name of the test and to which classes the tests belong.
-* Test classes overview: ![TestOverview](Documents/TestDocumentation/TestOverview.png)
-* DiceTest: ![DiceTest](Documents/TestDocumentation/DiceTest.png)
-* FightTest: ![FightTest](Documents/TestDocumentation/FightTest.png)
-* GameStateServiceTest:![GameStateServiceTest](Documents/TestDocumentation/GameStateServiceTest.png)
-* GameTest:![GameTest_PartOne](Documents/TestDocumentation/GameTest_PartOne.png) ![GameTest_PartTwo](Documents/TestDocumentation/GameTest_PartTwo.png)
-* MapLoaderServiceTest:![MapLoaderServiceTest](Documents/TestDocumentation/MapLoaderServiceTest.png)
-* TroopHandlerTest:![TroopHandlerTest](Documents/TestDocumentation/TroopHandlerTest.png)
+* Test classes overview: 
+
+![TestOverview](Documents/TestDocumentation/TestOverview.png)
+* DiceTest: 
+
+![DiceTest](Documents/TestDocumentation/DiceTest.png)
+* FightTest: 
+
+![FightTest](Documents/TestDocumentation/FightTest.png)
+* GameStateServiceTest:
+
+![GameStateServiceTest](Documents/TestDocumentation/GameStateServiceTest.png)
+* GameTest:
+
+![GameTest_PartOne](Documents/TestDocumentation/GameTest_PartOne.png) ![GameTest_PartTwo](Documents/TestDocumentation/GameTest_PartTwo.png)
+* MapLoaderServiceTest:
+
+![MapLoaderServiceTest](Documents/TestDocumentation/MapLoaderServiceTest.png)
+* TroopHandlerTest:   
+               
+![TroopHandlerTest](Documents/TestDocumentation/TroopHandlerTest.png)
 #### Team/Contact
 If you have further quetsions or some suggestions to improve the project, you can contact the team over the given informations below.
 * Team-leader
