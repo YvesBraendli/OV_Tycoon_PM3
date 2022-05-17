@@ -44,7 +44,7 @@ public class MapModelTest {
     @Before
     public void platformStart() {
         JavaFXPlatformRunnable.run();
-        zoneMapImage = new Image(getClass().getClassLoader().getResource("zvv_zones_v7.png").toExternalForm());
+        zoneMapImage = new Image(getClass().getClassLoader().getResource("zvv_zones_v11.png").toExternalForm());
     }
 
     public void initializeUUTWithDefaultScale() {
