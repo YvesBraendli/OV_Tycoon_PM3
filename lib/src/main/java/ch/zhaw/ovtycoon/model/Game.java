@@ -99,7 +99,6 @@ public class Game implements Serializable {
         Player winner = attacker.getTroops() < initialAttackerTroops ? getZoneOwner(defender) : getZoneOwner(attacker);
         fightWinner.set(winner.getColor());
         if (defender.getTroops() <= 0) {
-        	System.out.println("called it");
             Player attackingPlayer = getZoneOwner(attacker);
             setZoneOwner(attackingPlayer, defender);
             tryEliminatePlayer(defendingPlayer);
