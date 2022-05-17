@@ -49,7 +49,7 @@ public class Game implements Serializable {
      * @param colors The list of all the players in the current game
      */
     public void initGame(ArrayList<PlayerColor> colors) {
-        if (colors == null) {
+        if (colors == null || colors.size() <= 1) {
             throw new IllegalArgumentException("Number of chosen colors musst be equal to numbers of players.");
         }
 
