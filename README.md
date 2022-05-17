@@ -38,7 +38,7 @@ When you dont want to attack anymore, you can move your troops. In this phase yo
 After you hit the 'next'-Button in you movement phase, the game will switch to the next player who can choose the same options as are described on top.
 
 ### Additional Information
-Bla bla bla
+In the additional informations, you can find specific extra information about the project.
 
 #### Class Diagramm
 Show below is the current class diagramm of the project.
@@ -47,3 +47,18 @@ Show below is the current class diagramm of the project.
 #### Test Protocol
 The protocoll with all the negativ and positive Tests is shown below.
 ![OV-Tycoon](Documents/Design/Logo/OV-Tycoon.png)
+#### Team/Contact
+If you have further quetsions or some suggestions to improve the project, you can contact the team over the given informations below.
+* Team-leader
+    * Kolodziejczyk Rinchen, 		
+    e-mail: kolodrin@students.zhaw.ch,		
+	tel.: 076 571 85 22 			
+* Deputy Team-leader
+    * Brändli Yves,
+    e-mail: braenyve@students.zhaw.ch,
+    tel.: 076 221 46 69
+* Team:
+    * Bissig Simon
+    * Meier Robin
+    * Moser Nadine
+    * Todorovic Sava
