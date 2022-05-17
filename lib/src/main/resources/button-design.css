@@ -1,0 +1,49 @@
+.buttonClass {
+  -fx-font-size:16px;
+  -fx-font-family:System;
+  -fx-font-weight: bold;
+  -fx-background-color:White;
+  -fx-width:140px;
+  -fx-height:80px;
+  -fx-border-width:4px;
+  -fx-border-color: black;
+  -fx-border-radius:13px;
+  -fx-display:inline-block;
+  }
+
+  .buttonClass:hover {
+  	-fx-background:linear-gradient(to bottom, White 50%, Blue 50%);
+  	-fx-background-radius: 13px;
+  	-fx-background-color: dodgerblue;
+  	-fx-top:1px;
+  	}
+
+.buttonClass:active {
+	-fx-position:relative;
+	-fx-top:1px;
+}
+
+.buttonClassLittle {
+  -fx-font-size:12px;
+  -fx-font-family:System;
+  -fx-font-weight: bold;
+  -fx-background-color:White;
+  -fx-width:140px;
+  -fx-height:80px;
+  -fx-border-width:4px;
+  -fx-border-color: black;
+  -fx-border-radius:13px;
+  -fx-display:inline-block;
+  }
+
+  .buttonClassLittle:hover {
+  	-fx-background:linear-gradient(to bottom, White 50%, Blue 50%);
+  	-fx-background-radius: 13px;
+  	-fx-background-color: dodgerblue;
+  	-fx-top:1px;
+  	}
+
+.buttonClassLittle:active {
+	-fx-position:relative;
+	-fx-top:1px;
+}

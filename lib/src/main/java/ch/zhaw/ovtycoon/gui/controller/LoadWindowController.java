@@ -21,8 +21,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 
+/**
+ * Controller for the load window.
+ */
 public class LoadWindowController {
 
+    /**
+     * To set the parent.
+     */
     private Parent parentSceneGraph;
 
     @FXML
@@ -30,15 +36,29 @@ public class LoadWindowController {
     @FXML
     private Button startButton;
 
+    /**
+     * Set when a new game must be loaded.
+     */
     private boolean loadGame = false;
+
+    /**
+     * A list of all the player color.
+     */
     private ArrayList<Config.PlayerColor> listOfColours = new ArrayList<>();
 
 
-
+    /**
+     * Constructor of the controller, when it is loading a saved game.
+     * @param isLoadingGame - true, if game needs to load.
+     */
     public LoadWindowController(boolean isLoadingGame){
         this.loadGame = isLoadingGame;
     }
 
+    /**
+     * Constructor of the controller, when a new game is started.
+     * @param listOfPlayers - list of the player in the game
+     */
     public LoadWindowController( ArrayList<String> listOfPlayers){
         for (String colour : listOfPlayers) {
             listOfColours.add(Config.PlayerColor.valueOf(colour.toUpperCase()));
@@ -46,15 +66,24 @@ public class LoadWindowController {
 
     }
 
+    /**
+     * Initialize the controller.
+     */
     @FXML
     public void initialize() {
         moveTram();
     }
 
+    /**
+     * Sets the parent scene graph.
+     */
     public void setParentSceneGraph(Parent parentSceneGraph) {
         this.parentSceneGraph = parentSceneGraph;
     }
 
+    /**
+     * Moves the tram from one side to another.
+     */
     public void moveTram() {
         TranslateTransition tramAnimation = new TranslateTransition();
         tramAnimation.setNode(tramImage);
@@ -64,6 +93,9 @@ public class LoadWindowController {
         tramAnimation.play();
     }
 
+    /**
+     * Opens the main window and set up the controller.
+     */
     private void openMainWindow() {
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/MainWindow.fxml"));
@@ -78,7 +110,7 @@ public class LoadWindowController {
             Scene scene = new Scene(rootPane);
             scene.getStylesheets().add(getClass().getClassLoader().getResource("map-styles.css").toExternalForm());
 
-            double stageWidth = scale * 1027.0d;
+            double stageWidth = scale * 969.0d;
             double stageHeight = scale * 969.0d;
 
             Stage mainWindow = new Stage();

@@ -10,28 +10,32 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane fx:id="anchorPane" prefHeight="969.0" prefWidth="1027.0" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1">
+<AnchorPane fx:id="anchorPane" maxWidth="950.0" minWidth="950.0" prefHeight="969.0" prefWidth="950.0" style="-fx-background-color: white;" xmlns="http://javafx.com/javafx/11.0.2" xmlns:fx="http://javafx.com/fxml/1">
    <children>
       <ImageView fx:id="background" fitHeight="969.0" fitWidth="1027.0" pickOnBounds="true" preserveRatio="true">
          <image>
-            <Image url="@Image/MainWindowBackground.png" />
+            <Image url="@Image/MainWindow2.png" />
          </image>
       </ImageView>
-      <Button fx:id="saveButton" layoutX="135.0" layoutY="874.0" mnemonicParsing="false" prefHeight="46.0" prefWidth="93.0" styleClass="buttonClass" stylesheets="@start-window-styles.css" text="Save">
+      <Button fx:id="saveButton" layoutX="135.0" layoutY="874.0" mnemonicParsing="false" prefHeight="46.0" prefWidth="93.0" styleClass="buttonClassLittle" stylesheets="@button-design.css" text="Save">
          <font>
             <Font size="6.0" />
          </font></Button>
-      <Button fx:id="actionBtn" layoutX="267.0" layoutY="864.0" mnemonicParsing="false" prefHeight="65.0" prefWidth="138.0" styleClass="buttonClass" stylesheets="@start-window-styles.css" text="Action" textAlignment="CENTER" textOverrun="WORD_ELLIPSIS">
+      <Button fx:id="closeButton" layoutX="28.0" layoutY="874.0" mnemonicParsing="false" prefHeight="46.0" prefWidth="102.0" styleClass="buttonClassLittle" stylesheets="@button-design.css" text="Schliessen">
+         <font>
+            <Font size="6.0" />
+         </font></Button>
+      <Button fx:id="actionBtn" layoutX="267.0" layoutY="864.0" mnemonicParsing="false" prefHeight="65.0" prefWidth="138.0" styleClass="buttonClass" stylesheets="@button-design.css" text="Action" textAlignment="CENTER" textOverrun="WORD_ELLIPSIS">
          <font>
             <Font name="System Bold" size="17.0" />
          </font>
       </Button>
-      <Button fx:id="nextMoveBtn" layoutX="474.0" layoutY="864.0" mnemonicParsing="false" prefHeight="65.0" prefWidth="226.0" styleClass="buttonClass" stylesheets="@start-window-styles.css" text="Naechste Phase" textAlignment="CENTER" textOverrun="WORD_ELLIPSIS">
+      <Button fx:id="nextMoveBtn" layoutX="474.0" layoutY="864.0" mnemonicParsing="false" prefHeight="65.0" prefWidth="226.0" styleClass="buttonClass" stylesheets="@button-design.css" text="Naechste Phase" textAlignment="CENTER" textOverrun="WORD_ELLIPSIS">
          <font>
             <Font name="System Bold" size="17.0" />
          </font>
       </Button>
-      <VBox fx:id="playersVBox" layoutX="791.0" layoutY="53.0" prefHeight="483.0" prefWidth="138.0" />
+      <VBox fx:id="playersVBox" layoutX="818.0" layoutY="34.0" prefHeight="483.0" prefWidth="131.0" />
       <VBox fx:id="mapVBox" alignment="CENTER_LEFT" layoutX="40.0" layoutY="34.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="800.0" prefWidth="700.0" spacing="20.0">
          <padding>
             <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
@@ -52,9 +56,5 @@
             </StackPane>
          </children>
       </VBox>
-      <Button fx:id="closeButton" layoutX="28.0" layoutY="874.0" mnemonicParsing="false" prefHeight="46.0" prefWidth="85.0" styleClass="buttonClass" stylesheets="@start-window-styles.css" text="Close">
-         <font>
-            <Font size="10.0" />
-         </font></Button>
    </children>
 </AnchorPane>
