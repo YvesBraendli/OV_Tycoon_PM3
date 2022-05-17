@@ -20,7 +20,6 @@ import ch.zhaw.ovtycoon.gui.model.dto.ZoneTroopAmountDTO;
 import ch.zhaw.ovtycoon.gui.model.dto.ZoneTroopAmountInitDTO;
 import ch.zhaw.ovtycoon.gui.service.ColorService;
 import ch.zhaw.ovtycoon.gui.service.GameStateService;
-import ch.zhaw.ovtycoon.model.Game;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;

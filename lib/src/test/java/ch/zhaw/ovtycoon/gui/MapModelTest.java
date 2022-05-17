@@ -192,13 +192,6 @@ public class MapModelTest {
 
     }
 
-    public void testFightAttackerWins() {
-
-    }
-
-    public void testFightDefenderWins() {
-    }
-
     @Test
     public void testFinishFightZoneOvertaken() {
         final int attackerTroops = 3;
@@ -221,13 +214,6 @@ public class MapModelTest {
             }
         }));
         uut.finishFight(attackerOvertakesZone);
-    }
-
-    public void testFightRegionOvertaken() {
-
-    }
-
-    public void testFightAttackerWinsGame() {
     }
 
     @Test
@@ -318,22 +304,25 @@ public class MapModelTest {
         assertNull(uut.getTarget());
         ZoneSquare source = uut.getZoneSquares().stream().filter(zone -> zone.getName().equals("Zone110")).findFirst().orElse(null);
         ZoneSquare target = uut.getZoneSquares().stream().filter(zone -> zone.getName().equals("Zone154")).findFirst().orElse(null);
+        target.setColor(BLUE);
         uut.setSource(source);
         AtomicInteger sourceOrTargetPropertyUpdateCount = new AtomicInteger(0);
         AtomicInteger darkenBackgroundPropertyUpdateCount = new AtomicInteger(0);
+        AtomicInteger setZoneActiveUpdateCount = new AtomicInteger(0);
         assertNotNull(source);
         assertNotNull(target);
-
+        final int clickableZonesCountAfterClick = 0;
+        final int hoverableZonesCountAfterClick = 0;
         int toClickX = target.getCenter().getX();
         int toClickY = target.getCenter().getY();
         final List<String> clickableZonesNames = new ArrayList<>();
         clickableZonesNames.add(target.getName());
+        uut.sourceOrTargetNullProperty().set(false);
+        uut.darkenBackgroundProperty().set(true);
+        uut.setClickableZones(List.of(target));
         RisikoController mockRisikoController = mock(RisikoController.class);
         uut.setRisikoController(mockRisikoController);
-        when(mockRisikoController.getValidTargetZoneNames(target.getName())).thenReturn(List.of(target.getName()));
-
-        uut.handleMapClick(toClickX, toClickY);
-
+        when(mockRisikoController.getValidTargetZoneNames(source.getName())).thenReturn(List.of(target.getName()));
         uut.darkenBackgroundProperty().addListener((new ChangeListener<Boolean>() {
             @Override
             public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
@@ -372,27 +361,25 @@ public class MapModelTest {
                 uut.removeUnnecessaryTooltipsProperty().removeListener(this);
             }
         }));
+        uut.setZoneActiveProperty().addListener((new ChangeListener<ActivateZoneDTO>() {
+            @Override
+            public void changed(ObservableValue<? extends ActivateZoneDTO> observable, ActivateZoneDTO oldValue, ActivateZoneDTO newValue) {
+                if (setZoneActiveUpdateCount.get() == 0) {
+                    assertEquals(target, newValue.getZoneSquare());
+                    assertFalse(newValue.isShift());
+                    setZoneActiveUpdateCount.set(1);
+                } else {
+                    assertEquals(source, newValue.getZoneSquare());
+                    assertTrue(newValue.isShift());
+                    uut.setZoneActiveProperty().removeListener(this);
+                }
+            }
+        }));
+        uut.handleMapClick(toClickX, toClickY);
+        assertEquals(target, uut.getTarget());
+        assertEquals(hoverableZonesCountAfterClick, uut.getHoverableZones().size());
+        assertEquals(clickableZonesCountAfterClick, uut.getClickableZones().size());
 
-    }
-
-    public void testClickShouldUnsetTarget() {
-
-    }
-
-    public void testClickShouldUnsetSourceAndTarget() {
-
-    }
-
-    public void testClickOnNoZone() {
-    }
-
-    public void testClickOnPositionOutOfMapBounds() {
-    }
-
-    public void testClickMapClickDisabled() {
-    }
-
-    public void testClickNoClickableZones() {
     }
 
     @Test

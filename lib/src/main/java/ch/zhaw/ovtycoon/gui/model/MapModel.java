@@ -291,9 +291,7 @@ public class MapModel {
         if (attacker == null || defender == null) return null;
 
         final AtomicReference<Config.PlayerColor> fightWinner = new AtomicReference<>(null);
-        final AtomicBoolean zoneOvertaken = new AtomicBoolean(false);
-
-        risikoController.getFightWinner().addListener((new ChangeListener<Config.PlayerColor>() {
+        ChangeListener<Config.PlayerColor> fightWinnerListener = new ChangeListener<Config.PlayerColor>() {
             @Override
             public void changed(ObservableValue<? extends Config.PlayerColor> observable, Config.PlayerColor oldValue, Config.PlayerColor newValue) {
                 if (newValue != null) {
@@ -301,9 +299,10 @@ public class MapModel {
                     risikoController.getFightWinner().removeListener(this);
                 }
             }
-        }));
+        };
 
-        risikoController.getZoneOvertaken().addListener((new ChangeListener<Boolean>() {
+        final AtomicBoolean zoneOvertaken = new AtomicBoolean(false);
+        ChangeListener<Boolean> zoneOvertakenListener = new ChangeListener<Boolean>() {
             @Override
             public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
                 if (newValue != null) {
@@ -311,10 +310,10 @@ public class MapModel {
                     risikoController.getZoneOvertaken().removeListener(this);
                 }
             }
-        }));
-        // TODO check if listener removed
+        };
+
         AtomicBoolean overtookRegion = new AtomicBoolean(false);
-        risikoController.getNewRegionOwnerProperty().addListener((new ChangeListener<Config.PlayerColor>() {
+        ChangeListener<Config.PlayerColor> regionOvertakenListener = new ChangeListener<Config.PlayerColor>() {
             @Override
             public void changed(ObservableValue<? extends Config.PlayerColor> observable, Config.PlayerColor oldValue, Config.PlayerColor newValue) {
                 if (newValue != null) {
@@ -322,7 +321,11 @@ public class MapModel {
                     risikoController.getNewRegionOwnerProperty().removeListener(this);
                 }
             }
-        }));
+        };
+
+        risikoController.getFightWinner().addListener(fightWinnerListener);
+        risikoController.getZoneOvertaken().addListener(zoneOvertakenListener);
+        risikoController.getNewRegionOwnerProperty().addListener(regionOvertakenListener);
 
         DiceRoll fightRes = risikoController.runFight(source.getName(), target.getName(), attackerTroops, defenderTroops);
         fightDTO.setAttackerDiceRoll(fightRes.getAttackerRoll());
@@ -341,6 +344,9 @@ public class MapModel {
         fightDTO.setDefender(defender.name().toLowerCase());
         fightDTO.setAttackerWon(attackerWon);
         fightDTO.setAttackerTroops(attackerTroops);
+        risikoController.getFightWinner().removeListener(fightWinnerListener);
+        risikoController.getZoneOvertaken().removeListener(zoneOvertakenListener);
+        risikoController.getNewRegionOwnerProperty().removeListener(regionOvertakenListener);
         return fightDTO;
     }
 
