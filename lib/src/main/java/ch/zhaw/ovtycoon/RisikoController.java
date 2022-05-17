@@ -13,7 +13,6 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -286,21 +285,23 @@ public class RisikoController{
 		return game.getMaxMovableTroops(zoneName);
 	}
 
-	// TODO remove as soon as player initialization implemented
-	public Player[] getPlayers() {
-		return game.getPlayers();
-	}
 
 	/**
 	 * Gets the player colors of the players of {@link #game}
-	 * @return array with player colors
+	 * @return array with player colors with not eliminated players
 	 */
 	public PlayerColor[] getPlayerColors() {
-		PlayerColor[] playerColors = new PlayerColor[game.getPlayers().length];
+		List<PlayerColor> playerColors = new ArrayList<>();
 		for (int i = 0; i < game.getPlayers().length; i++) {
-			playerColors[i] = game.getPlayers()[i].getColor();
+			if (!game.getPlayers()[i].isEliminated()) {
+				playerColors.add(game.getPlayers()[i].getColor());
+			}
 		}
-		return playerColors;
+		PlayerColor[] playerColorsArr = new PlayerColor[playerColors.size()];
+		for (int i = 0; i < playerColors.size(); i++) {
+			playerColorsArr[i] = playerColors.get(i);
+		}
+		return playerColorsArr;
 	}
 
 	/**
