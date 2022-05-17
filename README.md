@@ -16,9 +16,9 @@ This game is about taking over the public transport in the canton of Zurich. You
 
 
 ### Start the game
-Das Spiel kann momentan grundsätzlich überdie zwei folgenden Methoden gestartet werden:
+At the moment, the game can be startet/installed with the two method shown below:
 * One method is that one can download any desired development environment and import the project there. After you have buildet the project in this development environment, you can either start the project via the 'run' button of your development environment or via the gradle-built-in via 'run'.
-* The other method is to start the project over your command line input. For that you have to go to the file path (./PM3-FS22-IT20ta_ZH-Team3) there you can simple type in gradle run in your command line and the project will then automatically start up.
+* The other method is, that you download and install gradle and java to your laptop. After that you can open a command line input and navigate with cd ./PM3-FS22-IT20ta_ZH-Team3 to this file path, there you can simple type in the command gradle run in your command line and the project will then automatically start up.
 
 ### How to play
 #### Initialize Game
@@ -42,11 +42,17 @@ In the additional informations, you can find specific extra information about th
 
 #### Class Diagramm
 Show below is the current class diagramm of the project.
-![risiko](Documents/Projektskizze/risiko.png)
+![ClassDiagramm](Documents/ClassDiagram.png)
 
 #### Test Protocol
-The protocoll with all the negativ and positive Tests is shown below.
-![OV-Tycoon](Documents/Design/Logo/OV-Tycoon.png)
+The protocoll with all the negativ and positive Tests is shown below. You will also see the actual name of the test and to which classes the tests belong.
+* Test classes overview: ![TestOverview](Documents/TestDocumentation/TestOverview.png)
+* DiceTest: ![DiceTest](Documents/TestDocumentation/DiceTest.png)
+* FightTest: ![FightTest](Documents/TestDocumentation/FightTest.png)
+* GameStateServiceTest:![GameStateServiceTest](Documents/TestDocumentation/GameStateServiceTest.png)
+* GameTest:![GameTest_PartOne](Documents/TestDocumentation/GameTest_PartOne.png) ![GameTest_PartTwo](Documents/TestDocumentation/GameTest_PartTwo.png)
+* MapLoaderServiceTest:![MapLoaderServiceTest](Documents/TestDocumentation/MapLoaderServiceTest.png)
+* TroopHandlerTest:![TroopHandlerTest](Documents/TestDocumentation/TroopHandlerTest.png)
 #### Team/Contact
 If you have further quetsions or some suggestions to improve the project, you can contact the team over the given informations below.
 * Team-leader
