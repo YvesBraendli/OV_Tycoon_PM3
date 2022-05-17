@@ -20,7 +20,6 @@ public class Game implements Serializable {
     private transient SimpleObjectProperty<PlayerColor> fightWinner = new SimpleObjectProperty<>(null);
     private transient SimpleBooleanProperty zoneOvertaken = new SimpleBooleanProperty(false);
     private transient SimpleObjectProperty<Player> currentPlayerProperty = new SimpleObjectProperty<>(null);
-    private transient SimpleObjectProperty<Region> regionOwnerChange = new SimpleObjectProperty<>(null);
     private HashMap<Config.RegionName, ArrayList<Zone>> gameMap;
     private HashMap<Zone, Player> zoneOwner = new HashMap<Zone, Player>();
     private Player[] players;
@@ -37,7 +36,6 @@ public class Game implements Serializable {
         fightWinner = new SimpleObjectProperty<>(null);
         zoneOvertaken = new SimpleBooleanProperty(false);
         currentPlayerProperty = new SimpleObjectProperty<>(null);
-        regionOwnerChange = new SimpleObjectProperty<>(null);
         eliminatedPlayer = new SimpleObjectProperty<>(null);
         newRegionOwner = new SimpleObjectProperty<>(null);
     }
