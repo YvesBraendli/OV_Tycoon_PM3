@@ -130,8 +130,6 @@ public class RisikoController{
 	 * @return the current player by color
 	 */
     public PlayerColor getCurrentPlayer() {
-		System.out.println(game);
-		System.out.println(game.getCurrentPlayer());
     	return game.getCurrentPlayer().getColor();
     }
     
