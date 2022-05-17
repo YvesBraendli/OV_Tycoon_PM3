@@ -56,6 +56,9 @@
       </list>
     </option>
   </component>
+  <component name="Git.Merge.Settings">
+    <option name="BRANCH" value="develop" />
+  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
@@ -226,6 +229,7 @@
       <workItem from="1652775046157" duration="5410000" />
       <workItem from="1652786488524" duration="40000" />
       <workItem from="1652795971384" duration="257000" />
+      <workItem from="1652796259837" duration="421000" />
     </task>
     <servers />
   </component>
