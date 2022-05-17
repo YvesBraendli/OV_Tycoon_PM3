@@ -34,7 +34,7 @@ import static org.mockito.Mockito.when;
  * Tests for the {@link MapModel} class.
  */
 public class MapModelTest {
-    private final int zonesAmount = 43;
+    private final int zonesAmount = 42;
     private final double scaleDefault = 1.0d;
     private final double scaleSmall = 0.7d;
     private MapModel uut;
@@ -580,6 +580,7 @@ public class MapModelTest {
         final int troopAmountAddedWithReinforcement = 3;
         final ReinforcementAmountDTO reinforcementAmountDTO = new ReinforcementAmountDTO(troopAmountReceived, troopAmountAlreadyPlaced);
         uut.setCurrentReinforcement(reinforcementAmountDTO);
+        when(uut.getRisikoController().getAction()).thenReturn(Action.ATTACK);
         uut.placeReinforcementTroops(zoneToReinforceName, troopAmountAddedWithReinforcement);
         assertNull(uut.getCurrentReinforcement());
         assertFalse(uut.isMapClickEnabled());

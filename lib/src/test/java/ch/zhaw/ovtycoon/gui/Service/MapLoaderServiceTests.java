@@ -29,7 +29,7 @@ public class MapLoaderServiceTests {
     public void initZoneSquaresFromConfig_loadsAllZones_defaultScaling() {
         // Arrange
         testee = new MapLoaderService(zoneMapImage, scaleDefault);
-        int expectedZones = 43;
+        int expectedZones = 42;
 
         // Act
         List<ZoneSquare> result = testee.initZoneSquaresFromConfig();
@@ -42,7 +42,7 @@ public class MapLoaderServiceTests {
     public void initZoneSquaresFromConfig_allZonesHaveBorders_smallScaling() {
         // Arrange
         testee = new MapLoaderService(zoneMapImage, scaleSmall);
-        int expectedZones = 43;
+        int expectedZones = 42;
 
         // Act
         List<ZoneSquare> result = testee.initZoneSquaresFromConfig();
@@ -62,7 +62,7 @@ public class MapLoaderServiceTests {
     public void initZoneSquaresFromConfig_allZonesHaveBorders_defaultScaling() {
         // Arrange
         testee = new MapLoaderService(zoneMapImage, scaleSmall);
-        int expectedZones = 43;
+        int expectedZones = 42;
 
         // Act
         List<ZoneSquare> result = testee.initZoneSquaresFromConfig();
