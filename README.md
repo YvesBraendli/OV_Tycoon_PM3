@@ -7,7 +7,12 @@
 1. Basic informations
 2. Start the game
 3. How to play
-4. Additional informations
+	1. Initialize Game
+ 	2. Turn
+		1. Setting Reinforcement
+		2. Attacking
+		3. Movement
+5. Additional informations
     1. Class Diagramm
     2. Test Protocol
     3. Team/Contact
