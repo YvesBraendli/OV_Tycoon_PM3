@@ -10,7 +10,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane fx:id="anchorPane" maxWidth="950.0" minWidth="950.0" prefHeight="969.0" prefWidth="950.0" style="-fx-background-color: white;" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1">
+<AnchorPane fx:id="anchorPane" maxWidth="950.0" minWidth="950.0" prefHeight="969.0" prefWidth="950.0" style="-fx-background-color: white;" xmlns="http://javafx.com/javafx/11.0.2" xmlns:fx="http://javafx.com/fxml/1">
    <children>
       <ImageView fx:id="background" fitHeight="969.0" fitWidth="1027.0" pickOnBounds="true" preserveRatio="true">
          <image>

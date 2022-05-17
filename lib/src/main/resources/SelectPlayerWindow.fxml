@@ -6,7 +6,7 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane fx:id="selectPlayerPane" prefHeight="350.0" prefWidth="1024.0" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ch.zhaw.ovtycoon.gui.controller.SelectPlayerWindowController">
+<AnchorPane fx:id="selectPlayerPane" prefHeight="350.0" prefWidth="1024.0" xmlns="http://javafx.com/javafx/11.0.2" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ch.zhaw.ovtycoon.gui.controller.SelectPlayerWindowController">
    <children>
       <ImageView fitHeight="350.0" fitWidth="1024.0" pickOnBounds="true" preserveRatio="true">
          <image>

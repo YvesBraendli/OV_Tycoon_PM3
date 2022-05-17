@@ -124,7 +124,7 @@ public class SelectPlayerWindowController {
      */
     public void doNext(){
         if(listOfPlayer.size()<2){
-            infoText.setText("Too few player");
+            infoText.setText("Zu wenige Mitspieler!");
         }else{
             openLoadWindow();
             Stage stage = (Stage) nextButton.getScene().getWindow();
