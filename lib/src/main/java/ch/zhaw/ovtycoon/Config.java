@@ -9,15 +9,9 @@ import java.util.Map;
 public class Config  implements Serializable {
 	public static final int MAX_DICE_VALUE = 6;
 	public static final int MAX_THROWABLE_DICE = 3;
-	public static final int MAX_ATTACKERS = 3;
-	public static final int MIN_ATTACKERS = 1;
-	public static final int REGION_BONUS = 2;
-	public static final int MAX_PLAYERS = 6;
-	public static final int MIN_PLAYERS = 2;
-	public static final int NUMBER_OF_ZONES = 43;
+	public static final int NUMBER_OF_ZONES = 42;
 	public static final int NUMBER_OF_REGIONS = 5;
 	public static final int NUMBER_OF_TROOPS_TOTAL_IN_GAME = 80;
-	public static final int MIN_NUMBER_OF_TROOPS_IN_ZONE = 1;
 	public static final int MIN_NUMBER_OF_REINFORCEMENTS = 3;
 	
 	public static final Map<Integer, Integer> TROOPS_PER_PLAYER_AMOUNT;
@@ -27,6 +21,7 @@ public class Config  implements Serializable {
 		m.put(3, 35);
 		m.put(4, 30);
 		m.put(5, 25);
+		m.put(6, 20);
 		TROOPS_PER_PLAYER_AMOUNT = Collections.unmodifiableMap(m);
 	}
 	
@@ -107,7 +102,7 @@ public class Config  implements Serializable {
 	}
 
 	public enum PlayerColor {
-		BLACK("0x000000ff"), BLUE("0x0000ffff"), GREEN("0x4e944fff"), RED("0xff0000ff"), WHITE("0xffffffff"), YELLOW("0x8b8000ff");
+		BLACK("0x000000ff"), BLUE("0x000095ff"), GREEN("0x00f18fff"), RED("0xfc6c29ff"), BROWN("0x5b3a29ff"), VIOLET("0x7f00ffff");
 
 		private final String hexValue;
 

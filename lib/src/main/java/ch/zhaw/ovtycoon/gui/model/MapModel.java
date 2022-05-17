@@ -38,7 +38,7 @@ import static ch.zhaw.ovtycoon.Config.PlayerColor.RED;
 
 /**
  * Model for the zone map and the main view.
- * Has properties used by the {@link ch.zhaw.ovtycoon.gui.MapController} to update the view.
+ * Has properties used by the {@link ch.zhaw.ovtycoon.gui.controller.MainWindowController} to update the view.
  */
 public class MapModel {
     private final List<ZoneSquare> zoneSquares;
@@ -71,10 +71,10 @@ public class MapModel {
     private boolean mapClickEnabled = true;
     private List<ZoneSquare> clickableZones = new ArrayList<>();
     private List<ZoneSquare> hoverableZones = new ArrayList<>();
+    private final double scale;
     private ZoneSquare source = null;
     private ZoneSquare target = null;
     private TooltipDTO currHovered = null;
-    private final double scale;
     private final Scenario scenarioToBeTested = Scenario.PLAYER_ELIMINATED; // Only for initializing the zones and players to test certain scenarios, e.g. win game
     private ReinforcementAmountDTO currentReinforcement = null;
 
@@ -85,18 +85,13 @@ public class MapModel {
      * @param mapImage Image to be used as the game map
      * @param scale    for scaling the map for smaller screens
      */
-    public MapModel(Image mapImage, double scale) {
+    public MapModel(Image mapImage, double scale, RisikoController risikoController) {
         this.scale = scale;
         mapLoaderService = new MapLoaderService(mapImage, scale);
         colorService = new ColorService();
-        zoneSquares = mapLoaderService.initZoneSquaresFromConfig();
-        // TODO remove after player init view merged
-        ArrayList<Config.PlayerColor> playersForTesting = new ArrayList<>();
-        playersForTesting.add(RED);
-        playersForTesting.add(BLUE);
-        playersForTesting.add(GREEN);
-        currPlayer = new SimpleObjectProperty<>(playersForTesting.get(playersForTesting.size() - 1));
-        risikoController = new RisikoController(playersForTesting);
+        zoneSquares = mapLoaderService.initZoneSquaresFromConfig();;
+        this.risikoController = risikoController;
+        currPlayer = new SimpleObjectProperty<>(risikoController.getPlayerColors()[risikoController.getPlayerColors().length - 1]);
     }
 
     /**

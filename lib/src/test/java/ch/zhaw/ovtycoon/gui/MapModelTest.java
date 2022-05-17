@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static ch.zhaw.ovtycoon.Config.PlayerColor.*;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
 import static junit.framework.TestCase.assertNull;
@@ -47,11 +48,17 @@ public class MapModelTest {
     }
 
     public void initializeUUTWithDefaultScale() {
-        uut = new MapModel(zoneMapImage, scaleDefault);
+        RisikoController mockRisikoController = mock(RisikoController.class);
+        Config.PlayerColor[] playersForTesting = {RED, BLUE, GREEN};
+        when(mockRisikoController.getPlayerColors()).thenReturn(playersForTesting);
+        uut = new MapModel(zoneMapImage, scaleDefault, mockRisikoController);
     }
 
     public void initializeUUTWithSmallScale() {
-        uut = new MapModel(zoneMapImage, scaleSmall);
+        RisikoController mockRisikoController = mock(RisikoController.class);
+        Config.PlayerColor[] playersForTesting = {RED, BLUE, GREEN};
+        when(mockRisikoController.getPlayerColors()).thenReturn(playersForTesting);
+        uut = new MapModel(zoneMapImage, scaleSmall, mockRisikoController);
     }
 
     @Test
