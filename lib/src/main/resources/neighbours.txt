@@ -33,7 +33,7 @@ zone=Zone111,neighbours=Zone112,Zone121,Zone154,Zone110,Zone117
 zone=Zone155,neighbours=Zone150,Zone156,Zone154,Zone110,Zone151
 zone=Zone133,neighbours=Zone143,Zone180,Zone172,Zone173,Zone134,Zone132
 zone=Zone110,neighbours=Zone155,Zone140,Zone111,Zone150,Zone121,Zone154
-zone=Zone154,neighbours=Zone184,Zone155,Zone111,Zone110,Zone117
+zone=Zone154,neighbours=Zone155,Zone111,Zone110,Zone117
 zone=Zone132,neighbours=Zone143,Zone131,Zone172,Zone135,Zone142,Zone133
 zone=Zone113,neighbours=Zone112,Zone118,Zone123,Zone114
 zone=Zone135,neighbours=Zone170,Zone171,Zone131,Zone130,Zone122,Zone172,Zone132
