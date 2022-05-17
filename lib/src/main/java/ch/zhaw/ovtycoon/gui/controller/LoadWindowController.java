@@ -70,9 +70,8 @@ public class LoadWindowController {
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/MainWindow.fxml"));
             final Image mapImage = new Image(getClass().getResource("/zvv_zones_v11.png").toExternalForm());
-            double  scale = Screen.getPrimary().getBounds().getHeight() < 1000.0d ? 0.7d : 1.0d; //TODO set final
-            // TODO remove after player init view merged
-            RisikoController risikoController = loadGame ? new RisikoController() : new RisikoController(listOfColours);
+            final double  scale = Screen.getPrimary().getBounds().getHeight() < 1000.0d ? 0.7d : 1.0d;
+            final RisikoController risikoController = loadGame ? new RisikoController() : new RisikoController(listOfColours);
             final MapModel mapModel = new MapModel(mapImage, scale, risikoController);
             MainWindowController mainWindowController = new MainWindowController(mapModel);
             fxmlLoader.setController(mainWindowController);

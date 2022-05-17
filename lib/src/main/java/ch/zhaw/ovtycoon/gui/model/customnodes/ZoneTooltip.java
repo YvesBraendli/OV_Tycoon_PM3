@@ -22,7 +22,7 @@ public class ZoneTooltip extends VBox {
     public ZoneTooltip(String text) {
         setWidth(TOOLTIP_WIDTH);
         setHeight(TOOLTIP_HEIGHT);
-        setId(text); // TODO ev only use number
+        setId(text);
         Polygon triangle = new Polygon();
         triangle.getPoints().addAll(new Double[]{0.0d, 0.0d, TRIANGLE_SIDE_LENGTH, 0.0d, TRIANGLE_SIDE_LENGTH / 2.0d, TRIANGLE_SIDE_LENGTH});
         Label label = new Label();

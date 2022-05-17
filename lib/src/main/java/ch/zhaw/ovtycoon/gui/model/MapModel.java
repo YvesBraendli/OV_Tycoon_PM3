@@ -483,7 +483,7 @@ public class MapModel {
         risikoController.nextAction();
         Config.PlayerColor playerAfterActionSwitch = risikoController.getCurrentPlayer();
         if (currentPlayerBeforeActionSwitch != playerAfterActionSwitch) {
-            currPlayer.set(risikoController.getCurrentPlayer()); // TODO ev bind to property in mapModel.getRisikoController()
+            currPlayer.set(risikoController.getCurrentPlayer());
         }
         Action next = risikoController.getAction();
         actionButtonVisible.set(next != Action.DEFEND);
@@ -516,7 +516,6 @@ public class MapModel {
         return highlightPlayer;
     }
 
-    // TODO check if can be omitted
     public SimpleObjectProperty<TooltipDTO> removeTooltipProperty() {
         return removeTooltip;
     }
