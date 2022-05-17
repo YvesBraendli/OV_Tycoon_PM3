@@ -8,7 +8,6 @@ sX=65, oX=141, sY=391, oY=164, color=GREEN, name=Zone154, center=(130,455);
 sX=182, oX=225, sY=317, oY=233, color=BLUE, name=Zone121, center=(310,385);
 sX=330, oX=93, sY=419, oY=150, color=YELLOW, name=Zone130, center=(355,535);
 sX=280, oX=115, sY=648, oY=78, color=RED, name=Zone152, center=(345,685);
-sX=60, oX=31, sY=412, oY=61, color=YELLOW, name=Zone184, center=(75,420);
 sX=281, oX=121, sY=53, oY=116, color=RED, name=Zone115, center=(325,110);
 sX=332, oX=106, sY=93, oY=96, color=YELLOW, name=Zone161, center=(390,140);
 sX=434, oX=75, sY=75, oY=77, color=RED, name=Zone162, center=(475,100);

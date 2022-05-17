@@ -18,17 +18,18 @@ public class TroopHandler implements Serializable {
      * @param zoneToMoveUnitsTo        The zone, to which the player desires to move his troop units.
      * @param numberOfTroopUnitsToMove The number of troops, the player desires to move to another zone.
      */
-    public void moveUnits(Zone zoneToRemoveUnitsFrom, Zone zoneToMoveUnitsTo,int numberOfTroopUnitsToMove) {
+    public void moveUnits(Zone zoneToRemoveUnitsFrom, Zone zoneToMoveUnitsTo, int numberOfTroopUnitsToMove) {
         zoneToMoveUnitsTo.addTroops(numberOfTroopUnitsToMove);
         zoneToRemoveUnitsFrom.decreaseZone(numberOfTroopUnitsToMove);
     }
 
     /**
      * Allows current player to add an amount of troops to an owned zone
+     *
      * @param amount number of troops to add to zone
-     * @param zone zone to reinforce
+     * @param zone   zone to reinforce
      */
-    public void reinforce(int amount, Zone zone){
+    public void reinforce(int amount, Zone zone) {
         zone.addTroops(amount);
     }
 

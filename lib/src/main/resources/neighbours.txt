@@ -1,7 +1,6 @@
 zone=Zone180,neighbours=Zone181,Zone134,Zone133
 zone=Zone160,neighbours=Zone163,Zone161,Zone124,Zone120,Zone162,Zone123
 zone=Zone181,neighbours=Zone153,Zone180
-zone=Zone184,neighbours=Zone154
 zone=Zone162,neighbours=Zone161,Zone160
 zone=Zone140,neighbours=Zone121,Zone130,Zone141,Zone110
 zone=Zone161,neighbours=Zone160,Zone124,Zone162,Zone115
