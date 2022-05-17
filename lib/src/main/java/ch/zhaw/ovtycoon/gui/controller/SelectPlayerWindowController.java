@@ -39,7 +39,6 @@ public class SelectPlayerWindowController {
 
     @FXML
     public void initialize() {
-        nextButton.setStyle("buttonClass");
         selectPlayerPane.getChildren().stream().filter((node -> node.getId() != null && node.getId().toLowerCase().contains("player"))).forEach((node) -> node.setOnMouseClicked(event -> {
             resize(node.getId());
             amountOfPlayers(node.getId());
