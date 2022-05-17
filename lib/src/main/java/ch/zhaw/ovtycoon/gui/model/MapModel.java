@@ -47,7 +47,7 @@ public class MapModel {
     private RisikoController risikoController;
     private final SimpleBooleanProperty sourceOrTargetNull = new SimpleBooleanProperty(true);
     private final SimpleBooleanProperty actionButtonVisible = new SimpleBooleanProperty(false);
-    private final SimpleObjectProperty<Config.PlayerColor> currPlayer; // TODO remove default value after player init view merged
+    private final SimpleObjectProperty<Config.PlayerColor> currPlayer;
     private final SimpleStringProperty actionButtonText = new SimpleStringProperty();
     private final SimpleStringProperty showActionChange = new SimpleStringProperty();
     private final SimpleBooleanProperty darkenBackground = new SimpleBooleanProperty();
@@ -75,7 +75,6 @@ public class MapModel {
     private ZoneSquare source = null;
     private ZoneSquare target = null;
     private TooltipDTO currHovered = null;
-    private final Scenario scenarioToBeTested = Scenario.PLAYER_ELIMINATED; // Only for initializing the zones and players to test certain scenarios, e.g. win game
     private ReinforcementAmountDTO currentReinforcement = null;
 
     /**
@@ -84,12 +83,13 @@ public class MapModel {
      *
      * @param mapImage Image to be used as the game map
      * @param scale    for scaling the map for smaller screens
+     * @param risikoController Class for communicating with the backend
      */
     public MapModel(Image mapImage, double scale, RisikoController risikoController) {
         this.scale = scale;
         mapLoaderService = new MapLoaderService(mapImage, scale);
         colorService = new ColorService();
-        zoneSquares = mapLoaderService.initZoneSquaresFromConfig();;
+        zoneSquares = mapLoaderService.initZoneSquaresFromConfig();
         this.risikoController = risikoController;
         currPlayer = new SimpleObjectProperty<>(risikoController.getPlayerColors()[risikoController.getPlayerColors().length - 1]);
     }
@@ -701,56 +701,5 @@ public class MapModel {
             int translateY = zoneSquare.getCenter().getY();
             initializeZoneTroopsText.set(new ZoneTroopAmountInitDTO(zoneSquare.getName(), troops, translateX, translateY));
         });
-    }
-
-    // TODO Should happen in backend: methods below will be removed as soon as player initialization is implemented in the backend -------------------------------
-
-    private void addPlayerColorsToZones() {
-        Random random = new Random();
-        Player[] players = risikoController.getPlayers();
-        if (scenarioToBeTested == Scenario.PLAYER_ELIMINATED) {
-            for (int i = 0; i < zoneSquares.size() - 1; i++) {
-                String name = zoneSquares.get(i).getName();
-                int troops = random.nextInt(3) + 1;
-
-                int randomInt = random.nextInt(2);
-                risikoController.setZoneOwner(players[randomInt], zoneSquares.get(i).getName());
-                Color zoneColor = colorService.getColor(players[randomInt].getColor().getHexValue());
-                drawZone.set(new DrawZoneDTO(zoneSquares.get(i), zoneColor));
-                risikoController.updateZoneTroops(name, troops);
-            }
-            // for testing elimination of player green
-            String name = zoneSquares.get(42).getName();
-            int troops = random.nextInt(3) + 1;
-            risikoController.setZoneOwner(players[2], zoneSquares.get(42).getName());
-            Color zoneColor = colorService.getColor(players[2].getColor().getHexValue());
-            this.drawZone.set(new DrawZoneDTO(zoneSquares.get(42), zoneColor));
-            risikoController.updateZoneTroops(name, troops);
-        } else if (scenarioToBeTested == Scenario.WIN_GAME) {
-            for (int i = 0; i < zoneSquares.size() - 1; i++) {
-                String name = zoneSquares.get(i).getName();
-                int troops = random.nextInt(3) + 1;
-                risikoController.setZoneOwner(players[0], zoneSquares.get(i).getName());
-                Color zoneColor = colorService.getColor(players[0].getColor().getHexValue());
-                this.drawZone.set(new DrawZoneDTO(zoneSquares.get(i), zoneColor));
-                risikoController.updateZoneTroops(name, troops);
-            }
-            String name = zoneSquares.get(42).getName();
-            int troops = random.nextInt(3) + 1;
-            risikoController.setZoneOwner(players[1], zoneSquares.get(42).getName());
-            Color zoneColor = colorService.getColor(players[1].getColor().getHexValue());
-            this.drawZone.set(new DrawZoneDTO(zoneSquares.get(42), zoneColor));
-            risikoController.updateZoneTroops(name, troops);
-        } else {
-            for (int i = 0; i < zoneSquares.size(); i++) {
-                int randomInt = random.nextInt(3);
-                String name = zoneSquares.get(i).getName();
-                int troops = random.nextInt(3) + 1;
-                risikoController.setZoneOwner(players[randomInt], zoneSquares.get(i).getName());
-                Color zoneColor = colorService.getColor(players[randomInt].getColor().getHexValue());
-                this.drawZone.set(new DrawZoneDTO(zoneSquares.get(i), zoneColor));
-                risikoController.updateZoneTroops(name, troops);
-            }
-        }
     }
 }
