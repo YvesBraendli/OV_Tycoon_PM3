@@ -305,8 +305,8 @@ public class MapModel {
         ChangeListener<Boolean> zoneOvertakenListener = new ChangeListener<Boolean>() {
             @Override
             public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-                if (newValue != null) {
-                    zoneOvertaken.set(newValue);
+                if (newValue != false) {
+                    zoneOvertaken.set(true);
                     risikoController.getZoneOvertaken().removeListener(this);
                 }
             }
