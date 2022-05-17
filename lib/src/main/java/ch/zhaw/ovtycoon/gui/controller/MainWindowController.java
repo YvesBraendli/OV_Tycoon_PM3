@@ -28,7 +28,6 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.canvas.Canvas;
@@ -39,21 +38,12 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -77,7 +67,7 @@ public class MainWindowController {
     private static final int OVERLAY_EFFECT_SHIFT_PIXELS = 5;
     private final Color transparentColor = Color.TRANSPARENT;
     private final Color neighbourOverlayColor = new Color(1, 1, 1, 0.25d);
-    private final List<HBox> playersListItems = new ArrayList<>();
+    private final List<ImageView> playersListItems = new ArrayList<>();
     private final SimpleBooleanProperty showingAnimation = new SimpleBooleanProperty(false);
     private final SimpleBooleanProperty showingPopup = new SimpleBooleanProperty(false);
     private final SimpleBooleanProperty gameWon = new SimpleBooleanProperty(false);
@@ -85,6 +75,10 @@ public class MainWindowController {
     private final SimpleBooleanProperty clickedActionButton = new SimpleBooleanProperty();
     private final double scale;
     private final MapModel mapModel;
+    @FXML
+    private ImageView background;
+    @FXML
+    private AnchorPane anchorPane;
     @FXML
     private StackPane stackPane;
     @FXML
@@ -112,9 +106,9 @@ public class MainWindowController {
     @FXML
     private HBox upperHBox;
     @FXML
-    private Button CloseButton;
+    private Button closeButton;
     @FXML
-    private Button SaveButton;
+    private Button saveButton;
     private Timeline highlightClickableZonesTl = new Timeline();
     private PixelWriter pw;
     private PixelWriter mapPw;
@@ -130,11 +124,6 @@ public class MainWindowController {
      * @param mapModel MapModel to be used by the controller
      */
     public MainWindowController(MapModel mapModel) {
-        this.mapModel = mapModel;
-        this.scale = mapModel.getScale();
-    }
-
-    public MainWindowController(MapModel mapModel, Game gameToLoad) {
         this.mapModel = mapModel;
         this.scale = mapModel.getScale();
     }
@@ -159,8 +148,8 @@ public class MainWindowController {
             mapModel.nextAction();
         });
         actionBtn.setOnMouseClicked(event -> onActionButtonClick());
-        SaveButton.setOnMouseClicked(event -> saveGame());
-        CloseButton.setOnMouseClicked(event -> closeGame());
+        saveButton.setOnMouseClicked(event -> saveGame());
+        closeButton.setOnMouseClicked(event -> closeGame());
         nextMoveBtn.disableProperty().bind(showingAnimation.or(showingPopup).or(gameWon));
         actionBtn.visibleProperty().bind(mapModel.actionButtonVisibleProperty().or(gameWon));
         actionBtn.disableProperty().bind(mapModel.actionButtonDisabledProperty().or(mapModel.sourceOrTargetNullProperty()).or(clickedActionButton));
@@ -169,6 +158,7 @@ public class MainWindowController {
         eliminatePlayer();
         initMapListeners();
         mapModel.setInitialValues(); // TODO ev clean up
+        actionBtn.getStyleClass().add("buttonClass");
     }
 
     public void setParentSceneGraph(Parent parentSceneGraph) {
@@ -279,7 +269,7 @@ public class MainWindowController {
     private void eliminatePlayer() {
         mapModel.getRisikoController().getEliminatedPlayerProperty().addListener(((observable, oldValue, newValue) -> {
             showNotification(NotificationType.WARNING, String.format(PLAYER_ELIMINATED, newValue.name().toLowerCase()));
-            HBox toBeEliminated = playersListItems.stream().filter((hBox -> hBox.getId().equals(newValue.name().toLowerCase()))).findAny().orElse(null);
+            ImageView toBeEliminated = playersListItems.stream().filter((hBox -> hBox.getId().equals(newValue.name().toLowerCase()))).findAny().orElse(null);
             if (toBeEliminated != null) toBeEliminated.setStyle("-fx-opacity: 0.25;");
         }));
     }
@@ -306,6 +296,38 @@ public class MainWindowController {
         labelStackPane.setMinWidth(labelStackPane.getMinWidth() * scale);
         playersVBox.setPrefHeight(playersVBox.getPrefHeight() * scale);
         playersVBox.setPrefWidth(playersVBox.getPrefWidth() * scale);
+
+        background.setFitHeight(background.getFitHeight() * scale);
+        background.setFitWidth(background.getFitWidth() * scale);
+
+        nextMoveBtn.setLayoutX(nextMoveBtn.getLayoutX() * scale);
+        nextMoveBtn.setLayoutY(nextMoveBtn.getLayoutY() * scale);
+        nextMoveBtn.setPrefHeight(actionBtn.getPrefHeight() * scale);
+        nextMoveBtn.setPrefWidth(actionBtn.getPrefWidth() * scale);
+        nextMoveBtn.setStyle("-fx-font-family: Arial; -fx-font-weight: bold; -fx-font-size: 10px;");
+
+        actionBtn.setLayoutX(actionBtn.getLayoutX() * scale);
+        actionBtn.setLayoutY(actionBtn.getLayoutY() * scale);
+        actionBtn.setPrefHeight(actionBtn.getPrefHeight() * scale);
+        actionBtn.setPrefWidth(actionBtn.getPrefWidth() * scale);
+        actionBtn.setStyle("-fx-font-family: Arial; -fx-font-weight: bold; -fx-font-size: 10px;");
+
+
+        closeButton.setLayoutX(closeButton.getLayoutX() * scale);
+        closeButton.setLayoutY(closeButton.getLayoutY() * scale);
+        closeButton.setPrefHeight(closeButton.getPrefHeight() * scale);
+        closeButton.setPrefWidth(closeButton.getPrefWidth() * scale);
+        closeButton.setStyle("-fx-font-family: Arial; -fx-font-weight: bold; -fx-font-size: 7px;");
+
+        saveButton.setLayoutX(saveButton.getLayoutX() * scale);
+        saveButton.setLayoutY(saveButton.getLayoutY() * scale);
+        saveButton.setPrefHeight(saveButton.getPrefHeight() * scale);
+        saveButton.setPrefWidth(saveButton.getPrefWidth() * scale);
+        saveButton.setStyle("-fx-font-family: Arial; -fx-font-weight: bold; -fx-font-size: 8px;");
+
+        playersVBox.setLayoutX(playersVBox.getLayoutX() * scale);
+        playersVBox.setLayoutY(playersVBox.getLayoutY() * scale);
+
     }
 
     /**
@@ -382,7 +404,7 @@ public class MainWindowController {
      */
     private void addPlayers() {
         for (Config.PlayerColor playerColor : mapModel.getRisikoController().getPlayerColors()) {
-            HBox playerHBox = buildAndGetPlayerHBox(playerColor);
+            ImageView playerHBox = buildAndGetPlayerHBox(playerColor);
             playersListItems.add(playerHBox);
             playersVBox.getChildren().add(playerHBox);
         }
@@ -400,11 +422,11 @@ public class MainWindowController {
      * @param idNew id of the HBox to be highlighted
      */
     private void highlightCurrPlayerTile(String idOld, String idNew) {
-        HBox toBeUnHighlighted = playersListItems.stream().filter(box -> idOld.equals(box.getId())).findFirst().orElse(null);
+        ImageView toBeUnHighlighted = playersListItems.stream().filter(box -> idOld.equals(box.getId())).findFirst().orElse(null);
         highlightPlayerTile(idNew);
         if (toBeUnHighlighted == null) return;
-        toBeUnHighlighted.setPrefWidth(150.0d * scale);
-        toBeUnHighlighted.setPrefHeight(25.0d * scale);
+        toBeUnHighlighted.setFitWidth(70.0d * scale);
+        toBeUnHighlighted.setFitHeight(70.0d * scale);
     }
 
     /**
@@ -413,10 +435,10 @@ public class MainWindowController {
      * @param id id of the HBox to be highlighted
      */
     private void highlightPlayerTile(String id) {
-        HBox toBeHighlighted = playersListItems.stream().filter(box -> id.equals(box.getId())).findFirst().orElse(null);
+        ImageView toBeHighlighted = playersListItems.stream().filter(box -> id.equals(box.getId())).findFirst().orElse(null);
         if (toBeHighlighted == null) return;
-        toBeHighlighted.setPrefWidth(175.0d * scale);
-        toBeHighlighted.setPrefHeight(35.0d * scale);
+        toBeHighlighted.setFitWidth(100.0d * scale);
+        toBeHighlighted.setFitHeight(100.0d * scale);
     }
 
     /**
@@ -425,31 +447,16 @@ public class MainWindowController {
      * @param player player color
      * @return HBox created
      */
-    private HBox buildAndGetPlayerHBox(Config.PlayerColor player) {
-        String playerColor = player.getHexValue().substring(0, 8).replace("0x", "#");
-        HBox playerBox = new HBox();
-        playerBox.setPrefHeight(25.0d * scale);
-        playerBox.setPrefWidth(150.0d * scale);
-        playerBox.maxHeightProperty().bind(playerBox.prefHeightProperty());
-        playerBox.maxWidthProperty().bind(playerBox.prefWidthProperty());
-        playerBox.setAlignment(Pos.TOP_RIGHT);
-        playerBox.setStyle("-fx-border-width: 0.5px; -fx-border-color: black;");
+    private ImageView buildAndGetPlayerHBox(Config.PlayerColor player) {
         String colorName = player.name().toLowerCase();
-
         Image playerImage = new Image(getClass().getClassLoader().getResource(PLAYER_IMAGE_PREFIX + colorName + ".png").toExternalForm());
         ImageView playerImageView = new ImageView();
-        playerImageView.fitHeightProperty().bind(playerBox.prefHeightProperty());
-        playerImageView.fitWidthProperty().bind(playerBox.prefHeightProperty());
+        playerImageView.setFitWidth(70.0d * scale);
+        playerImageView.setFitHeight(70.0d * scale);
         playerImageView.setImage(playerImage);
-        playerBox.getChildren().add(playerImageView);
-        Label plrLabel = new Label(player.name().toLowerCase());
-        plrLabel.prefHeightProperty().bind(playerBox.prefHeightProperty());
-        plrLabel.prefWidthProperty().bind(playerBox.prefWidthProperty().subtract(playerBox.prefHeightProperty()));
-        plrLabel.setStyle(String.format("-fx-background-color: %s; -fx-text-fill: white; -fx-padding: 0 0 0 5px;", playerColor));
-        playerBox.getChildren().add(plrLabel);
+        playerImageView.setId(colorName);
+        return playerImageView;
 
-        playerBox.setId(colorName);
-        return playerBox;
     }
 
 
@@ -900,9 +907,7 @@ public class MainWindowController {
 
     public void saveGame(){
         this.gameStateService.saveGameState(mapModel.getRisikoController().getGame());
+        showNotification(NotificationType.INFO, "Spielstand gespeichert");
     }
 
-    public void doAction(){
-
-    }
 }

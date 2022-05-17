@@ -21,6 +21,7 @@ public class Config  implements Serializable {
 		m.put(3, 35);
 		m.put(4, 30);
 		m.put(5, 25);
+		m.put(6, 20);
 		TROOPS_PER_PLAYER_AMOUNT = Collections.unmodifiableMap(m);
 	}
 	
@@ -101,7 +102,7 @@ public class Config  implements Serializable {
 	}
 
 	public enum PlayerColor {
-		BLACK("0x000000ff"), BLUE("0x0000ffff"), GREEN("0x4e944fff"), RED("0xff0000ff"), WHITE("0xffffffff"), YELLOW("0x8b8000ff");
+		BLACK("0x000000ff"), BLUE("0x000095ff"), GREEN("0x00f18fff"), RED("0xfc6c29ff"), BROWN("0x5b3a29ff"), VIOLET("0x7f00ffff");
 
 		private final String hexValue;
 

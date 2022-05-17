@@ -41,7 +41,6 @@ public class MapLoaderService {
      * @return Initialized list with zone squares.
      */
     public List<ZoneSquare> initZoneSquaresFromConfig() {
-        long start = System.currentTimeMillis();
         List<ZoneSquare> zoneSquares = new ArrayList<>();
         try {
             String dir = System.getProperty("user.dir");
@@ -74,7 +73,6 @@ public class MapLoaderService {
         catch (IOException ioException) {
             ioException.printStackTrace();
         }
-        System.out.println(String.format("Finished stripe init in %d ms", System.currentTimeMillis() - start));
         return zoneSquares;
     }
 

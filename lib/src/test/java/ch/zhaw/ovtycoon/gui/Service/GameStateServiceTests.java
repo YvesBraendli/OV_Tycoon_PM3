@@ -33,7 +33,7 @@ public class GameStateServiceTests {
         Game game = new Game();
         Zone zone = new Zone(zoneName.toString());
         Player player = new Player("tester");
-        player.setColor(Config.PlayerColor.YELLOW);
+        player.setColor(Config.PlayerColor.RED);
         game.setZoneOwner(player, zone);
 
         // Act
@@ -50,7 +50,7 @@ public class GameStateServiceTests {
         // Arrange
         ZoneName zoneName = Config.ZoneName.Zone140;
         String playerName = "tester";
-        Config.PlayerColor playerColor = Config.PlayerColor.YELLOW;
+        Config.PlayerColor playerColor = Config.PlayerColor.RED;
         Game game = new Game();
         Zone zone = new Zone(zoneName.toString());
         Player player = new Player(playerName);

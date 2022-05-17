@@ -25,13 +25,13 @@ public class SelectPlayerWindowController {
 
 
     @FXML
-    private Button NextButton;
+    private Button nextButton;
 
     @FXML
     private TextField infoText;
 
     @FXML
-    private AnchorPane SelectPlayerPane;
+    private AnchorPane selectPlayerPane;
 
     public void setParentSceneGraph(Parent parentSceneGraph) {
         this.parentSceneGraph = parentSceneGraph;
@@ -39,14 +39,14 @@ public class SelectPlayerWindowController {
 
     @FXML
     public void initialize() {
-        SelectPlayerPane.getChildren().stream().filter((node -> node.getId() != null && node.getId().toLowerCase().contains("player"))).forEach((node) -> node.setOnMouseClicked(event -> {
+        selectPlayerPane.getChildren().stream().filter((node -> node.getId() != null && node.getId().toLowerCase().contains("player"))).forEach((node) -> node.setOnMouseClicked(event -> {
             resize(node.getId());
             amountOfPlayers(node.getId());
         }));
     }
 
     public void resize(String id) {
-        ImageView toResize = (ImageView) SelectPlayerPane.getChildren().stream().filter((node -> node.getId() != null && node.getId().equals(id))).findFirst().orElse(null);
+        ImageView toResize = (ImageView) selectPlayerPane.getChildren().stream().filter((node -> node.getId() != null && node.getId().equals(id))).findFirst().orElse(null);
         if (toResize == null) return;
         boolean enlarge = toResize.getFitWidth() == 100.0d;
         double resizedWidth = enlarge ? 130.0d : 100.0d;
@@ -61,6 +61,7 @@ public class SelectPlayerWindowController {
 
     public void amountOfPlayers(String id) {
         String colour = id.substring(6);
+
         if(listOfPlayer.indexOf(colour) == -1){
             listOfPlayer.add(colour);
             infoText.setText("Player " + colour + " is ready");
@@ -69,6 +70,9 @@ public class SelectPlayerWindowController {
             infoText.setText("Player " + colour + " is not ready");
         }
     }
+
+
+
 
     private void openLoadWindow(){
         try {
@@ -101,7 +105,7 @@ public class SelectPlayerWindowController {
             infoText.setText("Too few player");
         }else{
             openLoadWindow();
-            Stage stage = (Stage) NextButton.getScene().getWindow();
+            Stage stage = (Stage) nextButton.getScene().getWindow();
             stage.close();
         }
     }
