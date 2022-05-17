@@ -10,6 +10,7 @@
 4. Additional informations
     1. Class Diagramm
     2. Test Protocol
+    3. Team/Contact
 
 ### Basic Informations
 This game is about taking over the public transport in the canton of Zurich. You'll take on the role of a boss of a public transport company. In this game, you'll be able to place trains (further on in the beta release and the documentation called "troops") in different zones of the Canton of Zurich, where you'll compete for the favor of the passengers. You'll be able to open up new zones and thus slowly build an empire over the public transport of the Canton of Zurich.
