@@ -32,6 +32,7 @@ public class TroopHandlerTest {
         gameInstance = new Game();
         ArrayList<PlayerColor> colors = new ArrayList<>();
 		colors.add(PlayerColor.BLACK);
+		colors.add(PlayerColor.BLUE);
         gameInstance.initGame(colors);
         clearBoard(colors);
         numberOfTroopsInZone = 20;
