@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ch.zhaw.ovtycoon.model.DiceTests" tests="4" skipped="0" failures="0" errors="0" timestamp="2022-04-16T12:29:02" hostname="DESKTOP-HPFDVNN" time="0.008">
+  <properties/>
+  <testcase name="rollDice_returnAmountOfDiceIsEqualToArgumentAmount_validArgument" classname="ch.zhaw.ovtycoon.model.DiceTests" time="0.005"/>
+  <testcase name="rollDice_returnNull_negativAmount" classname="ch.zhaw.ovtycoon.model.DiceTests" time="0.001"/>
+  <testcase name="rollDice_returnNull_amountToBig" classname="ch.zhaw.ovtycoon.model.DiceTests" time="0.001"/>
+  <testcase name="rollDice_sortedValues_validArgument" classname="ch.zhaw.ovtycoon.model.DiceTests" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
