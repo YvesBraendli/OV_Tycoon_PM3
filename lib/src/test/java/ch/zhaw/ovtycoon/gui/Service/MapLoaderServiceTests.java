@@ -17,6 +17,7 @@ public class MapLoaderServiceTests {
     private MapLoaderService testee;
     private final double scaleDefault = 1.0d;
     private final double scaleSmall = 0.7d;
+    private final int overlayPixelShift = 5;
     private Image zoneMapImage;
 
     @Before
@@ -54,6 +55,9 @@ public class MapLoaderServiceTests {
                 int xDiff = Math.abs(hS.getStartX() - hS.getEndX());
                 boolean xIsSet = xDiff >= 0;
                 assertTrue(xIsSet);
+                assertTrue(hS.getStartX() >= overlayPixelShift);
+                assertTrue(hS.getEndX() >= overlayPixelShift);
+                assertTrue(hS.getY() >= overlayPixelShift);
             }
         }
     }
@@ -71,11 +75,9 @@ public class MapLoaderServiceTests {
         for (ZoneSquare zS: result) {
             List<HorizontalStripe> borders = zS.getBorder();
             for (HorizontalStripe  hS : borders) {
-                assertTrue(hS.getStartX() > 0);
-                assertTrue(hS.getEndX() > 0);
-                assertTrue(hS.getY() > 0);
-                int total = hS.getStartX() + hS.getEndX() + hS.getY();
-                assertTrue( total > 5);
+                assertTrue(hS.getStartX() >= overlayPixelShift);
+                assertTrue(hS.getEndX() >= overlayPixelShift);
+                assertTrue(hS.getY() >= overlayPixelShift);
             }
         }
     }
