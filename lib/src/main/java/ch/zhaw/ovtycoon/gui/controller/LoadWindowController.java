@@ -4,7 +4,6 @@ package ch.zhaw.ovtycoon.gui.controller;
 import ch.zhaw.ovtycoon.Config;
 import ch.zhaw.ovtycoon.RisikoController;
 import ch.zhaw.ovtycoon.gui.model.MapModel;
-import com.google.common.base.Strings;
 import javafx.animation.TranslateTransition;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -17,10 +16,9 @@ import javafx.scene.layout.Pane;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+
 import java.io.IOException;
 import java.util.ArrayList;
-
-import static ch.zhaw.ovtycoon.Config.PlayerColor.*;
 
 
 public class LoadWindowController {
