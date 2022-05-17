@@ -91,7 +91,7 @@ public class Game implements Serializable {
      */
     public DiceRoll runFight(Zone attacker, Zone defender, int numOfAttackers, int numOfDefenders) {
         fightWinner.set(null); // resetting after each fight
-        zoneOvertaken.setValue(null); // set value called here for being able to set it to null
+        zoneOvertaken.setValue(false); // set value called here for being able to set it to null
         Player defendingPlayer = getZoneOwner(defender);
         int initialAttackerTroops = attacker.getTroops();
         Fight fight = new Fight(attacker, defender);
@@ -108,9 +108,7 @@ public class Game implements Serializable {
                 setNewRegionOwner(attackingPlayer.getColor());
                 setNewRegionOwner(null); // reset
             }
-        } else {
-            zoneOvertaken.set(false);
-        }
+        } 
         return diceRoll;
     }
 

@@ -304,8 +304,8 @@ public class MapModel {
         ChangeListener<Boolean> zoneOvertakenListener = new ChangeListener<Boolean>() {
             @Override
             public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-                if (newValue != null) {
-                    zoneOvertaken.set(newValue);
+                if (newValue != false) {
+                    zoneOvertaken.set(true);
                     risikoController.getZoneOvertaken().removeListener(this);
                 }
             }
@@ -334,6 +334,7 @@ public class MapModel {
         String loser = attackerWon ? defender.name().toLowerCase() : attacker.name().toLowerCase();
         fightDTO.setFightWinner(winner);
         fightDTO.setFightLoser(loser);
+        System.out.println("zone overtook:"+zoneOvertaken.get());
         fightDTO.setOvertookZone(zoneOvertaken.get());
         fightDTO.setOverTookRegion(overtookRegion.get());
         if (overtookRegion.get()) {
