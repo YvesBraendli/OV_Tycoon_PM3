@@ -334,7 +334,6 @@ public class MapModel {
         String loser = attackerWon ? defender.name().toLowerCase() : attacker.name().toLowerCase();
         fightDTO.setFightWinner(winner);
         fightDTO.setFightLoser(loser);
-        System.out.println("zone overtook:"+zoneOvertaken.get());
         fightDTO.setOvertookZone(zoneOvertaken.get());
         fightDTO.setOverTookRegion(overtookRegion.get());
         if (overtookRegion.get()) {
