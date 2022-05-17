@@ -47,7 +47,7 @@ public class MapModel {
     private RisikoController risikoController;
     private final SimpleBooleanProperty sourceOrTargetNull = new SimpleBooleanProperty(true);
     private final SimpleBooleanProperty actionButtonVisible = new SimpleBooleanProperty(false);
-    private final SimpleObjectProperty<Config.PlayerColor> currPlayer; // TODO remove default value after player init view merged
+    private final SimpleObjectProperty<Config.PlayerColor> currPlayer;
     private final SimpleStringProperty actionButtonText = new SimpleStringProperty();
     private final SimpleStringProperty showActionChange = new SimpleStringProperty();
     private final SimpleBooleanProperty darkenBackground = new SimpleBooleanProperty();
@@ -75,7 +75,6 @@ public class MapModel {
     private ZoneSquare source = null;
     private ZoneSquare target = null;
     private TooltipDTO currHovered = null;
-    private final Scenario scenarioToBeTested = Scenario.PLAYER_ELIMINATED; // Only for initializing the zones and players to test certain scenarios, e.g. win game
     private ReinforcementAmountDTO currentReinforcement = null;
 
     /**
@@ -84,12 +83,13 @@ public class MapModel {
      *
      * @param mapImage Image to be used as the game map
      * @param scale    for scaling the map for smaller screens
+     * @param risikoController Class for communicating with the backend
      */
     public MapModel(Image mapImage, double scale, RisikoController risikoController) {
         this.scale = scale;
         mapLoaderService = new MapLoaderService(mapImage, scale);
         colorService = new ColorService();
-        zoneSquares = mapLoaderService.initZoneSquaresFromConfig();;
+        zoneSquares = mapLoaderService.initZoneSquaresFromConfig();
         this.risikoController = risikoController;
         currPlayer = new SimpleObjectProperty<>(risikoController.getPlayerColors()[risikoController.getPlayerColors().length - 1]);
     }
@@ -100,7 +100,6 @@ public class MapModel {
      * zones to the values provided by {@link #risikoController}.
      */
     public void setInitialValues() {
-        hoverableZones = new ArrayList<>(zoneSquares);
         drawZonesInPlayerColors();
         initTroopAmountText();
         currPlayer.set(risikoController.getCurrentPlayer());
@@ -291,9 +290,7 @@ public class MapModel {
         if (attacker == null || defender == null) return null;
 
         final AtomicReference<Config.PlayerColor> fightWinner = new AtomicReference<>(null);
-        final AtomicBoolean zoneOvertaken = new AtomicBoolean(false);
-
-        risikoController.getFightWinner().addListener((new ChangeListener<Config.PlayerColor>() {
+        ChangeListener<Config.PlayerColor> fightWinnerListener = new ChangeListener<Config.PlayerColor>() {
             @Override
             public void changed(ObservableValue<? extends Config.PlayerColor> observable, Config.PlayerColor oldValue, Config.PlayerColor newValue) {
                 if (newValue != null) {
@@ -301,9 +298,10 @@ public class MapModel {
                     risikoController.getFightWinner().removeListener(this);
                 }
             }
-        }));
+        };
 
-        risikoController.getZoneOvertaken().addListener((new ChangeListener<Boolean>() {
+        final AtomicBoolean zoneOvertaken = new AtomicBoolean(false);
+        ChangeListener<Boolean> zoneOvertakenListener = new ChangeListener<Boolean>() {
             @Override
             public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
                 if (newValue != null) {
@@ -311,10 +309,10 @@ public class MapModel {
                     risikoController.getZoneOvertaken().removeListener(this);
                 }
             }
-        }));
-        // TODO check if listener removed
+        };
+
         AtomicBoolean overtookRegion = new AtomicBoolean(false);
-        risikoController.getNewRegionOwnerProperty().addListener((new ChangeListener<Config.PlayerColor>() {
+        ChangeListener<Config.PlayerColor> regionOvertakenListener = new ChangeListener<Config.PlayerColor>() {
             @Override
             public void changed(ObservableValue<? extends Config.PlayerColor> observable, Config.PlayerColor oldValue, Config.PlayerColor newValue) {
                 if (newValue != null) {
@@ -322,7 +320,11 @@ public class MapModel {
                     risikoController.getNewRegionOwnerProperty().removeListener(this);
                 }
             }
-        }));
+        };
+
+        risikoController.getFightWinner().addListener(fightWinnerListener);
+        risikoController.getZoneOvertaken().addListener(zoneOvertakenListener);
+        risikoController.getNewRegionOwnerProperty().addListener(regionOvertakenListener);
 
         DiceRoll fightRes = risikoController.runFight(source.getName(), target.getName(), attackerTroops, defenderTroops);
         fightDTO.setAttackerDiceRoll(fightRes.getAttackerRoll());
@@ -341,6 +343,9 @@ public class MapModel {
         fightDTO.setDefender(defender.name().toLowerCase());
         fightDTO.setAttackerWon(attackerWon);
         fightDTO.setAttackerTroops(attackerTroops);
+        risikoController.getFightWinner().removeListener(fightWinnerListener);
+        risikoController.getZoneOvertaken().removeListener(zoneOvertakenListener);
+        risikoController.getNewRegionOwnerProperty().removeListener(regionOvertakenListener);
         return fightDTO;
     }
 
@@ -465,50 +470,6 @@ public class MapModel {
 
             sourceOrTargetNull.set(source == null || target == null);
         }
-        // uncomment for testing
-        // System.out.println(String.format("Click handling took %d ms", System.currentTimeMillis() - startTime));
-    }
-
-    private List<ZoneSquare> getTargets(ZoneSquare sqr) {
-        return risikoController.getValidTargetZoneNames(sqr.getName()).stream()
-                .map(zoneName -> getZsqByName(zoneName)).collect(Collectors.toList());
-    }
-
-    private ZoneSquare getZsqByName(String name) {
-        return zoneSquares.stream().filter(zsq -> name.equals(zsq.getName())).findFirst().orElse(null);
-    }
-
-    public List<ZoneSquare> getClickableZones() {
-        return clickableZones;
-    }
-
-    public SimpleObjectProperty<TooltipDTO> showTooltipProperty() {
-        return showTooltip;
-    }
-
-    public SimpleObjectProperty<Config.PlayerColor> highlightPlayerProperty() {
-        return highlightPlayer;
-    }
-
-    // TODO check if can be omitted
-    public SimpleObjectProperty<TooltipDTO> removeTooltipProperty() {
-        return removeTooltip;
-    }
-
-    public SimpleIntegerProperty moveTroopsProperty() {
-        return moveTroops;
-    }
-
-    public SimpleObjectProperty<DrawZoneDTO> drawZoneProperty() {
-        return drawZone;
-    }
-
-    public SimpleStringProperty gameWinnerProperty() {
-        return gameWinner;
-    }
-
-    public SimpleObjectProperty<MoveTroopsDTO> openMoveTroopsPopupProperty() {
-        return openMoveTroopsPopup;
     }
 
     /**
@@ -527,7 +488,7 @@ public class MapModel {
         risikoController.nextAction();
         Config.PlayerColor playerAfterActionSwitch = risikoController.getCurrentPlayer();
         if (currentPlayerBeforeActionSwitch != playerAfterActionSwitch) {
-            currPlayer.set(risikoController.getCurrentPlayer()); // TODO ev bind to property in mapModel.getRisikoController()
+            currPlayer.set(risikoController.getCurrentPlayer());
         }
         Action next = risikoController.getAction();
         actionButtonVisible.set(next != Action.DEFEND);
@@ -548,15 +509,36 @@ public class MapModel {
         currentReinforcement = null;
     }
 
-    private ZoneSquare getZoneAtCoordinates(int x, int y) {
-        List<ZoneSquare> containsY = this.zoneSquares.stream()
-                .filter(zone ->
-                        zone.getBorder().stream().map(str -> str.getY()).collect(Collectors.toList()).contains(y)
-                ).collect(Collectors.toList());
-        return containsY.stream()
-                .filter(zone -> zone.getBorder().stream()
-                        .anyMatch(st -> st.getY() == y && st.getStartX() <= x && st.getEndX() >= x))
-                .findFirst().orElse(null);
+    public List<ZoneSquare> getClickableZones() {
+        return clickableZones;
+    }
+
+    public SimpleObjectProperty<TooltipDTO> showTooltipProperty() {
+        return showTooltip;
+    }
+
+    public SimpleObjectProperty<Config.PlayerColor> highlightPlayerProperty() {
+        return highlightPlayer;
+    }
+
+    public SimpleObjectProperty<TooltipDTO> removeTooltipProperty() {
+        return removeTooltip;
+    }
+
+    public SimpleIntegerProperty moveTroopsProperty() {
+        return moveTroops;
+    }
+
+    public SimpleObjectProperty<DrawZoneDTO> drawZoneProperty() {
+        return drawZone;
+    }
+
+    public SimpleStringProperty gameWinnerProperty() {
+        return gameWinner;
+    }
+
+    public SimpleObjectProperty<MoveTroopsDTO> openMoveTroopsPopupProperty() {
+        return openMoveTroopsPopup;
     }
 
     public SimpleBooleanProperty darkenBackgroundProperty() {
@@ -680,8 +662,40 @@ public class MapModel {
         return scale;
     }
 
+    public void setClickableZones(List<ZoneSquare> clickableZones) {
+        this.clickableZones = clickableZones;
+    }
+
+    public void setCurrentReinforcement(ReinforcementAmountDTO currentReinforcement) {
+        this.currentReinforcement = currentReinforcement;
+    }
+
     public List<ZoneSquare> getHoverableZones() {
         return hoverableZones;
+    }
+
+    public ReinforcementAmountDTO getCurrentReinforcement() {
+        return currentReinforcement;
+    }
+
+    private ZoneSquare getZoneAtCoordinates(int x, int y) {
+        List<ZoneSquare> containsY = this.zoneSquares.stream()
+                .filter(zone ->
+                        zone.getBorder().stream().map(str -> str.getY()).collect(Collectors.toList()).contains(y)
+                ).collect(Collectors.toList());
+        return containsY.stream()
+                .filter(zone -> zone.getBorder().stream()
+                        .anyMatch(st -> st.getY() == y && st.getStartX() <= x && st.getEndX() >= x))
+                .findFirst().orElse(null);
+    }
+
+    private List<ZoneSquare> getTargets(ZoneSquare sqr) {
+        return risikoController.getValidTargetZoneNames(sqr.getName()).stream()
+                .map(zoneName -> getZsqByName(zoneName)).collect(Collectors.toList());
+    }
+
+    private ZoneSquare getZsqByName(String name) {
+        return zoneSquares.stream().filter(zsq -> name.equals(zsq.getName())).findFirst().orElse(null);
     }
 
     private void initTroopAmountText() {
@@ -691,56 +705,5 @@ public class MapModel {
             int translateY = zoneSquare.getCenter().getY();
             initializeZoneTroopsText.set(new ZoneTroopAmountInitDTO(zoneSquare.getName(), troops, translateX, translateY));
         });
-    }
-
-    // TODO Should happen in backend: methods below will be removed as soon as player initialization is implemented in the backend -------------------------------
-
-    private void addPlayerColorsToZones() {
-        Random random = new Random();
-        Player[] players = risikoController.getPlayers();
-        if (scenarioToBeTested == Scenario.PLAYER_ELIMINATED) {
-            for (int i = 0; i < zoneSquares.size() - 1; i++) {
-                String name = zoneSquares.get(i).getName();
-                int troops = random.nextInt(3) + 1;
-
-                int randomInt = random.nextInt(2);
-                risikoController.setZoneOwner(players[randomInt], zoneSquares.get(i).getName());
-                Color zoneColor = colorService.getColor(players[randomInt].getColor().getHexValue());
-                drawZone.set(new DrawZoneDTO(zoneSquares.get(i), zoneColor));
-                risikoController.updateZoneTroops(name, troops);
-            }
-            // for testing elimination of player green
-            String name = zoneSquares.get(42).getName();
-            int troops = random.nextInt(3) + 1;
-            risikoController.setZoneOwner(players[2], zoneSquares.get(42).getName());
-            Color zoneColor = colorService.getColor(players[2].getColor().getHexValue());
-            this.drawZone.set(new DrawZoneDTO(zoneSquares.get(42), zoneColor));
-            risikoController.updateZoneTroops(name, troops);
-        } else if (scenarioToBeTested == Scenario.WIN_GAME) {
-            for (int i = 0; i < zoneSquares.size() - 1; i++) {
-                String name = zoneSquares.get(i).getName();
-                int troops = random.nextInt(3) + 1;
-                risikoController.setZoneOwner(players[0], zoneSquares.get(i).getName());
-                Color zoneColor = colorService.getColor(players[0].getColor().getHexValue());
-                this.drawZone.set(new DrawZoneDTO(zoneSquares.get(i), zoneColor));
-                risikoController.updateZoneTroops(name, troops);
-            }
-            String name = zoneSquares.get(42).getName();
-            int troops = random.nextInt(3) + 1;
-            risikoController.setZoneOwner(players[1], zoneSquares.get(42).getName());
-            Color zoneColor = colorService.getColor(players[1].getColor().getHexValue());
-            this.drawZone.set(new DrawZoneDTO(zoneSquares.get(42), zoneColor));
-            risikoController.updateZoneTroops(name, troops);
-        } else {
-            for (int i = 0; i < zoneSquares.size(); i++) {
-                int randomInt = random.nextInt(3);
-                String name = zoneSquares.get(i).getName();
-                int troops = random.nextInt(3) + 1;
-                risikoController.setZoneOwner(players[randomInt], zoneSquares.get(i).getName());
-                Color zoneColor = colorService.getColor(players[randomInt].getColor().getHexValue());
-                this.drawZone.set(new DrawZoneDTO(zoneSquares.get(i), zoneColor));
-                risikoController.updateZoneTroops(name, troops);
-            }
-        }
     }
 }
