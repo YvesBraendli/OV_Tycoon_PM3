@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/OV_Tycoon.iml" filepath="$PROJECT_DIR$/.idea/modules/OV_Tycoon.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/lib/OV_Tycoon.lib.iml" filepath="$PROJECT_DIR$/.idea/modules/lib/OV_Tycoon.lib.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/lib/OV_Tycoon.lib.main.iml" filepath="$PROJECT_DIR$/.idea/modules/lib/OV_Tycoon.lib.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/lib/OV_Tycoon.lib.test.iml" filepath="$PROJECT_DIR$/.idea/modules/lib/OV_Tycoon.lib.test.iml" />
+    </modules>
+  </component>
+</project>
