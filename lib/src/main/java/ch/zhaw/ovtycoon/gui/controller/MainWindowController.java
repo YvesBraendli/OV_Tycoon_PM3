@@ -20,7 +20,6 @@ import ch.zhaw.ovtycoon.gui.model.dto.ZoneTroopAmountDTO;
 import ch.zhaw.ovtycoon.gui.model.dto.ZoneTroopAmountInitDTO;
 import ch.zhaw.ovtycoon.gui.service.ColorService;
 import ch.zhaw.ovtycoon.gui.service.GameStateService;
-import ch.zhaw.ovtycoon.model.Game;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
@@ -144,7 +143,7 @@ public class MainWindowController {
         mapPw = gc.getPixelWriter();
         labelStackPane.setOnMouseMoved(mouseEvent -> handleMapHover(mouseEvent));
         nextMoveBtn.setOnMouseClicked(event -> {
-            clickedActionButton.set(false); // TODO cleanup
+            clickedActionButton.set(false);
             mapModel.nextAction();
         });
         actionBtn.setOnMouseClicked(event -> onActionButtonClick());
@@ -157,7 +156,7 @@ public class MainWindowController {
         addPlayers();
         eliminatePlayer();
         initMapListeners();
-        mapModel.setInitialValues(); // TODO ev clean up
+        mapModel.setInitialValues();
         actionBtn.getStyleClass().add("buttonClass");
     }
 
@@ -226,7 +225,8 @@ public class MainWindowController {
             if (newValue && labelStackPane.getChildren().size() > this.mapModel.getZoneSquares().size())
                 for (int i = mapModel.getZoneSquares().size(); i < labelStackPane.getChildren().size(); i++) {
                     if (labelStackPane.getChildren().get(i) instanceof ZoneTooltip) {
-                        labelStackPane.getChildren().remove(i); // TODO check if error possible when removing + iterating
+                        labelStackPane.getChildren().remove(i);
+                        break;
                     }
                 }
         }));
@@ -236,7 +236,7 @@ public class MainWindowController {
         mapModel.gameWinnerProperty().addListener(((observable, oldValue, newValue) -> gameWon(newValue)));
         mapModel.drawZoneProperty().addListener(((observable, oldValue, newValue) -> drawZone(newValue.getZoneToDraw(), newValue.getColor())));
         mapModel.openMoveTroopsPopupProperty().addListener(((observable, oldValue, newValue) -> {
-            if (newValue != null) { // TODO check if can be omitted
+            if (newValue != null) {
                 moveTroops(newValue);
             }
         }));
@@ -260,8 +260,6 @@ public class MainWindowController {
             }
         }));
     }
-
-    // TODO get current player from map model
 
     /**
      * Adds a change listener to the eliminated player property provided by {@link #mapModel}
@@ -565,7 +563,6 @@ public class MainWindowController {
         centerJavaFXRegion(labelStackPane, troopAmountPopup);
         addPopup(troopAmountPopup);
         troopAmountPopup.getConfirmBtn().setOnMouseClicked(click -> {
-            // TODO should be different if attack / move
             mapModel.finishMovingTroops(troopAmountPopup.getTroopAmount());
             removePopup(troopAmountPopup);
             clickedActionButton.set(false);
@@ -797,7 +794,7 @@ public class MainWindowController {
                 overlaidPixels.add(new Pixel(x, y));
                 pw.setColor(x, y, overlayColor);
                 if (shift) {
-                    for (int k = 1; k < OVERLAY_EFFECT_SHIFT_PIXELS; k++) { // TODO check for index out of bounds
+                    for (int k = 1; k < OVERLAY_EFFECT_SHIFT_PIXELS; k++) {
                         pw.setColor(x - k, y - k, mix);
                         overlaidPixels.add(new Pixel(x - k, y - k));
                     }
