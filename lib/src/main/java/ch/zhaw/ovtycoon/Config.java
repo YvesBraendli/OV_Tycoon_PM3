@@ -9,7 +9,7 @@ import java.util.Map;
 public class Config  implements Serializable {
 	public static final int MAX_DICE_VALUE = 6;
 	public static final int MAX_THROWABLE_DICE = 3;
-	public static final int NUMBER_OF_ZONES = 43;
+	public static final int NUMBER_OF_ZONES = 42;
 	public static final int NUMBER_OF_REGIONS = 5;
 	public static final int NUMBER_OF_TROOPS_TOTAL_IN_GAME = 80;
 	public static final int MIN_NUMBER_OF_REINFORCEMENTS = 3;
