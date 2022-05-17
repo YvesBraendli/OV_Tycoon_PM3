@@ -13,7 +13,9 @@ public class Config  implements Serializable {
 	public static final int NUMBER_OF_REGIONS = 5;
 	public static final int NUMBER_OF_TROOPS_TOTAL_IN_GAME = 80;
 	public static final int MIN_NUMBER_OF_REINFORCEMENTS = 3;
-	
+	public static final int MAX_NUMBER_OF_ATTACKER_TROOPS = 3;
+	public static final int MAX_NUMBER_OF_DEFENDER_TROOPS = 2;
+
 	public static final Map<Integer, Integer> TROOPS_PER_PLAYER_AMOUNT;
 	static {
 		Map<Integer, Integer> m = new HashMap<Integer, Integer>();
@@ -114,5 +116,21 @@ public class Config  implements Serializable {
 			return hexValue;
 		}
 	}
-	
+
+	/**
+	 * Enum representing the actions of the risiko game.
+	 */
+	public enum Action {
+		ATTACK("Angriff"), MOVE("Bewegung"), DEFEND("Verteidigung");
+
+		private final String actionName;
+
+		private Action(String name) {
+			this.actionName = name;
+		}
+
+		public String getActionName() {
+			return actionName;
+		}
+	}
 }

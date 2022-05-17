@@ -2,7 +2,6 @@ package ch.zhaw.ovtycoon.gui;
 
 import ch.zhaw.ovtycoon.Config;
 import ch.zhaw.ovtycoon.RisikoController;
-import ch.zhaw.ovtycoon.gui.model.Action;
 import ch.zhaw.ovtycoon.gui.model.MapModel;
 import ch.zhaw.ovtycoon.gui.model.ZoneSquare;
 import ch.zhaw.ovtycoon.gui.model.dto.ActivateZoneDTO;
@@ -388,10 +387,10 @@ public class MapModelTest {
         initializeSourceAndTargetZoneSquare();
         final Config.PlayerColor currPlayerColor = Config.PlayerColor.RED;
         final int amountOfHoverableZonesAfterNextActionCalled = 0;
-        final String actionNameAfterNextActionCalled = Action.ATTACK.getActionName();
+        final String actionNameAfterNextActionCalled = Config.Action.ATTACK.getActionName();
         RisikoController mockRisikoController = mock(RisikoController.class);
         uut.setRisikoController(mockRisikoController);
-        when(mockRisikoController.getAction()).thenReturn(Action.ATTACK);
+        when(mockRisikoController.getAction()).thenReturn(Config.Action.ATTACK);
         when(mockRisikoController.getCurrentPlayer()).thenReturn(currPlayerColor);
         uut.nextAction();
         assertNull(uut.getSource());
@@ -567,7 +566,7 @@ public class MapModelTest {
         final int troopAmountAddedWithReinforcement = 3;
         final ReinforcementAmountDTO reinforcementAmountDTO = new ReinforcementAmountDTO(troopAmountReceived, troopAmountAlreadyPlaced);
         uut.setCurrentReinforcement(reinforcementAmountDTO);
-        when(uut.getRisikoController().getAction()).thenReturn(Action.ATTACK);
+        when(uut.getRisikoController().getAction()).thenReturn(Config.Action.ATTACK);
         uut.placeReinforcementTroops(zoneToReinforceName, troopAmountAddedWithReinforcement);
         assertNull(uut.getCurrentReinforcement());
         assertFalse(uut.isMapClickEnabled());

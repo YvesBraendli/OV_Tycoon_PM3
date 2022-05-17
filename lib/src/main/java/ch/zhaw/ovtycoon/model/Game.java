@@ -5,7 +5,6 @@ import ch.zhaw.ovtycoon.Config.PlayerColor;
 import ch.zhaw.ovtycoon.Config.RegionName;
 import ch.zhaw.ovtycoon.data.DiceRoll;
 import ch.zhaw.ovtycoon.data.Player;
-import ch.zhaw.ovtycoon.gui.model.Action;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -15,8 +14,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
+import static ch.zhaw.ovtycoon.Config.MAX_NUMBER_OF_ATTACKER_TROOPS;
+import static ch.zhaw.ovtycoon.Config.MAX_NUMBER_OF_DEFENDER_TROOPS;
+
 public class Game implements Serializable {
-    private final Action[] actions = {Action.DEFEND, Action.ATTACK, Action.MOVE};
+    private final Config.Action[] actions = {Config.Action.DEFEND, Config.Action.ATTACK, Config.Action.MOVE};
     private transient SimpleObjectProperty<PlayerColor> fightWinner = new SimpleObjectProperty<>(null);
     private transient SimpleBooleanProperty zoneOvertaken = new SimpleBooleanProperty(false);
     private transient SimpleObjectProperty<Player> currentPlayerProperty = new SimpleObjectProperty<>(null);
@@ -518,7 +520,7 @@ public class Game implements Serializable {
      *
      * @return current action
      */
-    public Action getCurrentAction() {
+    public Config.Action getCurrentAction() {
         return actions[currentActionIndex];
     }
 
@@ -560,7 +562,7 @@ public class Game implements Serializable {
      * @return maximal available troop amount
      */
     public int getMaxTroopsForAttack(String zoneName) {
-        return Math.min(getMaxMovableTroops(zoneName), 3);
+        return Math.min(getMaxMovableTroops(zoneName), MAX_NUMBER_OF_ATTACKER_TROOPS);
     }
 
     /**
@@ -570,7 +572,7 @@ public class Game implements Serializable {
      * @return maximal available troop amount
      */
     public int getMaxTroopsForDefending(String zoneName) {
-        return Math.min(getZone(zoneName).getTroops(), 2);
+        return Math.min(getZone(zoneName).getTroops(), MAX_NUMBER_OF_DEFENDER_TROOPS);
     }
 
     /**

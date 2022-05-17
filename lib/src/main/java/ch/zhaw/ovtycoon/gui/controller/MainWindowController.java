@@ -1,7 +1,6 @@
 package ch.zhaw.ovtycoon.gui.controller;
 
 import ch.zhaw.ovtycoon.Config;
-import ch.zhaw.ovtycoon.gui.model.Action;
 import ch.zhaw.ovtycoon.gui.model.CustomTimeline;
 import ch.zhaw.ovtycoon.gui.model.HorizontalStripe;
 import ch.zhaw.ovtycoon.gui.model.MapModel;
@@ -499,7 +498,7 @@ public class MainWindowController {
         KeyFrame showActionChangeLabelKf = new KeyFrame(Duration.seconds(showActionChangeDurationSeconds), event -> this.labelStackPane.getChildren().add(label));
         KeyFrame removeActionChangeLabelKf = new KeyFrame(Duration.seconds(removeActionChangeLabelDurationSeconds), event -> {
             this.labelStackPane.getChildren().remove(label);
-            if (mapModel.getRisikoController().getAction() == Action.DEFEND) {
+            if (mapModel.getRisikoController().getAction() == Config.Action.DEFEND) {
                 reinforcement();
                 labelStackPane.setOnMouseClicked(mouseEvent -> reinforcementClickHandler(mouseEvent));
             } else {

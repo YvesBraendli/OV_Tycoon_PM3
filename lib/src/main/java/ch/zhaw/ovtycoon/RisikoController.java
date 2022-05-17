@@ -3,7 +3,6 @@ package ch.zhaw.ovtycoon;
 import ch.zhaw.ovtycoon.Config.PlayerColor;
 import ch.zhaw.ovtycoon.Config.RegionName;
 import ch.zhaw.ovtycoon.data.DiceRoll;
-import ch.zhaw.ovtycoon.gui.model.Action;
 import ch.zhaw.ovtycoon.gui.service.GameStateService;
 import ch.zhaw.ovtycoon.model.Game;
 import ch.zhaw.ovtycoon.data.Player;
@@ -13,7 +12,6 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -332,7 +330,7 @@ public class RisikoController{
 	 * Gets the current action
 	 * @return current action
 	 */
-	public Action getAction() {
+	public Config.Action getAction() {
 		return game.getCurrentAction();
 	}
 
@@ -342,7 +340,7 @@ public class RisikoController{
 	 * @return list with names of valid target zones
 	 */
 	public List<String> getValidTargetZoneNames(String sourceZoneName) {
-		return getAction() == Action.ATTACK ? getAttackableZones(sourceZoneName) : getPossibleMovementNeighbours(sourceZoneName, getCurrentPlayer());
+		return getAction() == Config.Action.ATTACK ? getAttackableZones(sourceZoneName) : getPossibleMovementNeighbours(sourceZoneName, getCurrentPlayer());
 	}
 
 	/**

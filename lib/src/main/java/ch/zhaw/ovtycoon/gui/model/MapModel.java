@@ -3,7 +3,6 @@ package ch.zhaw.ovtycoon.gui.model;
 import ch.zhaw.ovtycoon.Config;
 import ch.zhaw.ovtycoon.RisikoController;
 import ch.zhaw.ovtycoon.data.DiceRoll;
-import ch.zhaw.ovtycoon.data.Player;
 import ch.zhaw.ovtycoon.gui.model.dto.ActivateZoneDTO;
 import ch.zhaw.ovtycoon.gui.model.dto.AttackDTO;
 import ch.zhaw.ovtycoon.gui.model.dto.DrawZoneDTO;
@@ -27,14 +26,9 @@ import javafx.scene.paint.Color;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
-
-import static ch.zhaw.ovtycoon.Config.PlayerColor.BLUE;
-import static ch.zhaw.ovtycoon.Config.PlayerColor.GREEN;
-import static ch.zhaw.ovtycoon.Config.PlayerColor.RED;
 
 /**
  * Model for the zone map and the main view.
@@ -103,7 +97,7 @@ public class MapModel {
         initTroopAmountText();
         currPlayer.set(risikoController.getCurrentPlayer());
         actionButtonText.set(risikoController.getAction().getActionName());
-        actionButtonVisible.set(risikoController.getAction() != Action.DEFEND);
+        actionButtonVisible.set(risikoController.getAction() != Config.Action.DEFEND);
         showActionChange.set(risikoController.getAction().getActionName());
     }
 
@@ -483,7 +477,7 @@ public class MapModel {
         target = null;
         sourceOrTargetNull.set(true);
         Config.PlayerColor currentPlayerBeforeActionSwitch = risikoController.getCurrentPlayer();
-        if (risikoController.getAction() == Action.DEFEND) {
+        if (risikoController.getAction() == Config.Action.DEFEND) {
             resetReinforcementDTO();
         }
         risikoController.nextAction();
@@ -491,8 +485,8 @@ public class MapModel {
         if (currentPlayerBeforeActionSwitch != playerAfterActionSwitch) {
             currPlayer.set(risikoController.getCurrentPlayer());
         }
-        Action next = risikoController.getAction();
-        actionButtonVisible.set(next != Action.DEFEND);
+        Config.Action next = risikoController.getAction();
+        actionButtonVisible.set(next != Config.Action.DEFEND);
         actionButtonText.set(risikoController.getAction().getActionName());
         mapClickEnabled = false;
         hoverableZones = new ArrayList<>();
