@@ -11,9 +11,6 @@ import ch.zhaw.ovtycoon.model.Zone;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
-
-
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,11 +26,11 @@ public class RisikoController{
 
 	/**
 	 * Constructor of Interface, instantiates game with number of Players
-	 * @param numberOfPlayers - amount of players that will play the game
+	 * @param playerColors - amount of players that will play the game
 	 */
-	public RisikoController(ArrayList<PlayerColor> colors) {
+	public RisikoController(ArrayList<PlayerColor> playerColors) {
 		game = new Game();
-    	game.initGame(colors);
+    	game.initGame(playerColors);
 	}
 
 	public RisikoController() {
@@ -390,7 +387,6 @@ public class RisikoController{
 		return game;
 	}
 
-	// ---------------------------------------------------------------------------------------------------------
     
     private ArrayList<String> translateZoneListToNameList(ArrayList<Zone> zoneList){
     	ArrayList<String> zoneNameList = new ArrayList<String>();

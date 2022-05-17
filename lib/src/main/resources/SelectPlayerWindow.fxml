@@ -43,7 +43,7 @@
             <Image url="@player_violet.png" />
          </image>
       </ImageView>
-      <Button fx:id="nextButton" layoutX="868.0" layoutY="272.0" mnemonicParsing="false" onMouseClicked="#doNext" prefHeight="47.0" prefWidth="83.0" styleClass="buttonClass" stylesheets="@start-window-styles.css" text="Next" />
-      <TextField fx:id="infoText" alignment="TOP_CENTER" editable="false" layoutX="382.0" layoutY="99.0" prefHeight="25.0" prefWidth="259.0" style="-fx-font-weight: bold; -fx-background-color: white;" text="Click on the Player you want to play with!" />
+      <Button fx:id="nextButton" layoutX="868.0" layoutY="272.0" mnemonicParsing="false" onMouseClicked="#doNext" prefHeight="47.0" prefWidth="83.0" styleClass="buttonClass" stylesheets="@button-design.css" text="Next" />
+      <TextField fx:id="infoText" alignment="TOP_CENTER" editable="false" layoutX="364.0" layoutY="99.0" prefHeight="25.0" prefWidth="296.0" style="-fx-font-weight: bold; -fx-background-color: white;" text="Klicke auf die Spieler mit denen du spielen willst!" />
    </children>
 </AnchorPane>

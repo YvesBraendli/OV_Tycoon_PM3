@@ -14,6 +14,10 @@ import javafx.stage.Stage;
 import java.io.IOException;
 import java.util.ArrayList;
 
+
+/**
+ * Controller for the select player window.
+ */
 public class SelectPlayerWindowController {
 
     /**
@@ -33,10 +37,9 @@ public class SelectPlayerWindowController {
     @FXML
     private AnchorPane selectPlayerPane;
 
-    public void setParentSceneGraph(Parent parentSceneGraph) {
-        this.parentSceneGraph = parentSceneGraph;
-    }
-
+    /**
+     * Initialize the controller and checks when the player are clicked.
+     */
     @FXML
     public void initialize() {
         selectPlayerPane.getChildren().stream().filter((node -> node.getId() != null && node.getId().toLowerCase().contains("player"))).forEach((node) -> node.setOnMouseClicked(event -> {
@@ -45,6 +48,19 @@ public class SelectPlayerWindowController {
         }));
     }
 
+    /**
+     * Sets the parent scene graph.
+     */
+    public void setParentSceneGraph(Parent parentSceneGraph) {
+        this.parentSceneGraph = parentSceneGraph;
+    }
+
+
+    /**
+     * Resize the player image, every time it get clicked.
+     *
+     * @param id is the color of the player in a String
+     */
     public void resize(String id) {
         ImageView toResize = (ImageView) selectPlayerPane.getChildren().stream().filter((node -> node.getId() != null && node.getId().equals(id))).findFirst().orElse(null);
         if (toResize == null) return;
@@ -59,21 +75,26 @@ public class SelectPlayerWindowController {
         toResize.setY(toResize.getY() + layoutXYSummand);
     }
 
+    /**
+     * Put the player color string in a list and gives feedback to the user if the player are added or not.
+     *
+     * @param id is the color of the player in a String
+     */
     public void amountOfPlayers(String id) {
         String colour = id.substring(6);
 
         if(listOfPlayer.indexOf(colour) == -1){
             listOfPlayer.add(colour);
-            infoText.setText("Player " + colour + " is ready");
+            infoText.setText("Spieler " + colour + " ist bereit!");
         }else{
             listOfPlayer.remove(listOfPlayer.indexOf(colour));
-            infoText.setText("Player " + colour + " is not ready");
+            infoText.setText("Spieler " + colour + " ist nicht bereit!");
         }
     }
 
-
-
-
+    /**
+     * Opens the load window and set up the controller for this window.
+     */
     private void openLoadWindow(){
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/LoadWindow.fxml"));
@@ -98,8 +119,9 @@ public class SelectPlayerWindowController {
         }
     }
 
-
-
+    /**
+     * When the next button is clicked, it checks, if there are more the one player in the list.
+     */
     public void doNext(){
         if(listOfPlayer.size()<2){
             infoText.setText("Too few player");

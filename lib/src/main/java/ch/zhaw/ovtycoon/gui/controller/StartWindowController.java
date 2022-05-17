@@ -14,7 +14,11 @@ import javafx.util.Duration;
 
 import java.io.IOException;
 
+/**
+ * Controller for the start window.
+ */
 public class StartWindowController {
+
 
     /**
      * To set the parent.
@@ -27,37 +31,53 @@ public class StartWindowController {
     private Button loadGameButton;
     @FXML
     private Button closeButton;
-
     @FXML
-    private ImageView flugzeug;
+    private ImageView plane;
 
+    /**
+     * Initializes the start window controller.
+     */
     @FXML
     private void initialize(){
-        moveFlugzeug();
+        movePlane();
         newGameButton.getStyleClass().add("buttonClass");
     }
 
+    /**
+     * Sets the parent scene graph.
+     */
     public void setParentSceneGraph(Parent parentSceneGraph) {
         this.parentSceneGraph = parentSceneGraph;
     }
 
+    /**
+     * Opens a new game.
+     */
     public void doNewGame(){
         openSelectPlayerWindow();
         Stage stage = (Stage) newGameButton.getScene().getWindow();
         stage.close();
-
     }
-
+    /**
+     * Loads a saved game.
+     */
     public void loadGame(){
         openLoadWindow();
         Stage stage = (Stage) newGameButton.getScene().getWindow();
         stage.close();
     }
 
+    /**
+     * Close the start window and terminate the programm.
+     */
     public void closeGame(){
         Platform.exit();
     }
 
+
+    /**
+     * Opens the select player window and set up the controller for this window.
+     */
     void openSelectPlayerWindow(){
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/SelectPlayerWindow.fxml"));
@@ -80,6 +100,9 @@ public class StartWindowController {
         }
     }
 
+    /**
+     * Opens the load window and set up the controller for this window.
+     */
     void openLoadWindow(){
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/LoadWindow.fxml"));
@@ -94,7 +117,7 @@ public class StartWindowController {
             loadWindowController.setParentSceneGraph(parentSceneGraph);
 
             selectPlayerWindow.setScene(scene);
-            selectPlayerWindow.setTitle("Loading...");
+            selectPlayerWindow.setTitle("Ladet...");
             selectPlayerWindow.setResizable(false);
             selectPlayerWindow.show();
 
@@ -102,10 +125,12 @@ public class StartWindowController {
             e.printStackTrace();
         }
     }
-
-    public void moveFlugzeug(){
+    /**
+     * Opens the load window and set up the controller for this window.
+     */
+    public void movePlane(){
         TranslateTransition flugzeugAnimation = new TranslateTransition();
-        flugzeugAnimation.setNode(flugzeug);
+        flugzeugAnimation.setNode(plane);
         flugzeugAnimation.setDuration(Duration.seconds(40));
         flugzeugAnimation.setByX(-200);
         flugzeugAnimation.setByY(-80);

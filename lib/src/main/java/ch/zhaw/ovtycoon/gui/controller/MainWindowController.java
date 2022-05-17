@@ -20,7 +20,6 @@ import ch.zhaw.ovtycoon.gui.model.dto.ZoneTroopAmountDTO;
 import ch.zhaw.ovtycoon.gui.model.dto.ZoneTroopAmountInitDTO;
 import ch.zhaw.ovtycoon.gui.service.ColorService;
 import ch.zhaw.ovtycoon.gui.service.GameStateService;
-import ch.zhaw.ovtycoon.model.Game;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
@@ -42,7 +41,6 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
-
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -299,28 +297,30 @@ public class MainWindowController {
 
         background.setFitHeight(background.getFitHeight() * scale);
         background.setFitWidth(background.getFitWidth() * scale);
+        background.setLayoutX(background.getLayoutX() + 15);
+        background.setLayoutY(background.getLayoutY() + 8);
 
         nextMoveBtn.setLayoutX(nextMoveBtn.getLayoutX() * scale);
-        nextMoveBtn.setLayoutY(nextMoveBtn.getLayoutY() * scale);
+        nextMoveBtn.setLayoutY(nextMoveBtn.getLayoutY() * scale - 10);
         nextMoveBtn.setPrefHeight(actionBtn.getPrefHeight() * scale);
         nextMoveBtn.setPrefWidth(actionBtn.getPrefWidth() * scale);
         nextMoveBtn.setStyle("-fx-font-family: Arial; -fx-font-weight: bold; -fx-font-size: 10px;");
 
         actionBtn.setLayoutX(actionBtn.getLayoutX() * scale);
-        actionBtn.setLayoutY(actionBtn.getLayoutY() * scale);
+        actionBtn.setLayoutY(actionBtn.getLayoutY() * scale - 10);
         actionBtn.setPrefHeight(actionBtn.getPrefHeight() * scale);
         actionBtn.setPrefWidth(actionBtn.getPrefWidth() * scale);
         actionBtn.setStyle("-fx-font-family: Arial; -fx-font-weight: bold; -fx-font-size: 10px;");
 
 
         closeButton.setLayoutX(closeButton.getLayoutX() * scale);
-        closeButton.setLayoutY(closeButton.getLayoutY() * scale);
+        closeButton.setLayoutY(closeButton.getLayoutY() * scale - 5);
         closeButton.setPrefHeight(closeButton.getPrefHeight() * scale);
         closeButton.setPrefWidth(closeButton.getPrefWidth() * scale);
-        closeButton.setStyle("-fx-font-family: Arial; -fx-font-weight: bold; -fx-font-size: 7px;");
+        closeButton.setStyle("-fx-font-family: Arial; -fx-font-weight: bold; -fx-font-size: 8px;");
 
         saveButton.setLayoutX(saveButton.getLayoutX() * scale);
-        saveButton.setLayoutY(saveButton.getLayoutY() * scale);
+        saveButton.setLayoutY(saveButton.getLayoutY() * scale - 5);
         saveButton.setPrefHeight(saveButton.getPrefHeight() * scale);
         saveButton.setPrefWidth(saveButton.getPrefWidth() * scale);
         saveButton.setStyle("-fx-font-family: Arial; -fx-font-weight: bold; -fx-font-size: 8px;");
@@ -900,11 +900,16 @@ public class MainWindowController {
         showNotification(NotificationType.INFO, String.format(GAME_WINNER, winnerName));
     }
 
-
+    /**
+     * Close the main window and terminate the programm.
+     */
     public void closeGame(){
         Platform.exit();
     }
 
+    /**
+     * Save the current game and gives infotext to user.
+     */
     public void saveGame(){
         this.gameStateService.saveGameState(mapModel.getRisikoController().getGame());
         showNotification(NotificationType.INFO, "Spielstand gespeichert");

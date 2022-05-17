@@ -9,7 +9,16 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 
+/**
+ * Main class that initializes the start window of
+ * the GUI and sets up the startWindowController.
+ */
 public class Main extends Application {
+    /**
+     * Initializes the start window.
+     *
+     * @param primaryStage
+     */
     @Override
     public void start(Stage primaryStage) throws Exception {
         try {
@@ -19,11 +28,11 @@ public class Main extends Application {
             startWindowController.setParentSceneGraph(rootPane);
 
             Scene scene = new Scene(rootPane);
-            scene.getStylesheets().add(getClass().getClassLoader().getResource("start-window-styles.css").toExternalForm());
+            scene.getStylesheets().add(getClass().getClassLoader().getResource("button-design.css").toExternalForm());
 
             primaryStage.setScene(scene);
 
-            primaryStage.setTitle("ÖV-Tycoon");
+            primaryStage.setTitle("OV-Tycoon");
             primaryStage.setMinWidth(600);
             primaryStage.setMinHeight(400);
             primaryStage.setResizable(false);
