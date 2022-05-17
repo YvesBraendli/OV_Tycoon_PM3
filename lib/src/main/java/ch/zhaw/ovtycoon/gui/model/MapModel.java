@@ -100,7 +100,6 @@ public class MapModel {
      * zones to the values provided by {@link #risikoController}.
      */
     public void setInitialValues() {
-        hoverableZones = new ArrayList<>(zoneSquares);
         drawZonesInPlayerColors();
         initTroopAmountText();
         currPlayer.set(risikoController.getCurrentPlayer());
