@@ -11,13 +11,11 @@ import ch.zhaw.ovtycoon.gui.model.dto.ReinforcementAmountDTO;
 import ch.zhaw.ovtycoon.gui.model.dto.ReinforcementDTO;
 import ch.zhaw.ovtycoon.gui.model.dto.TooltipDTO;
 import ch.zhaw.ovtycoon.gui.model.dto.ZoneTroopAmountDTO;
-import ch.zhaw.ovtycoon.model.Zone;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.image.Image;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,10 +33,10 @@ import static org.mockito.Mockito.when;
  * Tests for the {@link MapModel} class.
  */
 public class MapModelTest {
-    private MapModel uut;
     private final int zonesAmount = 43;
     private final double scaleDefault = 1.0d;
     private final double scaleSmall = 0.7d;
+    private MapModel uut;
     private Image zoneMapImage;
 
 
@@ -191,7 +189,8 @@ public class MapModelTest {
 
     }
 
-    public void testFightDefenderWins() {}
+    public void testFightDefenderWins() {
+    }
 
     @Test
     public void testFinishFightZoneOvertaken() {
@@ -221,10 +220,11 @@ public class MapModelTest {
 
     }
 
-    public void testFightAttackerWinsGame() {}
+    public void testFightAttackerWinsGame() {
+    }
 
     @Test
-    public void testClickOnZoneSetSource(){
+    public void testClickOnZoneSetSource() {
         initializeUUTWithDefaultScale();
         assertNull(uut.getSource());
         ZoneSquare toClick = uut.getZoneSquares().stream().filter(zone -> zone.getName().equals("Zone110")).findFirst().orElse(null);
@@ -240,10 +240,10 @@ public class MapModelTest {
         clickableZonesNames.add(toClick.getName());
         RisikoController mockRisikoController = mock(RisikoController.class);
         uut.setRisikoController(mockRisikoController);
+        uut.darkenBackgroundProperty().set(true);
+        uut.sourceOrTargetNullProperty().set(false);
         when(mockRisikoController.getValidSourceZoneNames()).thenReturn(clickableZonesNames);
         when(mockRisikoController.getValidTargetZoneNames(toClick.getName())).thenReturn(List.of(validTarget.getName()));
-
-        uut.handleMapClick(toClickX, toClickY);
 
         uut.darkenBackgroundProperty().addListener((new ChangeListener<Boolean>() {
             @Override
@@ -264,18 +264,15 @@ public class MapModelTest {
                 uut.removeOverlaidPixelsProperty().removeListener(this);
             }
         }));
-        uut.sourceOrTargetNullProperty().addListener((new ChangeListener<Boolean>() {
+        ChangeListener<Boolean> sourceOrTargetNullActionListener = new ChangeListener<Boolean>() {
             @Override
             public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
                 if (sourceOrTargetPropertyUpdateCount.get() == 0) {
                     assertTrue(newValue);
-                    sourceOrTargetPropertyUpdateCount.set(1);
-                } else {
-                    assertFalse(newValue);
-                    uut.sourceOrTargetNullProperty().removeListener(this);
                 }
             }
-        }));
+        };
+        uut.sourceOrTargetNullProperty().addListener(sourceOrTargetNullActionListener);
         uut.highlightNeighboursProperty().addListener((new ChangeListener<List<ZoneSquare>>() {
             @Override
             public void changed(ObservableValue<? extends List<ZoneSquare>> observable, List<ZoneSquare> oldValue, List<ZoneSquare> newValue) {
@@ -299,18 +296,22 @@ public class MapModelTest {
                 uut.stopAnimationProperty().removeListener(this);
             }
         }));
+        uut.handleMapClick(toClickX, toClickY);
         assertEquals(toClick, uut.getSource());
         assertTrue(uut.getHoverableZones().contains(toClick));
         assertTrue(uut.getHoverableZones().contains(validTarget));
+        assertTrue(uut.getClickableZones().contains(toClick));
         assertTrue(uut.getClickableZones().contains(validTarget));
-        assertTrue(uut.getClickableZones().contains(validTarget));
+        uut.sourceOrTargetNullProperty().removeListener(sourceOrTargetNullActionListener);
     }
 
+    @Test
     public void testClickShouldUpdateTarget() {
         initializeUUTWithDefaultScale();
-        assertNull(uut.getSource());
+        assertNull(uut.getTarget());
         ZoneSquare source = uut.getZoneSquares().stream().filter(zone -> zone.getName().equals("Zone110")).findFirst().orElse(null);
         ZoneSquare target = uut.getZoneSquares().stream().filter(zone -> zone.getName().equals("Zone154")).findFirst().orElse(null);
+        uut.setSource(source);
         AtomicInteger sourceOrTargetPropertyUpdateCount = new AtomicInteger(0);
         AtomicInteger darkenBackgroundPropertyUpdateCount = new AtomicInteger(0);
         assertNotNull(source);
@@ -322,7 +323,7 @@ public class MapModelTest {
         clickableZonesNames.add(target.getName());
         RisikoController mockRisikoController = mock(RisikoController.class);
         uut.setRisikoController(mockRisikoController);
-        when(mockRisikoController.getValidTargetZoneNames(toClick.getName())).thenReturn(List.of(validTarget.getName()));
+        when(mockRisikoController.getValidTargetZoneNames(target.getName())).thenReturn(List.of(target.getName()));
 
         uut.handleMapClick(toClickX, toClickY);
 
@@ -357,34 +358,13 @@ public class MapModelTest {
                 }
             }
         }));
-        uut.highlightNeighboursProperty().addListener((new ChangeListener<List<ZoneSquare>>() {
-            @Override
-            public void changed(ObservableValue<? extends List<ZoneSquare>> observable, List<ZoneSquare> oldValue, List<ZoneSquare> newValue) {
-                assertTrue(newValue.size() > 0);
-                assertEquals(validTarget, newValue.get(0));
-                uut.highlightNeighboursProperty().removeListener(this);
-            }
-        }));
-        uut.setZoneActiveProperty().addListener((new ChangeListener<ActivateZoneDTO>() {
-            @Override
-            public void changed(ObservableValue<? extends ActivateZoneDTO> observable, ActivateZoneDTO oldValue, ActivateZoneDTO newValue) {
-                assertEquals(toClick, newValue.getZoneSquare());
-                assertTrue(newValue.isShift());
-                uut.setZoneActiveProperty().removeListener(this);
-            }
-        }));
-        uut.stopAnimationProperty().addListener((new ChangeListener<Boolean>() {
+        uut.removeUnnecessaryTooltipsProperty().addListener((new ChangeListener<Boolean>() {
             @Override
             public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
                 assertTrue(newValue);
-                uut.stopAnimationProperty().removeListener(this);
+                uut.removeUnnecessaryTooltipsProperty().removeListener(this);
             }
         }));
-        assertEquals(toClick, uut.getSource());
-        assertTrue(uut.getHoverableZones().contains(toClick));
-        assertTrue(uut.getHoverableZones().contains(validTarget));
-        assertTrue(uut.getClickableZones().contains(validTarget));
-        assertTrue(uut.getClickableZones().contains(validTarget));
 
     }
 
@@ -396,13 +376,17 @@ public class MapModelTest {
 
     }
 
-    public void testClickOnNoZone(){}
+    public void testClickOnNoZone() {
+    }
 
-    public void testClickOnPositionOutOfMapBounds(){}
+    public void testClickOnPositionOutOfMapBounds() {
+    }
 
-    public void testClickMapClickDisabled() {}
+    public void testClickMapClickDisabled() {
+    }
 
-    public void testClickNoClickableZones() {}
+    public void testClickNoClickableZones() {
+    }
 
     @Test
     public void testNextActionValuesSetCorrectly() {
