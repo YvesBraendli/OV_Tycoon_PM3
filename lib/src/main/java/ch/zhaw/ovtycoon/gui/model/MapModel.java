@@ -47,7 +47,7 @@ public class MapModel {
     private RisikoController risikoController;
     private final SimpleBooleanProperty sourceOrTargetNull = new SimpleBooleanProperty(true);
     private final SimpleBooleanProperty actionButtonVisible = new SimpleBooleanProperty(false);
-    private final SimpleObjectProperty<Config.PlayerColor> currPlayer;
+    private final SimpleObjectProperty<Config.PlayerColor> currPlayer = new SimpleObjectProperty<>(null);
     private final SimpleStringProperty actionButtonText = new SimpleStringProperty();
     private final SimpleStringProperty showActionChange = new SimpleStringProperty();
     private final SimpleBooleanProperty darkenBackground = new SimpleBooleanProperty();
@@ -91,7 +91,6 @@ public class MapModel {
         colorService = new ColorService();
         zoneSquares = mapLoaderService.initZoneSquaresFromConfig();
         this.risikoController = risikoController;
-        currPlayer = new SimpleObjectProperty<>(risikoController.getPlayerColors()[risikoController.getPlayerColors().length - 1]);
     }
 
     /**
@@ -103,6 +102,8 @@ public class MapModel {
         drawZonesInPlayerColors();
         initTroopAmountText();
         currPlayer.set(risikoController.getCurrentPlayer());
+        actionButtonText.set(risikoController.getAction().getActionName());
+        actionButtonVisible.set(risikoController.getAction() != Action.DEFEND);
         showActionChange.set(risikoController.getAction().getActionName());
     }
 
@@ -304,8 +305,8 @@ public class MapModel {
         ChangeListener<Boolean> zoneOvertakenListener = new ChangeListener<Boolean>() {
             @Override
             public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-                if (newValue != null) {
-                    zoneOvertaken.set(newValue);
+                if (newValue != false) {
+                    zoneOvertaken.set(true);
                     risikoController.getZoneOvertaken().removeListener(this);
                 }
             }

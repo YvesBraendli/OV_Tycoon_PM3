@@ -41,7 +41,6 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
-
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -297,28 +296,30 @@ public class MainWindowController {
 
         background.setFitHeight(background.getFitHeight() * scale);
         background.setFitWidth(background.getFitWidth() * scale);
+        background.setLayoutX(background.getLayoutX() + 15);
+        background.setLayoutY(background.getLayoutY() + 8);
 
         nextMoveBtn.setLayoutX(nextMoveBtn.getLayoutX() * scale);
-        nextMoveBtn.setLayoutY(nextMoveBtn.getLayoutY() * scale);
+        nextMoveBtn.setLayoutY(nextMoveBtn.getLayoutY() * scale - 10);
         nextMoveBtn.setPrefHeight(actionBtn.getPrefHeight() * scale);
         nextMoveBtn.setPrefWidth(actionBtn.getPrefWidth() * scale);
         nextMoveBtn.setStyle("-fx-font-family: Arial; -fx-font-weight: bold; -fx-font-size: 10px;");
 
         actionBtn.setLayoutX(actionBtn.getLayoutX() * scale);
-        actionBtn.setLayoutY(actionBtn.getLayoutY() * scale);
+        actionBtn.setLayoutY(actionBtn.getLayoutY() * scale - 10);
         actionBtn.setPrefHeight(actionBtn.getPrefHeight() * scale);
         actionBtn.setPrefWidth(actionBtn.getPrefWidth() * scale);
         actionBtn.setStyle("-fx-font-family: Arial; -fx-font-weight: bold; -fx-font-size: 10px;");
 
 
         closeButton.setLayoutX(closeButton.getLayoutX() * scale);
-        closeButton.setLayoutY(closeButton.getLayoutY() * scale);
+        closeButton.setLayoutY(closeButton.getLayoutY() * scale - 5);
         closeButton.setPrefHeight(closeButton.getPrefHeight() * scale);
         closeButton.setPrefWidth(closeButton.getPrefWidth() * scale);
-        closeButton.setStyle("-fx-font-family: Arial; -fx-font-weight: bold; -fx-font-size: 7px;");
+        closeButton.setStyle("-fx-font-family: Arial; -fx-font-weight: bold; -fx-font-size: 8px;");
 
         saveButton.setLayoutX(saveButton.getLayoutX() * scale);
-        saveButton.setLayoutY(saveButton.getLayoutY() * scale);
+        saveButton.setLayoutY(saveButton.getLayoutY() * scale - 5);
         saveButton.setPrefHeight(saveButton.getPrefHeight() * scale);
         saveButton.setPrefWidth(saveButton.getPrefWidth() * scale);
         saveButton.setStyle("-fx-font-family: Arial; -fx-font-weight: bold; -fx-font-size: 8px;");
@@ -408,7 +409,8 @@ public class MainWindowController {
         }
 
         mapModel.currPlayerProperty().addListener((obs, oldVal, newVal) -> {
-            highlightCurrPlayerTile(oldVal.name().toLowerCase(), newVal.name().toLowerCase());
+            String oldId = oldVal == null ? null : oldVal.name().toLowerCase();
+            highlightCurrPlayerTile(oldId, newVal.name().toLowerCase());
             highlightCurrPlayerLarge(newVal);
         });
     }
@@ -420,7 +422,7 @@ public class MainWindowController {
      * @param idNew id of the HBox to be highlighted
      */
     private void highlightCurrPlayerTile(String idOld, String idNew) {
-        ImageView toBeUnHighlighted = playersListItems.stream().filter(box -> idOld.equals(box.getId())).findFirst().orElse(null);
+        ImageView toBeUnHighlighted = idOld == null ? null : playersListItems.stream().filter(box -> idOld.equals(box.getId())).findFirst().orElse(null);
         highlightPlayerTile(idNew);
         if (toBeUnHighlighted == null) return;
         toBeUnHighlighted.setFitWidth(70.0d * scale);
@@ -897,11 +899,16 @@ public class MainWindowController {
         showNotification(NotificationType.INFO, String.format(GAME_WINNER, winnerName));
     }
 
-
+    /**
+     * Close the main window and terminate the programm.
+     */
     public void closeGame(){
         Platform.exit();
     }
 
+    /**
+     * Save the current game and gives infotext to user.
+     */
     public void saveGame(){
         this.gameStateService.saveGameState(mapModel.getRisikoController().getGame());
         showNotification(NotificationType.INFO, "Spielstand gespeichert");
